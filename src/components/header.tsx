@@ -42,7 +42,6 @@ export function Header() {
             <Camera className="h-5 w-5 text-white" />
           </div>
           <span className="font-bold text-lg hidden sm:inline">
-            <span className="text-[#0063dc]">creami</span>{" "}
             <span className="text-[#ff0084]">Memoro</span>
           </span>
         </div>

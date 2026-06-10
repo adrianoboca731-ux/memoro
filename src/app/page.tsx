@@ -171,7 +171,6 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t py-4 px-4 text-center text-xs text-muted-foreground mt-auto">
-        <span className="text-[#0063dc]">creami</span>{" "}
         <span className="text-[#ff0084]">Memoro</span> — Condividi i Tuoi Ricordi
       </footer>
 

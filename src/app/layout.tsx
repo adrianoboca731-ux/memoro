@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "creami Memoro — Condividi i Tuoi Ricordi",
+  title: "Memoro — Condividi i Tuoi Ricordi",
   description: "Una piattaforma per condividere e scoprire foto straordinarie. Carica, organizza e esplora ricordi visivi.",
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
