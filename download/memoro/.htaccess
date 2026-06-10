@@ -1,0 +1,50 @@
+# creami Memoro — .htaccess per Altervista
+
+# Abilita rewrite engine
+RewriteEngine On
+
+# Imposta la pagina predefinita
+DirectoryIndex index.php
+
+# Proteggi la cartella includes
+<IfModule mod_rewrite.c>
+    RewriteRule ^includes/ - [F,L]
+    RewriteRule ^install/ - [L]
+</IfModule>
+
+# Proteggi i file sensibili
+<FilesMatch "^(config|Database|Photo|Album|Comment)\.php$">
+    Deny from all
+</FilesMatch>
+
+# Sicurezza generale
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Disabilita directory listing
+Options -Indexes
+
+# Cache per le immagini
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+</IfModule>
+
+# Compressione gzip
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json
+</IfModule>
+
+# PHP settings per Altervista
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    php_value max_execution_time 60
+    php_value memory_limit 128M
+</IfModule>
