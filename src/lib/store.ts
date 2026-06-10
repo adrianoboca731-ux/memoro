@@ -1,6 +1,19 @@
 import { create } from 'zustand';
 
-export type ViewType = 'explore' | 'albums' | 'favorites' | 'recent' | 'search' | 'groups' | 'galleries' | 'messages' | 'notifications';
+export type ViewType = 'home' | 'explore' | 'albums' | 'groups' | 'galleries' | 'favorites' | 'recent' | 'search' | 'messages' | 'notifications' | 'camera-roll' | 'people';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+  avatar: string | null;
+  bio: string | null;
+  location: string | null;
+  photoCount: number;
+  followerCount: number;
+  followingCount: number;
+}
 
 export interface Photo {
   id: string;
@@ -14,13 +27,28 @@ export interface Photo {
   width: number | null;
   height: number | null;
   tags: string | null;
-  albumId: string | null;
   views: number;
-  favorite: boolean;
+  commentCount: number;
+  favoriteCount: number;
+  userId: string;
+  albumId: string | null;
   createdAt: string;
   updatedAt: string;
+  user: User | null;
   album: Album | null;
   comments: Comment[];
+  exif: Exif | null;
+  isFavorited?: boolean;
+}
+
+export interface Exif {
+  id: string;
+  camera: string | null;
+  lens: string | null;
+  focalLength: string | null;
+  aperture: string | null;
+  shutterSpeed: string | null;
+  iso: string | null;
 }
 
 export interface Album {
@@ -28,6 +56,7 @@ export interface Album {
   name: string;
   description: string | null;
   cover: string | null;
+  userId: string;
   createdAt: string;
   updatedAt: string;
   photos?: Photo[];
@@ -37,7 +66,7 @@ export interface Album {
 export interface Comment {
   id: string;
   text: string;
-  author: string;
+  authorId: string;
   photoId: string;
   createdAt: string;
 }
@@ -51,28 +80,13 @@ export interface Group {
   isPublic: boolean;
   memberCount: number;
   photoCount: number;
+  discussionCount: number;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
-  members?: GroupMember[];
-  photos?: GroupPhoto[];
-}
-
-export interface GroupMember {
-  id: string;
-  groupId: string;
-  username: string;
-  role: string;
-  joinedAt: string;
-}
-
-export interface GroupPhoto {
-  id: string;
-  groupId: string;
-  photoId: string;
-  addedBy: string;
-  addedAt: string;
-  photo: Photo;
+  members?: any[];
+  photos?: any[];
+  discussions?: any[];
 }
 
 export interface Gallery {
@@ -81,27 +95,17 @@ export interface Gallery {
   description: string | null;
   cover: string | null;
   isPublic: boolean;
-  createdBy: string;
+  userId: string;
   createdAt: string;
   updatedAt: string;
   itemCount?: number;
-  items?: GalleryItem[];
-}
-
-export interface GalleryItem {
-  id: string;
-  galleryId: string;
-  photoId: string;
-  note: string | null;
-  addedBy: string;
-  addedAt: string;
-  photo: Photo;
+  items?: any[];
 }
 
 export interface Message {
   id: string;
-  fromUser: string;
-  toUser: string;
+  fromId: string;
+  toId: string;
   subject: string;
   body: string;
   isRead: boolean;
@@ -110,16 +114,17 @@ export interface Message {
 
 export interface Notification {
   id: string;
+  userId: string;
   type: string;
   title: string;
   message: string;
   link: string | null;
+  fromUserId: string | null;
   isRead: boolean;
   createdAt: string;
 }
 
 interface AppState {
-  // Navigation
   currentView: ViewType;
   selectedPhotoId: string | null;
   selectedAlbumId: string | null;
@@ -127,210 +132,94 @@ interface AppState {
   selectedGalleryId: string | null;
   isUploadOpen: boolean;
   searchQuery: string;
-
-  // Data
+  currentUser: User | null;
   photos: Photo[];
   albums: Album[];
   groups: Group[];
   galleries: Gallery[];
   messages: Message[];
   notifications: Notification[];
-  stats: { totalPhotos: number; totalAlbums: number; totalViews: number };
-
-  // Loading states
+  stats: { totalPhotos: number; totalAlbums: number; totalViews: number; totalUsers: number };
   isLoadingPhotos: boolean;
-  isLoadingAlbums: boolean;
-  isLoadingGroups: boolean;
-  isLoadingGalleries: boolean;
-
-  // Notification badge
   unreadNotifications: number;
   unreadMessages: number;
-
-  // Actions - Navigation
-  setCurrentView: (view: ViewType) => void;
+  setCurrentView: (v: ViewType) => void;
   selectPhoto: (id: string | null) => void;
   selectAlbum: (id: string | null) => void;
   selectGroup: (id: string | null) => void;
   selectGallery: (id: string | null) => void;
   toggleUpload: () => void;
-  setSearchQuery: (query: string) => void;
-
-  // Actions - Photos
-  setPhotos: (photos: Photo[]) => void;
-  setAlbums: (albums: Album[]) => void;
-  setStats: (stats: { totalPhotos: number; totalAlbums: number; totalViews: number }) => void;
-  toggleFavorite: (id: string) => void;
+  setSearchQuery: (q: string) => void;
+  setCurrentUser: (u: User | null) => void;
+  setPhotos: (p: Photo[]) => void;
+  setAlbums: (a: Album[]) => void;
+  setGroups: (g: Group[]) => void;
+  setGalleries: (g: Gallery[]) => void;
+  setMessages: (m: Message[]) => void;
+  setNotifications: (n: Notification[]) => void;
+  setStats: (s: { totalPhotos: number; totalAlbums: number; totalViews: number; totalUsers: number }) => void;
+  addPhoto: (p: Photo) => void;
   deletePhoto: (id: string) => void;
-  addPhoto: (photo: Photo) => void;
-  updatePhoto: (id: string, data: Partial<Photo>) => void;
-  addAlbum: (album: Album) => void;
+  updatePhoto: (id: string, d: Partial<Photo>) => void;
+  addAlbum: (a: Album) => void;
   deleteAlbum: (id: string) => void;
-  setLoadingPhotos: (loading: boolean) => void;
-  setLoadingAlbums: (loading: boolean) => void;
-  addComment: (photoId: string, comment: Comment) => void;
-
-  // Actions - Groups
-  setGroups: (groups: Group[]) => void;
-  addGroup: (group: Group) => void;
+  addGroup: (g: Group) => void;
   deleteGroup: (id: string) => void;
-  setLoadingGroups: (loading: boolean) => void;
-
-  // Actions - Galleries
-  setGalleries: (galleries: Gallery[]) => void;
-  addGallery: (gallery: Gallery) => void;
+  addGallery: (g: Gallery) => void;
   deleteGallery: (id: string) => void;
-  setLoadingGalleries: (loading: boolean) => void;
-
-  // Actions - Messages
-  setMessages: (messages: Message[]) => void;
-  addMessage: (message: Message) => void;
-  deleteMessage: (id: string) => void;
-  markMessageRead: (id: string) => void;
-
-  // Actions - Notifications
-  setNotifications: (notifications: Notification[]) => void;
-  setUnreadNotifications: (count: number) => void;
-  setUnreadMessages: (count: number) => void;
+  addComment: (photoId: string, c: Comment) => void;
+  toggleFavorite: (id: string) => void;
+  setUnreadNotifications: (n: number) => void;
+  setUnreadMessages: (n: number) => void;
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
-  addNotification: (notification: Notification) => void;
+  markMessageRead: (id: string) => void;
+  addMessage: (m: Message) => void;
+  deleteMessage: (id: string) => void;
+  addNotification: (n: Notification) => void;
+  setLoadingPhotos: (l: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  // Navigation
   currentView: 'explore',
-  selectedPhotoId: null,
-  selectedAlbumId: null,
-  selectedGroupId: null,
-  selectedGalleryId: null,
-  isUploadOpen: false,
-  searchQuery: '',
-
-  // Data
-  photos: [],
-  albums: [],
-  groups: [],
-  galleries: [],
-  messages: [],
-  notifications: [],
-  stats: { totalPhotos: 0, totalAlbums: 0, totalViews: 0 },
-
-  // Loading
-  isLoadingPhotos: false,
-  isLoadingAlbums: false,
-  isLoadingGroups: false,
-  isLoadingGalleries: false,
-
-  // Badges
-  unreadNotifications: 0,
-  unreadMessages: 0,
-
-  // Actions - Navigation
-  setCurrentView: (view) => set({ currentView: view }),
+  selectedPhotoId: null, selectedAlbumId: null, selectedGroupId: null, selectedGalleryId: null,
+  isUploadOpen: false, searchQuery: '', currentUser: null,
+  photos: [], albums: [], groups: [], galleries: [], messages: [], notifications: [],
+  stats: { totalPhotos: 0, totalAlbums: 0, totalViews: 0, totalUsers: 0 },
+  isLoadingPhotos: false, unreadNotifications: 0, unreadMessages: 0,
+  setCurrentView: (v) => set({ currentView: v }),
   selectPhoto: (id) => set({ selectedPhotoId: id }),
-  selectAlbum: (id) => set({ selectedAlbumId: id, currentView: id ? 'albums' : 'albums' }),
-  selectGroup: (id) => set({ selectedGroupId: id, currentView: 'groups' }),
-  selectGallery: (id) => set({ selectedGalleryId: id, currentView: 'galleries' }),
-  toggleUpload: () => set((state) => ({ isUploadOpen: !state.isUploadOpen })),
-  setSearchQuery: (query) => set({ searchQuery: query, currentView: query ? 'search' : 'explore' }),
-
-  // Actions - Photos
-  setPhotos: (photos) => set({ photos }),
-  setAlbums: (albums) => set({ albums }),
-  setStats: (stats) => set({ stats }),
-  toggleFavorite: (id) =>
-    set((state) => ({
-      photos: state.photos.map((p) =>
-        p.id === id ? { ...p, favorite: !p.favorite } : p
-      ),
-    })),
-  deletePhoto: (id) =>
-    set((state) => ({
-      photos: state.photos.filter((p) => p.id !== id),
-      selectedPhotoId: state.selectedPhotoId === id ? null : state.selectedPhotoId,
-    })),
-  addPhoto: (photo) =>
-    set((state) => ({ photos: [photo, ...state.photos] })),
-  updatePhoto: (id, data) =>
-    set((state) => ({
-      photos: state.photos.map((p) => (p.id === id ? { ...p, ...data } : p)),
-    })),
-  addAlbum: (album) =>
-    set((state) => ({ albums: [album, ...state.albums] })),
-  deleteAlbum: (id) =>
-    set((state) => ({
-      albums: state.albums.filter((a) => a.id !== id),
-      photos: state.photos.map((p) =>
-        p.albumId === id ? { ...p, albumId: null, album: null } : p
-      ),
-      selectedAlbumId: state.selectedAlbumId === id ? null : state.selectedAlbumId,
-    })),
-  setLoadingPhotos: (loading) => set({ isLoadingPhotos: loading }),
-  setLoadingAlbums: (loading) => set({ isLoadingAlbums: loading }),
-  addComment: (photoId, comment) =>
-    set((state) => ({
-      photos: state.photos.map((p) =>
-        p.id === photoId
-          ? { ...p, comments: [comment, ...(p.comments || [])] }
-          : p
-      ),
-    })),
-
-  // Actions - Groups
-  setGroups: (groups) => set({ groups }),
-  addGroup: (group) =>
-    set((state) => ({ groups: [group, ...state.groups] })),
-  deleteGroup: (id) =>
-    set((state) => ({
-      groups: state.groups.filter((g) => g.id !== id),
-      selectedGroupId: state.selectedGroupId === id ? null : state.selectedGroupId,
-    })),
-  setLoadingGroups: (loading) => set({ isLoadingGroups: loading }),
-
-  // Actions - Galleries
-  setGalleries: (galleries) => set({ galleries }),
-  addGallery: (gallery) =>
-    set((state) => ({ galleries: [gallery, ...state.galleries] })),
-  deleteGallery: (id) =>
-    set((state) => ({
-      galleries: state.galleries.filter((g) => g.id !== id),
-      selectedGalleryId: state.selectedGalleryId === id ? null : state.selectedGalleryId,
-    })),
-  setLoadingGalleries: (loading) => set({ isLoadingGalleries: loading }),
-
-  // Actions - Messages
-  setMessages: (messages) => set({
-    messages,
-    unreadMessages: messages.filter((m) => !m.isRead).length,
-  }),
-  addMessage: (message) =>
-    set((state) => ({ messages: [message, ...state.messages] })),
-  deleteMessage: (id) =>
-    set((state) => ({ messages: state.messages.filter((m) => m.id !== id) })),
-  markMessageRead: (id) =>
-    set((state) => ({
-      messages: state.messages.map((m) => m.id === id ? { ...m, isRead: true } : m),
-      unreadMessages: Math.max(0, state.unreadMessages - 1),
-    })),
-
-  // Actions - Notifications
-  setNotifications: (notifications) => set({ notifications }),
-  setUnreadNotifications: (count) => set({ unreadNotifications: count }),
-  setUnreadMessages: (count) => set({ unreadMessages: count }),
-  markNotificationRead: (id) =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => n.id === id ? { ...n, isRead: true } : n),
-      unreadNotifications: Math.max(0, state.unreadNotifications - 1),
-    })),
-  markAllNotificationsRead: () =>
-    set((state) => ({
-      notifications: state.notifications.map((n) => ({ ...n, isRead: true })),
-      unreadNotifications: 0,
-    })),
-  addNotification: (notification) =>
-    set((state) => ({
-      notifications: [notification, ...state.notifications],
-      unreadNotifications: state.unreadNotifications + 1,
-    })),
+  selectAlbum: (id) => set({ selectedAlbumId: id }),
+  selectGroup: (id) => set({ selectedGroupId: id }),
+  selectGallery: (id) => set({ selectedGalleryId: id }),
+  toggleUpload: () => set((s) => ({ isUploadOpen: !s.isUploadOpen })),
+  setSearchQuery: (q) => set({ searchQuery: q, currentView: q ? 'search' : 'explore' }),
+  setCurrentUser: (u) => set({ currentUser: u }),
+  setPhotos: (p) => set({ photos: p }),
+  setAlbums: (a) => set({ albums: a }),
+  setGroups: (g) => set({ groups: g }),
+  setGalleries: (g) => set({ galleries: g }),
+  setMessages: (m) => set({ messages: m, unreadMessages: m.filter(x => !x.isRead).length }),
+  setNotifications: (n) => set({ notifications: n }),
+  setStats: (s) => set({ stats: s }),
+  addPhoto: (p) => set((s) => ({ photos: [p, ...s.photos] })),
+  deletePhoto: (id) => set((s) => ({ photos: s.photos.filter(p => p.id !== id), selectedPhotoId: s.selectedPhotoId === id ? null : s.selectedPhotoId })),
+  updatePhoto: (id, d) => set((s) => ({ photos: s.photos.map(p => p.id === id ? { ...p, ...d } : p) })),
+  addAlbum: (a) => set((s) => ({ albums: [a, ...s.albums] })),
+  deleteAlbum: (id) => set((s) => ({ albums: s.albums.filter(a => a.id !== id) })),
+  addGroup: (g) => set((s) => ({ groups: [g, ...s.groups] })),
+  deleteGroup: (id) => set((s) => ({ groups: s.groups.filter(g => g.id !== id) })),
+  addGallery: (g) => set((s) => ({ galleries: [g, ...s.galleries] })),
+  deleteGallery: (id) => set((s) => ({ galleries: s.galleries.filter(g => g.id !== id) })),
+  addComment: (photoId, c) => set((s) => ({ photos: s.photos.map(p => p.id === photoId ? { ...p, comments: [c, ...(p.comments || [])] } : p) })),
+  toggleFavorite: (id) => set((s) => ({ photos: s.photos.map(p => p.id === id ? { ...p, isFavorited: !p.isFavorited, favoriteCount: p.favoriteCount + (p.isFavorited ? -1 : 1) } : p) })),
+  setUnreadNotifications: (n) => set({ unreadNotifications: n }),
+  setUnreadMessages: (n) => set({ unreadMessages: n }),
+  markNotificationRead: (id) => set((s) => ({ notifications: s.notifications.map(n => n.id === id ? { ...n, isRead: true } : n), unreadNotifications: Math.max(0, s.unreadNotifications - 1) })),
+  markAllNotificationsRead: () => set((s) => ({ notifications: s.notifications.map(n => ({ ...n, isRead: true })), unreadNotifications: 0 })),
+  markMessageRead: (id) => set((s) => ({ messages: s.messages.map(m => m.id === id ? { ...m, isRead: true } : m), unreadMessages: Math.max(0, s.unreadMessages - 1) })),
+  addMessage: (m) => set((s) => ({ messages: [m, ...s.messages] })),
+  deleteMessage: (id) => set((s) => ({ messages: s.messages.filter(m => m.id !== id) })),
+  addNotification: (n) => set((s) => ({ notifications: [n, ...s.notifications], unreadNotifications: s.unreadNotifications + 1 })),
+  setLoadingPhotos: (l) => set({ isLoadingPhotos: l }),
 }));
