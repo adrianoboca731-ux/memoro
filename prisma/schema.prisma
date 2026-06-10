@@ -26,6 +26,8 @@ model Photo {
   updatedAt   DateTime @updatedAt @map("updated_at")
   album       Album?   @relation(fields: [albumId], references: [id], onDelete: SetNull)
   comments    Comment[]
+  galleryItems GalleryItem[]
+  groupPhotos  GroupPhoto[]
 
   @@map("photos")
 }
@@ -51,4 +53,103 @@ model Comment {
   photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
 
   @@map("comments")
+}
+
+// === GRUPPI ===
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  cover       String?
+  rules       String?
+  isPublic    Boolean  @default(true) @map("is_public")
+  memberCount Int      @default(1) @map("member_count")
+  photoCount  Int      @default(0) @map("photo_count")
+  createdBy   String   @default("Admin") @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  members     GroupMember[]
+  photos      GroupPhoto[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  username  String
+  role      String   @default("member")
+  joinedAt  DateTime @default(now()) @map("joined_at")
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, username])
+  @@map("group_members")
+}
+
+model GroupPhoto {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  photoId   String   @map("photo_id")
+  addedBy   String   @default("Admin") @map("added_by")
+  addedAt   DateTime @default(now()) @map("added_at")
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, photoId])
+  @@map("group_photos")
+}
+
+// === GALLERIE ===
+model Gallery {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  cover       String?
+  isPublic    Boolean  @default(true) @map("is_public")
+  createdBy   String   @default("Admin") @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  items       GalleryItem[]
+
+  @@map("galleries")
+}
+
+model GalleryItem {
+  id        String   @id @default(cuid())
+  galleryId String   @map("gallery_id")
+  photoId   String   @map("photo_id")
+  note      String?
+  addedBy   String   @default("Admin") @map("added_by")
+  addedAt   DateTime @default(now()) @map("added_at")
+  gallery   Gallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([galleryId, photoId])
+  @@map("gallery_items")
+}
+
+// === MESSAGGI ===
+model Message {
+  id        String   @id @default(cuid())
+  fromUser  String   @map("from_user")
+  toUser    String   @map("to_user")
+  subject   String
+  body      String
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("messages")
+}
+
+// === NOTIFICHE ===
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
 }

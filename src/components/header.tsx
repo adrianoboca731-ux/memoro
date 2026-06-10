@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppStore, ViewType } from "@/lib/store";
-import { Camera, Search, Upload, Sun, Moon, Menu, X } from "lucide-react";
+import { Camera, Search, Upload, Sun, Moon, Menu, X, Bell, Mail, Users, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "next-themes";
@@ -10,12 +10,22 @@ import { useState, useCallback, useSyncExternalStore } from "react";
 const navItems: { key: ViewType; label: string }[] = [
   { key: "explore", label: "Esplora" },
   { key: "albums", label: "Album" },
+  { key: "groups", label: "Gruppi" },
+  { key: "galleries", label: "Gallerie" },
   { key: "favorites", label: "Preferiti" },
   { key: "recent", label: "Recenti" },
 ];
 
 export function Header() {
-  const { currentView, setCurrentView, setSearchQuery, toggleUpload, searchQuery } = useAppStore();
+  const {
+    currentView,
+    setCurrentView,
+    setSearchQuery,
+    toggleUpload,
+    searchQuery,
+    unreadNotifications,
+    unreadMessages,
+  } = useAppStore();
   const { theme, setTheme } = useTheme();
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -60,7 +70,7 @@ export function Header() {
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-1">
           {navItems.map((item) => (
             <Button
               key={item.key}
@@ -79,7 +89,37 @@ export function Header() {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Messages */}
+          <Button
+            variant={currentView === "messages" ? "default" : "ghost"}
+            size="icon"
+            className={`h-9 w-9 relative ${currentView === "messages" ? "bg-[#0063dc] text-white" : ""}`}
+            onClick={() => setCurrentView("messages")}
+          >
+            <Mail className="h-4 w-4" />
+            {unreadMessages > 0 && (
+              <span className="absolute -top-1 -right-1 text-[10px] bg-[#ff0084] text-white rounded-full w-4 h-4 flex items-center justify-center">
+                {unreadMessages > 9 ? "9+" : unreadMessages}
+              </span>
+            )}
+          </Button>
+
+          {/* Notifications */}
+          <Button
+            variant={currentView === "notifications" ? "default" : "ghost"}
+            size="icon"
+            className={`h-9 w-9 relative ${currentView === "notifications" ? "bg-[#ff0084] text-white" : ""}`}
+            onClick={() => setCurrentView("notifications")}
+          >
+            <Bell className="h-4 w-4" />
+            {unreadNotifications > 0 && (
+              <span className="absolute -top-1 -right-1 text-[10px] bg-[#ff0084] text-white rounded-full w-4 h-4 flex items-center justify-center">
+                {unreadNotifications > 9 ? "9+" : unreadNotifications}
+              </span>
+            )}
+          </Button>
+
           <Button
             onClick={toggleUpload}
             size="sm"
@@ -108,7 +148,7 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden h-9 w-9"
+            className="lg:hidden h-9 w-9"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -118,7 +158,7 @@ export function Header() {
 
       {/* Mobile Nav */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t px-4 py-2 flex gap-1 overflow-x-auto">
+        <div className="lg:hidden border-t px-4 py-2 flex gap-1 overflow-x-auto">
           {navItems.map((item) => (
             <Button
               key={item.key}

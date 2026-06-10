@@ -7,21 +7,28 @@ import { PhotoGrid } from "@/components/photo-grid";
 import { PhotoDetail } from "@/components/photo-detail";
 import { UploadModal } from "@/components/upload-modal";
 import { AlbumsView } from "@/components/albums-view";
-import { Image as ImageIcon, Heart, Clock, Compass, BarChart3 } from "lucide-react";
+import { GroupsView } from "@/components/groups-view";
+import { GalleriesView } from "@/components/galleries-view";
+import { MessagesView } from "@/components/messages-view";
+import { NotificationsView } from "@/components/notifications-view";
+import { Image as ImageIcon, Heart, Clock, Compass, BarChart3, Users, LayoutGrid } from "lucide-react";
 
 export default function HomePage() {
   const {
     currentView,
     photos,
-    albums,
     searchQuery,
     isLoadingPhotos,
-    isLoadingAlbums,
     setPhotos,
     setAlbums,
     setStats,
     setLoadingPhotos,
-    setLoadingAlbums,
+    setGroups,
+    setGalleries,
+    setMessages,
+    setNotifications,
+    setUnreadNotifications,
+    setUnreadMessages,
     stats,
   } = useAppStore();
 
@@ -45,7 +52,6 @@ export default function HomePage() {
 
   // Fetch albums
   const fetchAlbums = useCallback(async () => {
-    setLoadingAlbums(true);
     try {
       const res = await fetch("/api/albums");
       if (res.ok) {
@@ -54,10 +60,8 @@ export default function HomePage() {
       }
     } catch (err) {
       console.error("Failed to fetch albums:", err);
-    } finally {
-      setLoadingAlbums(false);
     }
-  }, [setAlbums, setLoadingAlbums]);
+  }, [setAlbums]);
 
   // Fetch stats
   const fetchStats = useCallback(async () => {
@@ -72,6 +76,59 @@ export default function HomePage() {
     }
   }, [setStats]);
 
+  // Fetch groups
+  const fetchGroups = useCallback(async () => {
+    try {
+      const res = await fetch("/api/groups");
+      if (res.ok) {
+        const data = await res.json();
+        setGroups(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch groups:", err);
+    }
+  }, [setGroups]);
+
+  // Fetch galleries
+  const fetchGalleries = useCallback(async () => {
+    try {
+      const res = await fetch("/api/galleries");
+      if (res.ok) {
+        const data = await res.json();
+        setGalleries(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch galleries:", err);
+    }
+  }, [setGalleries]);
+
+  // Fetch messages
+  const fetchMessages = useCallback(async () => {
+    try {
+      const res = await fetch("/api/messages?user=Admin");
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch messages:", err);
+    }
+  }, [setMessages]);
+
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch("/api/notifications");
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications);
+        setUnreadNotifications(data.unreadCount);
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  }, [setNotifications, setUnreadNotifications]);
+
   useEffect(() => {
     fetchPhotos();
   }, [fetchPhotos]);
@@ -83,6 +140,22 @@ export default function HomePage() {
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
+
+  useEffect(() => {
+    fetchGroups();
+  }, [fetchGroups]);
+
+  useEffect(() => {
+    fetchGalleries();
+  }, [fetchGalleries]);
+
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   // Filter photos based on current view
   const getFilteredPhotos = () => {
@@ -124,6 +197,64 @@ export default function HomePage() {
   const viewInfo = getViewTitle();
   const ViewIcon = viewInfo.icon;
 
+  // Render specialized views
+  if (currentView === "albums") return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <main className="flex-1"><AlbumsView /></main>
+      <footer className="border-t py-4 px-4 text-center text-xs text-muted-foreground mt-auto">
+        <span className="text-[#ff0084]">Memoro</span> — Condividi i Tuoi Ricordi
+      </footer>
+      <PhotoDetail />
+      <UploadModal />
+    </div>
+  );
+
+  if (currentView === "groups") return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <main className="flex-1"><GroupsView /></main>
+      <footer className="border-t py-4 px-4 text-center text-xs text-muted-foreground mt-auto">
+        <span className="text-[#ff0084]">Memoro</span> — Condividi i Tuoi Ricordi
+      </footer>
+      <PhotoDetail />
+      <UploadModal />
+    </div>
+  );
+
+  if (currentView === "galleries") return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <main className="flex-1"><GalleriesView /></main>
+      <footer className="border-t py-4 px-4 text-center text-xs text-muted-foreground mt-auto">
+        <span className="text-[#ff0084]">Memoro</span> — Condividi i Tuoi Ricordi
+      </footer>
+      <PhotoDetail />
+      <UploadModal />
+    </div>
+  );
+
+  if (currentView === "messages") return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <main className="flex-1"><MessagesView /></main>
+      <footer className="border-t py-4 px-4 text-center text-xs text-muted-foreground mt-auto">
+        <span className="text-[#ff0084]">Memoro</span> — Condividi i Tuoi Ricordi
+      </footer>
+    </div>
+  );
+
+  if (currentView === "notifications") return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <main className="flex-1"><NotificationsView /></main>
+      <footer className="border-t py-4 px-4 text-center text-xs text-muted-foreground mt-auto">
+        <span className="text-[#ff0084]">Memoro</span> — Condividi i Tuoi Ricordi
+      </footer>
+    </div>
+  );
+
+  // Default: photo grid views (explore, favorites, recent, search)
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -150,23 +281,17 @@ export default function HomePage() {
           </div>
         </div>
 
-        {currentView === "albums" ? (
-          <AlbumsView />
-        ) : (
-          <div>
-            {/* View header */}
-            <div className="px-4 pt-4 pb-2">
-              <div className="flex items-center gap-2">
-                <ViewIcon className="h-5 w-5 text-[#0063dc]" />
-                <h1 className="text-lg font-bold">{viewInfo.title}</h1>
-              </div>
-              <p className="text-sm text-muted-foreground mt-0.5">{viewInfo.desc}</p>
-            </div>
-
-            {/* Photo grid */}
-            <PhotoGrid photos={filteredPhotos} loading={isLoadingPhotos} />
+        {/* View header */}
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex items-center gap-2">
+            <ViewIcon className="h-5 w-5 text-[#0063dc]" />
+            <h1 className="text-lg font-bold">{viewInfo.title}</h1>
           </div>
-        )}
+          <p className="text-sm text-muted-foreground mt-0.5">{viewInfo.desc}</p>
+        </div>
+
+        {/* Photo grid */}
+        <PhotoGrid photos={filteredPhotos} loading={isLoadingPhotos} />
       </main>
 
       {/* Footer */}
