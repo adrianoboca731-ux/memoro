@@ -8,6 +8,7 @@ export interface Photo {
   description: string | null;
   filename: string;
   filepath: string;
+  thumbnail: string | null;
   mimetype: string;
   size: number;
   width: number | null;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { del } from '@vercel/blob';
 import { db } from '@/lib/db';
 
 export async function GET(
@@ -49,6 +50,19 @@ export async function DELETE(
 ) {
   const { id } = await params;
   try {
+    // Get photo to find blob URLs
+    const photo = await db.photo.findUnique({ where: { id } });
+
+    if (photo) {
+      // Delete blob files
+      if (photo.filepath && photo.filepath.includes('blob.vercel-storage.com')) {
+        try { await del(photo.filepath); } catch {}
+      }
+      if (photo.thumbnail && photo.thumbnail.includes('blob.vercel-storage.com')) {
+        try { await del(photo.thumbnail); } catch {}
+      }
+    }
+
     await db.photo.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {

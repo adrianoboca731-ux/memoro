@@ -117,6 +117,7 @@ export function UploadModal() {
         photoFormData.append("description", uploadFile.description);
         photoFormData.append("filename", uploadData.filename);
         photoFormData.append("filepath", uploadData.filepath);
+        if (uploadData.thumbnail) photoFormData.append("thumbnail", uploadData.thumbnail);
         photoFormData.append("mimetype", uploadData.mimetype);
         photoFormData.append("size", String(uploadData.size));
         if (uploadData.width) photoFormData.append("width", String(uploadData.width));

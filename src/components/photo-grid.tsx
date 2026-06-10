@@ -51,7 +51,7 @@ export function PhotoGrid({ photos, loading }: PhotoGridProps) {
           >
             <div className="relative overflow-hidden rounded-lg bg-muted">
               <img
-                src={photo.filepath.replace('/uploads/', '/uploads/thumb-')}
+                src={photo.thumbnail || photo.filepath.replace('/uploads/', '/uploads/thumb-')}
                 alt={photo.title}
                 className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"

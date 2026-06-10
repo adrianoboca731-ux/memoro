@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
     const description = (formData.get('description') as string) || '';
     const filename = formData.get('filename') as string;
     const filepath = formData.get('filepath') as string;
+    const thumbnail = (formData.get('thumbnail') as string) || null;
     const mimetype = formData.get('mimetype') as string;
     const size = parseInt(formData.get('size') as string, 10);
     const width = formData.get('width') ? parseInt(formData.get('width') as string, 10) : null;
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
         description,
         filename,
         filepath,
+        thumbnail,
         mimetype,
         size,
         width,
