@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  filename    String
+  filepath    String
+  mimetype    String
+  size        Int
+  width       Int?
+  height      Int?
+  tags        String?
+  albumId     String?
+  views       Int      @default(0)
+  favorite    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  album       Album?   @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  comments    Comment[]
+}
+
+model Album {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  cover       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  photos      Photo[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  author    String
+  photoId   String
+  createdAt DateTime @default(now())
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+}
