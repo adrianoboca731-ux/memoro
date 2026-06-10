@@ -1,121 +1,174 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
-import { useAppStore } from "@/lib/store";
+import { useSession } from "next-auth/react";
 import { Header } from "@/components/header";
-import { PhotoGrid } from "@/components/photo-grid";
-import { PhotoDetail } from "@/components/photo-detail";
-import { UploadModal } from "@/components/upload-modal";
-import { AlbumsView } from "@/components/albums-view";
-import { GroupsView } from "@/components/groups-view";
-import { GalleriesView } from "@/components/galleries-view";
-import { MessagesView } from "@/components/messages-view";
-import { NotificationsView } from "@/components/notifications-view";
-import { Compass, Heart, Clock, Image as ImageIcon, BarChart3, Users, Film } from "lucide-react";
+import { Camera, ArrowRight, Sparkles, Heart, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+// Hero section for logged-out users
+function HeroSection() {
+  return (
+    <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
+      <Header />
+      {/* Hero */}
+      <section className="flex-1 flex flex-col items-center justify-center px-4 py-20 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#0063dc]/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#ff0084]/10 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative z-10 max-w-3xl mx-auto text-center space-y-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0063dc] to-[#ff0084] flex items-center justify-center shadow-lg shadow-[#0063dc]/30">
+                <Camera className="h-9 w-9 text-white" />
+              </div>
+            </div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight">
+              Unisciti alla community fotografica più grande del mondo
+            </h1>
+          </motion.div>
+
+          <motion.p
+            className="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+          >
+            Carica, organizza e condividi le tue foto con milioni di persone.
+            Spazio illimitato, completamente gratuito.
+          </motion.p>
+
+          <motion.div
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <Link href="/auth/registrati">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white font-semibold px-8 h-12 text-base rounded-lg shadow-lg shadow-[#0063dc]/25"
+              >
+                Inizia gratuitamente
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/auth/accedi">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white/20 text-white hover:bg-white/5 h-12 px-8 text-base rounded-lg"
+              >
+                Accedi
+              </Button>
+            </Link>
+          </motion.div>
+
+          <motion.div
+            className="flex items-center justify-center gap-6 pt-4 text-white/30 text-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.45 }}
+          >
+            <span className="flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-[#ff0084]" />
+              Spazio illimitato
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Heart className="h-4 w-4 text-[#ff0084]" />
+              Completamente gratis
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Users className="h-4 w-4 text-[#ff0084]" />
+              Community globale
+            </span>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Featured photos section */}
+      <section className="bg-[#0d0d0d] px-4 pb-16">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-center text-white/20 text-sm uppercase tracking-widest mb-8">
+            Scopri foto straordinarie
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div
+                key={i}
+                className="aspect-square rounded-lg overflow-hidden bg-white/5"
+              >
+                <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center">
+                  <Camera className="h-6 w-6 text-white/10" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 py-6 px-4 text-center">
+        <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">
+          Memoro
+        </span>
+        <span className="text-white/20 text-sm ml-2">
+          &mdash; Condividi i Tuoi Ricordi &bull; Gratis per sempre
+        </span>
+      </footer>
+    </div>
+  );
+}
 
 export default function HomePage() {
-  const {
-    currentView, photos, searchQuery, isLoadingPhotos,
-    setPhotos, setAlbums, setStats, setLoadingPhotos,
-    setGroups, setGalleries, setMessages, setNotifications, setUnreadNotifications,
-    stats,
-  } = useAppStore();
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  const fetchPhotos = useCallback(async () => {
-    setLoadingPhotos(true);
-    try {
-      const params = new URLSearchParams();
-      if (searchQuery) params.set("search", searchQuery);
-      const res = await fetch(`/api/photos?${params.toString()}`);
-      if (res.ok) setPhotos(await res.json());
-    } catch {} finally { setLoadingPhotos(false); }
-  }, [searchQuery, setPhotos, setLoadingPhotos]);
-
-  const fetchAlbums = useCallback(async () => {
-    try { const res = await fetch("/api/albums"); if (res.ok) setAlbums(await res.json()); } catch {}
-  }, [setAlbums]);
-
-  const fetchStats = useCallback(async () => {
-    try { const res = await fetch("/api/stats"); if (res.ok) setStats(await res.json()); } catch {}
-  }, [setStats]);
-
-  const fetchGroups = useCallback(async () => {
-    try { const res = await fetch("/api/groups"); if (res.ok) setGroups(await res.json()); } catch {}
-  }, [setGroups]);
-
-  const fetchGalleries = useCallback(async () => {
-    try { const res = await fetch("/api/galleries"); if (res.ok) setGalleries(await res.json()); } catch {}
-  }, [setGalleries]);
-
-  const fetchMessages = useCallback(async () => {
-    try { const res = await fetch("/api/messages"); if (res.ok) setMessages(await res.json()); } catch {}
-  }, [setMessages]);
-
-  const fetchNotifications = useCallback(async () => {
-    try { const res = await fetch("/api/notifications"); if (res.ok) { const d = await res.json(); setNotifications(d.notifications); setUnreadNotifications(d.unreadCount); } } catch {}
-  }, [setNotifications, setUnreadNotifications]);
-
-  useEffect(() => { fetchPhotos(); }, [fetchPhotos]);
-  useEffect(() => { fetchAlbums(); }, [fetchAlbums]);
-  useEffect(() => { fetchStats(); }, [fetchStats]);
-  useEffect(() => { fetchGroups(); }, [fetchGroups]);
-  useEffect(() => { fetchGalleries(); }, [fetchGalleries]);
-  useEffect(() => { fetchMessages(); }, [fetchMessages]);
-  useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
-
-  const getFilteredPhotos = () => {
-    switch (currentView) {
-      case "favorites": return photos.filter(p => p.isFavorited);
-      case "recent": return [...photos].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20);
-      case "search": return photos;
-      default: return photos;
+  // Redirect logged-in users to explore page
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      router.replace("/esplora");
     }
-  };
+  }, [status, session, router]);
 
-  const filteredPhotos = getFilteredPhotos();
-  const getViewTitle = () => {
-    switch (currentView) {
-      case "home": return { title: "Photostream", icon: Compass, desc: "Le tue foto" };
-      case "favorites": return { title: "Preferiti", icon: Heart, desc: "Le tue foto preferite" };
-      case "recent": return { title: "Recenti", icon: Clock, desc: "Le foto più recenti" };
-      case "camera-roll": return { title: "Rullino", icon: Film, desc: "Tutte le foto in ordine cronologico" };
-      case "search": return { title: `Risultati per "${searchQuery}"`, icon: ImageIcon, desc: `${filteredPhotos.length} foto trovate` };
-      default: return { title: "Esplora", icon: Compass, desc: "Scopri foto straordinarie" };
-    }
-  };
-  const viewInfo = getViewTitle();
-  const ViewIcon = viewInfo.icon;
+  // Show loading state
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0063dc] to-[#ff0084] flex items-center justify-center animate-pulse">
+            <Camera className="h-4 w-4 text-white" />
+          </div>
+          <span className="text-white/40 text-sm">Caricamento...</span>
+        </div>
+      </div>
+    );
+  }
 
-  if (currentView === "albums") return <div className="min-h-screen bg-[#212124]"><Header /><AlbumsView /><PhotoDetail /><UploadModal /></div>;
-  if (currentView === "groups") return <div className="min-h-screen bg-[#212124]"><Header /><GroupsView /><PhotoDetail /><UploadModal /></div>;
-  if (currentView === "galleries") return <div className="min-h-screen bg-[#212124]"><Header /><GalleriesView /><PhotoDetail /><UploadModal /></div>;
-  if (currentView === "messages") return <div className="min-h-screen bg-[#212124]"><Header /><MessagesView /></div>;
-  if (currentView === "notifications") return <div className="min-h-screen bg-[#212124]"><Header /><NotificationsView /></div>;
+  // Not authenticated - show hero
+  if (!session) {
+    return <HeroSection />;
+  }
 
+  // Authenticated but redirecting - show loading
   return (
-    <div className="min-h-screen bg-[#212124]">
-      <Header />
-      <div className="border-b border-white/5 bg-[#1a1a1d]">
-        <div className="flex items-center gap-6 px-4 py-2 text-xs text-white/30">
-          <span className="flex items-center gap-1.5"><BarChart3 className="h-3 w-3" />{stats.totalPhotos} foto</span>
-          <span className="flex items-center gap-1.5"><ImageIcon className="h-3 w-3" />{stats.totalAlbums} album</span>
-          <span className="flex items-center gap-1.5"><Heart className="h-3 w-3" />{photos.filter(p => p.isFavorited).length} preferiti</span>
-          <span className="flex items-center gap-1.5"><Users className="h-3 w-3" />{stats.totalUsers || 0} persone</span>
+    <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0063dc] to-[#ff0084] flex items-center justify-center animate-pulse">
+          <Camera className="h-4 w-4 text-white" />
         </div>
+        <span className="text-white/40 text-sm">Reindirizzamento...</span>
       </div>
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2">
-          <ViewIcon className="h-5 w-5 text-[#ff0084]" />
-          <h1 className="text-lg font-bold text-white">{viewInfo.title}</h1>
-        </div>
-        <p className="text-sm text-white/30 mt-0.5">{viewInfo.desc}</p>
-      </div>
-      <PhotoGrid photos={filteredPhotos} loading={isLoadingPhotos} />
-      <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
-        <span className="text-[#ff0084]">Memoro</span> — Condividi i Tuoi Ricordi • 1TB Gratuito
-      </footer>
-      <PhotoDetail />
-      <UploadModal />
     </div>
   );
 }

@@ -1,46 +1,160 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { del } from '@vercel/blob';
-import { db } from '@/lib/db';
+import { NextRequest, NextResponse } from "next/server";
+import { del } from "@vercel/blob";
+import { db } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const photo = await db.photo.findUnique({
-    where: { id },
-    include: { album: true, comments: { orderBy: { createdAt: 'desc' } } },
-  });
+  try {
+    const { id } = await params;
+    const photo = await db.photo.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: { id: true, name: true, username: true, avatar: true },
+        },
+        exif: true,
+        comments: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            photo: { select: { id: true } },
+          },
+        },
+        favorites: {
+          select: { userId: true },
+        },
+        _count: { select: { favorites: true, comments: true } },
+      },
+    });
 
-  if (!photo) {
-    return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
+    if (!photo) {
+      return NextResponse.json(
+        { error: "Foto non trovata" },
+        { status: 404 }
+      );
+    }
+
+    // Check safety level against user settings
+    const session = await getServerSession(authOptions);
+    let userSafeSearch = "moderate";
+    if (session?.user?.id) {
+      const settings = await db.userSettings.findUnique({
+        where: { userId: (session.user as any).id },
+      });
+      if (settings) userSafeSearch = settings.safeSearch;
+    }
+
+    if (
+      userSafeSearch === "strict" &&
+      photo.safetyLevel !== "safe"
+    ) {
+      return NextResponse.json(
+        { error: "Contenuto non disponibile con le tue impostazioni" },
+        { status: 403 }
+      );
+    }
+    if (
+      userSafeSearch === "moderate" &&
+      photo.safetyLevel === "restricted"
+    ) {
+      return NextResponse.json(
+        { error: "Contenuto riservato" },
+        { status: 403 }
+      );
+    }
+
+    // Increment view count
+    await db.photo.update({
+      where: { id },
+      data: { views: { increment: 1 } },
+    });
+
+    // Check if current user has favorited
+    let isFavorited = false;
+    if (session?.user?.id) {
+      isFavorited = photo.favorites.some(
+        (f) => f.userId === (session.user as any).id
+      );
+    }
+
+    return NextResponse.json({
+      ...photo,
+      views: photo.views + 1,
+      favoriteCount: photo._count.favorites,
+      commentCount: photo._count.comments,
+      isFavorited,
+      favorites: undefined,
+      _count: undefined,
+    });
+  } catch (error) {
+    console.error("Error fetching photo:", error);
+    return NextResponse.json(
+      { error: "Errore nel caricamento della foto" },
+      { status: 500 }
+    );
   }
-
-  // Increment view count
-  await db.photo.update({
-    where: { id },
-    data: { views: { increment: 1 } },
-  });
-
-  return NextResponse.json({ ...photo, views: photo.views + 1 });
 }
 
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
   try {
+    const { id } = await params;
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
+    }
+
+    const photo = await db.photo.findUnique({ where: { id } });
+    if (!photo) {
+      return NextResponse.json(
+        { error: "Foto non trovata" },
+        { status: 404 }
+      );
+    }
+    if (photo.userId !== (session.user as any).id) {
+      return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+    }
+
     const body = await request.json();
-    const photo = await db.photo.update({
+    const allowedFields = [
+      "title",
+      "description",
+      "tags",
+      "safetyLevel",
+      "isMature",
+      "contentRating",
+      "albumId",
+    ];
+    const updateData: Record<string, unknown> = {};
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updateData[field] = body[field];
+      }
+    }
+
+    const updated = await db.photo.update({
       where: { id },
-      data: body,
-      include: { album: true, comments: true },
+      data: updateData,
+      include: {
+        user: {
+          select: { id: true, name: true, username: true, avatar: true },
+        },
+        exif: true,
+      },
     });
-    return NextResponse.json(photo);
+
+    return NextResponse.json(updated);
   } catch (error) {
-    console.error('Error updating photo:', error);
-    return NextResponse.json({ error: 'Failed to update photo' }, { status: 500 });
+    console.error("Error updating photo:", error);
+    return NextResponse.json(
+      { error: "Errore nell'aggiornamento della foto" },
+      { status: 500 }
+    );
   }
 }
 
@@ -48,25 +162,56 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
   try {
-    // Get photo to find blob URLs
-    const photo = await db.photo.findUnique({ where: { id } });
+    const { id } = await params;
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
+    }
 
-    if (photo) {
-      // Delete blob files
-      if (photo.filepath && photo.filepath.includes('blob.vercel-storage.com')) {
-        try { await del(photo.filepath); } catch {}
-      }
-      if (photo.thumbnail && photo.thumbnail.includes('blob.vercel-storage.com')) {
-        try { await del(photo.thumbnail); } catch {}
-      }
+    const photo = await db.photo.findUnique({ where: { id } });
+    if (!photo) {
+      return NextResponse.json(
+        { error: "Foto non trovata" },
+        { status: 404 }
+      );
+    }
+    if (photo.userId !== (session.user as any).id) {
+      return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+    }
+
+    // Delete blob files
+    if (
+      photo.filepath &&
+      photo.filepath.includes("blob.vercel-storage.com")
+    ) {
+      try {
+        await del(photo.filepath);
+      } catch {}
+    }
+    if (
+      photo.thumbnail &&
+      photo.thumbnail.includes("blob.vercel-storage.com")
+    ) {
+      try {
+        await del(photo.thumbnail);
+      } catch {}
     }
 
     await db.photo.delete({ where: { id } });
+
+    // Update user photo count
+    await db.user.update({
+      where: { id: (session.user as any).id },
+      data: { photoCount: { decrement: 1 } },
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting photo:', error);
-    return NextResponse.json({ error: 'Failed to delete photo' }, { status: 500 });
+    console.error("Error deleting photo:", error);
+    return NextResponse.json(
+      { error: "Errore nell'eliminazione della foto" },
+      { status: 500 }
+    );
   }
 }

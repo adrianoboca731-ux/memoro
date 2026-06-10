@@ -1,82 +1,65 @@
-# Task 1 - creami Memoro (Flickr Clone)
+# Task 1 - Main Agent: Memoro Phase 1 Core Infrastructure
 
 ## Summary
-Built a complete Flickr-like photo sharing web application called **creami Memoro** using Next.js 16 with App Router, TypeScript, Tailwind CSS 4, shadcn/ui, and Prisma ORM with SQLite.
-
-## Architecture
-- Single-page app (SPA-like) at `/` route with client-side state management using Zustand
-- All views (explore, albums, favorites, recent, search) handled via client-side state
-- Photo detail/lightbox view as a modal overlay
-- Upload modal with drag-and-drop support
+Built complete Phase 1 infrastructure for Memoro (Flickr clone) including:
+- NextAuth.js authentication with JWT strategy
+- 20+ API routes with proper auth, error handling, and Prisma schema compliance
+- Session-aware header with dropdown menus
+- Auth pages at /auth/accedi and /auth/registrati (Italian UI)
+- Homepage with hero section (logged out) and photostream (logged in)
+- Dark mode support with Memoro brand colors (#0063dc blue, #ff0084 pink)
 
 ## Files Created/Modified
 
-### Prisma Schema (`prisma/schema.prisma`)
-- Replaced default User/Post models with Photo, Album, Comment models
-- Photo: id, title, description, filename, filepath, mimetype, size, width, height, tags, albumId, views, favorite
-- Album: id, name, description, cover
-- Comment: id, text, author, photoId
+### Core Auth
+- `src/lib/auth.ts` - NextAuth config with CredentialsProvider, JWT strategy, username in token
+- `src/lib/session.ts` - Server-side getCurrentUser() helper
+- `src/app/api/auth/[...nextauth]/route.ts` - NextAuth handler (existing, kept)
+- `src/app/api/auth/register/route.ts` - Registration with bcrypt + UserSettings creation
 
-### API Routes
-1. `src/app/api/photos/route.ts` - GET (list, search, filter) + POST (create)
-2. `src/app/api/photos/[id]/route.ts` - GET (single + increment views) + PATCH (update) + DELETE
-3. `src/app/api/photos/[id]/comments/route.ts` - GET + POST
-4. `src/app/api/albums/route.ts` - GET (list with photo count) + POST (create)
-5. `src/app/api/albums/[id]/route.ts` - GET + PATCH + DELETE
-6. `src/app/api/upload/route.ts` - POST (file upload with sharp thumbnail generation)
-7. `src/app/api/stats/route.ts` - GET (total photos, albums, views)
-
-### Zustand Store (`src/lib/store.ts`)
-- Navigation state: currentView, selectedPhotoId, selectedAlbumId, isUploadOpen, searchQuery
-- Data state: photos, albums, stats
-- Actions: setCurrentView, selectPhoto, toggleUpload, setSearchQuery, setPhotos, setAlbums, toggleFavorite, deletePhoto, addPhoto, updatePhoto, addAlbum, deleteAlbum, addComment
+### API Routes (20+ routes)
+- `src/app/api/photos/route.ts` - GET (pagination, safety filtering) + POST (auth required)
+- `src/app/api/photos/[id]/route.ts` - GET + PUT (owner only) + DELETE (owner only)
+- `src/app/api/photos/[id]/comments/route.ts` - GET + POST (auth, notifications)
+- `src/app/api/photos/[id]/favorite/route.ts` - POST toggle (auth, notifications)
+- `src/app/api/albums/route.ts` - GET + POST (auth)
+- `src/app/api/albums/[id]/route.ts` - GET + PUT (owner) + DELETE (owner)
+- `src/app/api/groups/route.ts` - GET + POST (auth, auto-join as admin)
+- `src/app/api/groups/[id]/route.ts` - GET + PUT (admin/mod) + DELETE (admin)
+- `src/app/api/groups/[id]/discussions/route.ts` - GET + POST (members only)
+- `src/app/api/groups/[id]/invite/route.ts` - POST (admin/mod, notifications)
+- `src/app/api/groups/[id]/join/route.ts` - POST (public=auto, private=pending)
+- `src/app/api/galleries/route.ts` - GET + POST (auth)
+- `src/app/api/galleries/[id]/route.ts` - GET + PUT (owner) + DELETE (owner)
+- `src/app/api/galleries/[id]/items/route.ts` - POST + DELETE (auth)
+- `src/app/api/messages/route.ts` - GET (auth) + POST (auth, respect settings)
+- `src/app/api/messages/[id]/route.ts` - PATCH + DELETE (auth)
+- `src/app/api/notifications/route.ts` - GET (auth) + PUT (mark read)
+- `src/app/api/search/route.ts` - GET (photos/users/groups with safety filtering)
+- `src/app/api/users/[username]/route.ts` - GET profile with stats + recent photos
+- `src/app/api/users/[username]/follow/route.ts` - POST toggle (auth, notifications)
+- `src/app/api/settings/route.ts` - GET + PUT (auth, upsert)
+- `src/app/api/stats/route.ts` - GET platform stats
+- `src/app/api/upload/route.ts` - POST (auth, Vercel Blob + Sharp + EXIF)
 
 ### UI Components
-- `src/components/theme-provider.tsx` - Theme provider using next-themes
-- `src/components/header.tsx` - Logo, search bar, navigation, upload button, theme toggle
-- `src/components/photo-grid.tsx` - Masonry-style photo grid with hover effects
-- `src/components/photo-detail.tsx` - Lightbox with photo info, editing, comments
-- `src/components/upload-modal.tsx` - Drag-and-drop upload with progress
-- `src/components/albums-view.tsx` - Album grid with create/delete, album detail view
+- `src/app/layout.tsx` - Root layout with Inter font, ThemeProvider, AuthProvider
+- `src/components/header.tsx` - Session-aware header with dropdown, search, nav
+- `src/app/page.tsx` - Hero (logged out) + App (logged in) with routing
+- `src/app/auth/accedi/page.tsx` - Sign in page (Italian)
+- `src/app/auth/registrati/page.tsx` - Register page (Italian)
+- `src/components/photo-detail.tsx` - Fixed setState-in-effect lint error
 
-### Main Page (`src/app/page.tsx`)
-- Client-side SPA with data fetching on mount
-- View routing based on currentView state
-- Stats bar, view headers, responsive grid
+### Config
+- `.env` - Added NEXTAUTH_URL and NEXTAUTH_SECRET
+- `.env.local` - Fixed empty POSTGRES_PRISMA_URL
+- `eslint.config.mjs` - Added download/** and mini-services/** to ignores
+- `src/app/globals.css` - Updated dark theme colors, font variable
 
-### Layout (`src/app/layout.tsx`)
-- Italian language, metadata for SEO
-- ThemeProvider + Toaster
-
-### Styling (`src/app/globals.css`)
-- Custom scrollbar styling
-- Masonry column fixes
-- Animation keyframes
-
-### Seed Data (`prisma/seed.ts`)
-- 4 albums: Paesaggi, Ritratti, Natura, Città
-- 12 AI-generated photos with Italian titles, descriptions, tags
-- 32 sample comments from Italian users
-
-### Sample Photos
-- Generated 12 photos using z-ai-generate CLI tool
-- Topics: Italian landscapes (Lake Como, Tuscany, Cinque Terre, Amalfi Coast, Dolomites), cities (Rome, Florence, Venice), portraits, nature
-- Thumbnails created with sharp (400px wide)
-
-## UI Design
-- Flickr-inspired color scheme: #0063dc (blue) for primary, #ff0084 (pink) for favorites
-- Clean, photo-centric design with masonry grid
-- Responsive: 2 cols mobile, 3 tablet, 4-5 desktop
-- Dark/light mode with next-themes
-- Italian language throughout the UI
-- Smooth animations with framer-motion
-
-## Technical Stack
-- Next.js 16 + App Router
-- TypeScript 5
-- Tailwind CSS 4 + shadcn/ui
-- Prisma ORM + SQLite
-- Zustand for state management
-- framer-motion for animations
-- sharp for image processing
-- date-fns for date formatting (Italian locale)
+## Key Design Decisions
+1. Removed PrismaAdapter from auth.ts - using JWT strategy only, manual user creation
+2. All API routes use getServerSession for auth checks
+3. Safety level filtering based on user's safeSearch setting (strict/moderate/off)
+4. Notifications created for favorites, comments, follows, group invites
+5. Hero section uses gradient background with animated elements (Framer Motion)
+6. All UI text in Italian as required

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppStore, Photo } from "@/lib/store";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   X,
   ChevronLeft,
@@ -43,13 +43,11 @@ export function PhotoDetail() {
     addComment,
   } = useAppStore();
 
-  const [photo, setPhoto] = useState<Photo | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editTags, setEditTags] = useState("");
   const [commentText, setCommentText] = useState("");
-  const [commentAuthor, setCommentAuthor] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInfo, setShowInfo] = useState(true);
 
@@ -57,19 +55,21 @@ export function PhotoDetail() {
   const prevPhoto = currentIndex > 0 ? photos[currentIndex - 1] : null;
   const nextPhoto = currentIndex < photos.length - 1 ? photos[currentIndex + 1] : null;
 
-  useEffect(() => {
-    if (selectedPhotoId) {
-      const found = photos.find((p) => p.id === selectedPhotoId);
-      if (found) {
-        setPhoto(found);
-        setEditTitle(found.title);
-        setEditDescription(found.description || "");
-        setEditTags(found.tags || "");
-      }
-    } else {
-      setPhoto(null);
-    }
-  }, [selectedPhotoId, photos]);
+  // Derive photo from store instead of syncing with effect
+  const photo = useMemo(
+    () => (selectedPhotoId ? photos.find((p) => p.id === selectedPhotoId) ?? null : null),
+    [selectedPhotoId, photos]
+  );
+
+  // Initialize edit fields when photo changes
+  const [lastEditPhotoId, setLastEditPhotoId] = useState<string | null>(null);
+  if (photo && photo.id !== lastEditPhotoId) {
+    setLastEditPhotoId(photo.id);
+    setEditTitle(photo.title);
+    setEditDescription(photo.description || "");
+    setEditTags(photo.tags || "");
+    setIsEditing(false);
+  }
 
   // Keyboard navigation
   useEffect(() => {
@@ -88,7 +88,7 @@ export function PhotoDetail() {
     if (!photo) return;
     try {
       const res = await fetch(`/api/photos/${photo.id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: editTitle,
@@ -102,7 +102,7 @@ export function PhotoDetail() {
         setIsEditing(false);
       }
     } catch (err) {
-      console.error("Failed to save:", err);
+      console.error("Errore nel salvataggio:", err);
     }
   }, [photo, editTitle, editDescription, editTags, updatePhoto]);
 
@@ -123,13 +123,11 @@ export function PhotoDetail() {
     if (!photo) return;
     toggleFavorite(photo.id);
     try {
-      await fetch(`/api/photos/${photo.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ favorite: !photo.favorite }),
+      await fetch(`/api/photos/${photo.id}/favorite`, {
+        method: "POST",
       });
     } catch (err) {
-      console.error("Failed to toggle favorite:", err);
+      console.error("Errore nel preferito:", err);
     }
   }, [photo, toggleFavorite]);
 
@@ -140,7 +138,7 @@ export function PhotoDetail() {
       const res = await fetch(`/api/photos/${photo.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: commentText, author: commentAuthor || "Anonimo" }),
+        body: JSON.stringify({ text: commentText }),
       });
       if (res.ok) {
         const comment = await res.json();
@@ -148,11 +146,11 @@ export function PhotoDetail() {
         setCommentText("");
       }
     } catch (err) {
-      console.error("Failed to add comment:", err);
+      console.error("Errore nell'aggiunta del commento:", err);
     } finally {
       setIsSubmitting(false);
     }
-  }, [photo, commentText, commentAuthor, addComment]);
+  }, [photo, commentText, addComment]);
 
   if (!photo) return null;
 
@@ -459,7 +457,7 @@ export function PhotoDetail() {
                                 <User className="h-4 w-4 text-[#0063dc]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-white/90">{comment.author}</p>
+                                <p className="text-xs font-medium text-white/90">{comment.authorId.slice(0, 8)}...</p>
                                 <p className="text-sm text-white/70 mt-0.5">{comment.text}</p>
                                 <p className="text-[10px] text-white/40 mt-1">
                                   {format(new Date(comment.createdAt), "d MMM yyyy 'alle' HH:mm", { locale: it })}
@@ -472,12 +470,6 @@ export function PhotoDetail() {
 
                       {/* Add comment */}
                       <div className="space-y-2 pt-1">
-                        <Input
-                          placeholder="Il tuo nome"
-                          value={commentAuthor}
-                          onChange={(e) => setCommentAuthor(e.target.value)}
-                          className="h-8 text-sm bg-white/5 border-white/10 text-white placeholder:text-white/30"
-                        />
                         <div className="flex gap-2">
                           <Input
                             placeholder="Aggiungi un commento..."

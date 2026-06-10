@@ -36,8 +36,48 @@ model User {
   followers     Follow[]  @relation("UserFollowers")
   following     Follow[]  @relation("UserFollowing")
   favorites     Favorite[]
+  settings      UserSettings?
 
   @@map("users")
+}
+
+model UserSettings {
+  id                          String   @id @default(cuid())
+  userId                      String   @unique @map("user_id")
+
+  // Filtri contenuti adulti (come Flickr)
+  safeSearch                  String   @default("moderate") @map("safe_search") // "strict", "moderate", "off"
+  showMatureContent           Boolean  @default(false) @map("show_mature_content")
+  showRestrictedContent       Boolean  @default(false) @map("show_restricted_content")
+  allowMatureUploads          Boolean  @default(false) @map("allow_mature_uploads")
+
+  // Privacy (come Flickr)
+  profileVisibility           String   @default("public") @map("profile_visibility") // "public", "friends", "private"
+  allowMessages               String   @default("everyone") @map("allow_messages") // "everyone", "contacts", "nobody"
+  showEXIF                    Boolean  @default(true) @map("show_exif")
+  allowDownloads              Boolean  @default(true) @map("allow_downloads")
+  allowComments               Boolean  @default(true) @map("allow_comments")
+  showCameraRoll              Boolean  @default(false) @map("show_camera_roll")
+
+  // Notifiche
+  emailNotifications          Boolean  @default(true) @map("email_notifications")
+  notifyFavorites             Boolean  @default(true) @map("notify_favorites")
+  notifyComments              Boolean  @default(true) @map("notify_comments")
+  notifyFollows               Boolean  @default(true) @map("notify_follows")
+  notifyGroupInvites          Boolean  @default(true) @map("notify_group_invites")
+  notifyMessages              Boolean  @default(true) @map("notify_messages")
+
+  // Aspetto
+  defaultView                 String   @default("grid") @map("default_view") // "grid", "list", "justified"
+  darkMode                    Boolean  @default(false) @map("dark_mode")
+  language                    String   @default("it")
+
+  createdAt                   DateTime @default(now()) @map("created_at")
+  updatedAt                   DateTime @updatedAt @map("updated_at")
+
+  user                        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
 }
 
 model Follow {
@@ -69,6 +109,12 @@ model Photo {
   views       Int       @default(0)
   commentCount Int      @default(0) @map("comment_count")
   favoriteCount Int     @default(0) @map("favorite_count")
+
+  // Contenuti adulti (come Flickr)
+  safetyLevel String    @default("safe") @map("safety_level") // "safe", "moderate", "restricted"
+  isMature    Boolean   @default(false) @map("is_mature")
+  contentRating String? @map("content_rating") // "photo", "art", "screenshot", "illustration"
+
   userId      String    @map("user_id")
   albumId     String?   @map("album_id")
   createdAt   DateTime  @default(now()) @map("created_at")
@@ -283,4 +329,17 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+// === INVITI AI GRUPPI ===
+model GroupInvite {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  inviterId String   @map("inviter_id")
+  inviteeId String   @map("invitee_id")
+  status    String   @default("pending") // "pending", "accepted", "declined"
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([groupId, inviteeId])
+  @@map("group_invites")
 }
