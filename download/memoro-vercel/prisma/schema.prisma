@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  filename    String
+  filepath    String
+  thumbnail   String?
+  mimetype    String
+  size        Int
+  width       Int?
+  height      Int?
+  tags        String?
+  albumId     String?  @map("album_id")
+  views       Int      @default(0)
+  favorite    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  album       Album?   @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  comments    Comment[]
+
+  @@map("photos")
+}
+
+model Album {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  cover       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  photos      Photo[]
+
+  @@map("albums")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  author    String
+  photoId   String   @map("photo_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
