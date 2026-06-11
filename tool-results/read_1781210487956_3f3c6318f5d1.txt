@@ -1,0 +1,1011 @@
+     1→     1→"use client";
+     2→     2→
+     3→     3→import { useState, useEffect, useCallback, useRef } from "react";
+     4→     4→import { useParams } from "next/navigation";
+     5→     5→import { useSession } from "next-auth/react";
+     6→     6→import { Header } from "@/components/header";
+     7→     7→import { PhotoCard } from "@/components/photo-card";
+     8→     8→import { FollowButton } from "@/components/follow-button";
+     9→     9→import { EmptyState } from "@/components/empty-state";
+    10→    10→import {
+    11→    11→  Camera,
+    12→    12→  Image as ImageIcon,
+    13→    13→  Heart,
+    14→    14→  Users,
+    15→    15→  LayoutGrid,
+    16→    16→  FolderOpen,
+    17→    17→  MapPin,
+    18→    18→  Globe,
+    19→    19→  Mail,
+    20→    20→  Calendar,
+    21→    21→  BarChart3,
+    22→    22→  Film,
+    23→    23→  Info,
+    24→    24→  Eye,
+    25→    25→  MessageSquare,
+    26→    26→  TrendingUp,
+    27→    27→  ChevronDown,
+    28→    28→  Search,
+    29→    29→  ArrowUpDown,
+    30→    30→  Grid3X3,
+    31→    31→  List,
+    32→    32→  Pencil,
+    33→    33→  Upload,
+    34→    34→  X,
+    35→    35→  Lock,
+    36→    36→  Clock,
+    37→    37→  Check,
+    38→    38→} from "lucide-react";
+    39→    39→import { Button } from "@/components/ui/button";
+    40→    40→import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+    41→    41→import { Card, CardContent } from "@/components/ui/card";
+    42→    42→import { Separator } from "@/components/ui/separator";
+    43→    43→import { Skeleton } from "@/components/ui/skeleton";
+    44→    44→import { Badge } from "@/components/ui/badge";
+    45→    45→import {
+    46→    46→  DropdownMenu,
+    47→    47→  DropdownMenuContent,
+    48→    48→  DropdownMenuItem,
+    49→    49→  DropdownMenuTrigger,
+    50→    50→} from "@/components/ui/dropdown-menu";
+    51→    51→import { motion, AnimatePresence } from "framer-motion";
+    52→    52→import { format } from "date-fns";
+    53→    53→import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
+    54→    54→import Link from "next/link";
+    55→    55→import { useI18n } from "@/lib/i18n";
+    56→    56→import { toast } from "sonner";
+    57→    57→
+    58→    58→const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+    59→    59→
+    60→    60→// Flickr-style tabs: Info, Fotostream, Album, Preferite, Gallerie, Gruppi
+    61→    61→const profileTabs = [
+    62→    62→  { key: "info", labelKey: "profile.tabInfo" },
+    63→    63→  { key: "photostream", labelKey: "profile.tabPhotostream" },
+    64→    64→  { key: "albums", labelKey: "profile.tabAlbums" },
+    65→    65→  { key: "favorites", labelKey: "profile.tabFavorites" },
+    66→    66→  { key: "galleries", labelKey: "profile.tabGalleries" },
+    67→    67→  { key: "groups", labelKey: "profile.tabGroups" },
+    68→    68→] as const;
+    69→    69→
+    70→    70→type TabKey = typeof profileTabs[number]['key'];
+    71→    71→
+    72→    72→export default function ProfiloPage() {
+    73→    73→  const { t, locale } = useI18n();
+    74→    74→  const dateLocale = dateLocales[locale] || it;
+    75→    75→  const params = useParams();
+    76→    76→  const { data: session, update: updateSession } = useSession();
+    77→    77→  const username = params.username as string;
+    78→    78→
+    79→    79→  const [user, setUser] = useState<any>(null);
+    80→    80→  const [photos, setPhotos] = useState<any[]>([]);
+    81→    81→  const [albums, setAlbums] = useState<any[]>([]);
+    82→    82→  const [favorites, setFavorites] = useState<any[]>([]);
+    83→    83→  const [galleries, setGalleries] = useState<any[]>([]);
+    84→    84→  const [groups, setGroups] = useState<any[]>([]);
+    85→    85→  const [loading, setLoading] = useState(true);
+    86→    86→  const [isFollowing, setIsFollowing] = useState(false);
+    87→    87→  const [followStatus, setFollowStatus] = useState<string | null>(null);
+    88→    88→  const [activeTab, setActiveTab] = useState<TabKey>("photostream");
+    89→    89→  const [sortOrder, setSortOrder] = useState<"date" | "views" | "favorites">("date");
+    90→    90→  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+    91→    91→
+    92→    92→  // Cover & Logo upload states
+    93→    93→  const [coverUploading, setCoverUploading] = useState(false);
+    94→    94→  const [logoUploading, setLogoUploading] = useState(false);
+    95→    95→  const [coverHover, setCoverHover] = useState(false);
+    96→    96→  const [logoHover, setLogoHover] = useState(false);
+    97→    97→  const coverInputRef = useRef<HTMLInputElement>(null);
+    98→    98→  const logoInputRef = useRef<HTMLInputElement>(null);
+    99→    99→
+   100→   100→  const fetchUser = useCallback(async () => {
+   101→   101→    setLoading(true);
+   102→   102→    try {
+   103→   103→      const res = await fetch(`/api/users/${username}`);
+   104→   104→      if (res.ok) {
+   105→   105→        const data = await res.json();
+   106→   106→        setUser(data);
+   107→   107→        if (data.viewerFollowStatus) {
+   108→   108→          setFollowStatus(data.viewerFollowStatus);
+   109→   109→          setIsFollowing(data.viewerFollowStatus === "approved");
+   110→   110→        }
+   111→   111→      }
+   112→   112→    } catch (err) {
+   113→   113→      console.error("Error loading profile:", err);
+   114→   114→    } finally {
+   115→   115→      setLoading(false);
+   116→   116→    }
+   117→   117→  }, [username]);
+   118→   118→
+   119→   119→  const fetchPhotos = useCallback(async () => {
+   120→   120→    if (!user) return;
+   121→   121→    try {
+   122→   122→      const res = await fetch(`/api/photos?userId=${user.id}&limit=100`);
+   123→   123→      if (res.ok) {
+   124→   124→        const data = await res.json();
+   125→   125→        setPhotos(data.photos || data || []);
+   126→   126→      }
+   127→   127→    } catch (err) {
+   128→   128→      console.error("Error fetching photos:", err);
+   129→   129→      setPhotos([]);
+   130→   130→    }
+   131→   131→  }, [user]);
+   132→   132→
+   133→   133→  const fetchAlbums = useCallback(async () => {
+   134→   134→    if (!user) return;
+   135→   135→    try {
+   136→   136→      const res = await fetch(`/api/albums?userId=${user.id}`);
+   137→   137→      if (res.ok) {
+   138→   138→        const data = await res.json();
+   139→   139→        setAlbums(Array.isArray(data) ? data : []);
+   140→   140→      }
+   141→   141→    } catch {}
+   142→   142→  }, [user]);
+   143→   143→
+   144→   144→  const fetchFavorites = useCallback(async () => {
+   145→   145→    if (!user) return;
+   146→   146→    try {
+   147→   147→      const res = await fetch(`/api/photos?favorites=${user.id}&limit=100`);
+   148→   148→      if (res.ok) {
+   149→   149→        const data = await res.json();
+   150→   150→        setFavorites(data.photos || data || []);
+   151→   151→      }
+   152→   152→    } catch {}
+   153→   153→  }, [user]);
+   154→   154→
+   155→   155→  const fetchGalleries = useCallback(async () => {
+   156→   156→    if (!user) return;
+   157→   157→    try {
+   158→   158→      const res = await fetch(`/api/galleries?userId=${user.id}`);
+   159→   159→      if (res.ok) {
+   160→   160→        const data = await res.json();
+   161→   161→        setGalleries(Array.isArray(data) ? data : []);
+   162→   162→      }
+   163→   163→    } catch {}
+   164→   164→  }, [user]);
+   165→   165→
+   166→   166→  const fetchGroups = useCallback(async () => {
+   167→   167→    if (!user) return;
+   168→   168→    try {
+   169→   169→      const res = await fetch(`/api/groups?userId=${user.id}`);
+   170→   170→      if (res.ok) {
+   171→   171→        const data = await res.json();
+   172→   172→        setGroups(Array.isArray(data) ? data : []);
+   173→   173→      }
+   174→   174→    } catch {}
+   175→   175→  }, [user]);
+   176→   176→
+   177→   177→  useEffect(() => {
+   178→   178→    fetchUser();
+   179→   179→  }, [fetchUser]);
+   180→   180→
+   181→   181→  useEffect(() => {
+   182→   182→    if (user) {
+   183→   183→      fetchPhotos();
+   184→   184→      fetchAlbums();
+   185→   185→      fetchFavorites();
+   186→   186→      fetchGalleries();
+   187→   187→      fetchGroups();
+   188→   188→    }
+   189→   189→  }, [user, fetchPhotos, fetchAlbums, fetchFavorites, fetchGalleries, fetchGroups]);
+   190→   190→
+   191→   191→  const isOwnProfile = session?.user && user && (session.user as any).id === user.id;
+   192→   192→
+   193→   193→  // Check if profile is viewable: own profile always visible, public profiles always visible
+   194→   194→  // Private profiles only visible to approved followers
+   195→   195→  const isApprovedFollower = followStatus === "approved";
+   196→   196→  const isPendingFollower = followStatus === "pending";
+   197→   197→  const isProfileVisible = isOwnProfile || user?.isPublic !== false || isApprovedFollower;
+   198→   198→
+   199→   199→  // Only fetch content if profile is visible
+   200→   200→  const canViewContent = isOwnProfile || isProfileVisible;
+   201→   201→
+   202→   202→  // Fetch pending follow requests for own private profile
+   203→   203→  const fetchPendingRequests = useCallback(async () => {
+   204→   204→    if (!isOwnProfile || user?.isPublic !== false) return;
+   205→   205→    try {
+   206→   206→      const res = await fetch("/api/follows/pending");
+   207→   207→      if (res.ok) {
+   208→   208→        const data = await res.json();
+   209→   209→        setPendingRequests(data.requests || []);
+   210→   210→      }
+   211→   211→    } catch (err) {
+   212→   212→      console.error("Error fetching pending requests:", err);
+   213→   213→    }
+   214→   214→  }, [isOwnProfile, user]);
+   215→   215→
+   216→   216→  useEffect(() => {
+   217→   217→    if (user && isOwnProfile) {
+   218→   218→      fetchPendingRequests();
+   219→   219→    }
+   220→   220→  }, [user, isOwnProfile, fetchPendingRequests]);
+   221→   221→
+   222→   222→  const handleApproveFollow = useCallback(async (followId: string) => {
+   223→   223→    try {
+   224→   224→      const res = await fetch(`/api/follows/${followId}/approve`, { method: "POST" });
+   225→   225→      if (res.ok) {
+   226→   226→        setPendingRequests((prev) => prev.filter((r) => r.id !== followId));
+   227→   227→        toast.success(t("profile.approveFollow"));
+   228→   228→      }
+   229→   229→    } catch (err) {
+   230→   230→      console.error(err);
+   231→   231→    }
+   232→   232→  }, [t]);
+   233→   233→
+   234→   234→  const handleRejectFollow = useCallback(async (followId: string) => {
+   235→   235→    try {
+   236→   236→      const res = await fetch(`/api/follows/${followId}/approve`, { method: "DELETE" });
+   237→   237→      if (res.ok) {
+   238→   238→        setPendingRequests((prev) => prev.filter((r) => r.id !== followId));
+   239→   239→        toast.success(t("profile.rejectFollow"));
+   240→   240→      }
+   241→   241→    } catch (err) {
+   242→   242→      console.error(err);
+   243→   243→    }
+   244→   244→  }, [t]);
+   245→   245→
+   246→   246→  const handleFollowStatusChange = useCallback((following: boolean, status: string | null) => {
+   247→   247→    setIsFollowing(following);
+   248→   248→    setFollowStatus(status);
+   249→   249→  }, []);
+   250→   250→
+   251→   251→  // Cover upload handler
+   252→   252→  const handleCoverChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+   253→   253→    const file = e.target.files?.[0];
+   254→   254→    if (!file) return;
+   255→   255→
+   256→   256→    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+   257→   257→    if (!allowedTypes.includes(file.type)) {
+   258→   258→      toast.error(t("profile.coverInvalidType"));
+   259→   259→      return;
+   260→   260→    }
+   261→   261→    if (file.size > 10 * 1024 * 1024) {
+   262→   262→      toast.error(t("profile.coverTooLarge"));
+   263→   263→      return;
+   264→   264→    }
+   265→   265→
+   266→   266→    setCoverUploading(true);
+   267→   267→    try {
+   268→   268→      const formData = new FormData();
+   269→   269→      formData.append("cover", file);
+   270→   270→      const res = await fetch("/api/upload/cover", { method: "POST", body: formData });
+   271→   271→      if (res.ok) {
+   272→   272→        const data = await res.json();
+   273→   273→        setUser((prev: any) => ({ ...prev, coverImage: data.coverImage }));
+   274→   274→        toast.success(t("profile.coverUpdated"));
+   275→   275→      } else {
+   276→   276→        const errData = await res.json();
+   277→   277→        toast.error(errData.error || t("profile.coverUploadError"));
+   278→   278→      }
+   279→   279→    } catch {
+   280→   280→      toast.error(t("profile.coverUploadError"));
+   281→   281→    } finally {
+   282→   282→      setCoverUploading(false);
+   283→   283→      if (coverInputRef.current) coverInputRef.current.value = "";
+   284→   284→    }
+   285→   285→  }, [t]);
+   286→   286→
+   287→   287→  const handleCoverRemove = useCallback(async () => {
+   288→   288→    setCoverUploading(true);
+   289→   289→    try {
+   290→   290→      const res = await fetch("/api/upload/cover", { method: "DELETE" });
+   291→   291→      if (res.ok) {
+   292→   292→        setUser((prev: any) => ({ ...prev, coverImage: null }));
+   293→   293→        toast.success(t("profile.coverRemoved"));
+   294→   294→      }
+   295→   295→    } catch {
+   296→   296→      toast.error(t("profile.coverUploadError"));
+   297→   297→    } finally {
+   298→   298→      setCoverUploading(false);
+   299→   299→    }
+   300→   300→  }, [t]);
+   301→   301→
+   302→   302→  // Logo upload handler
+   303→   303→  const handleLogoChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+   304→   304→    const file = e.target.files?.[0];
+   305→   305→    if (!file) return;
+   306→   306→
+   307→   307→    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+   308→   308→    if (!allowedTypes.includes(file.type)) {
+   309→   309→      toast.error(t("profile.logoInvalidType"));
+   310→   310→      return;
+   311→   311→    }
+   312→   312→    if (file.size > 5 * 1024 * 1024) {
+   313→   313→      toast.error(t("profile.logoTooLarge"));
+   314→   314→      return;
+   315→   315→    }
+   316→   316→
+   317→   317→    setLogoUploading(true);
+   318→   318→    try {
+   319→   319→      const formData = new FormData();
+   320→   320→      formData.append("logo", file);
+   321→   321→      const res = await fetch("/api/upload/logo", { method: "POST", body: formData });
+   322→   322→      if (res.ok) {
+   323→   323→        const data = await res.json();
+   324→   324→        setUser((prev: any) => ({ ...prev, logoImage: data.logoImage }));
+   325→   325→        toast.success(t("profile.logoUpdated"));
+   326→   326→      } else {
+   327→   327→        const errData = await res.json();
+   328→   328→        toast.error(errData.error || t("profile.logoUploadError"));
+   329→   329→      }
+   330→   330→    } catch {
+   331→   331→      toast.error(t("profile.logoUploadError"));
+   332→   332→    } finally {
+   333→   333→      setLogoUploading(false);
+   334→   334→      if (logoInputRef.current) logoInputRef.current.value = "";
+   335→   335→    }
+   336→   336→  }, [t]);
+   337→   337→
+   338→   338→  const handleLogoRemove = useCallback(async () => {
+   339→   339→    setLogoUploading(true);
+   340→   340→    try {
+   341→   341→      const res = await fetch("/api/upload/logo", { method: "DELETE" });
+   342→   342→      if (res.ok) {
+   343→   343→        setUser((prev: any) => ({ ...prev, logoImage: null }));
+   344→   344→        toast.success(t("profile.logoRemoved"));
+   345→   345→      }
+   346→   346→    } catch {
+   347→   347→      toast.error(t("profile.logoUploadError"));
+   348→   348→    } finally {
+   349→   349→      setLogoUploading(false);
+   350→   350→    }
+   351→   351→  }, [t]);
+   352→   352→
+   353→   353→  // Sort photos based on selected order
+   354→   354→  const sortedPhotos = useCallback((photoList: any[]) => {
+   355→   355→    const list = [...photoList];
+   356→   356→    switch (sortOrder) {
+   357→   357→      case "views": return list.sort((a, b) => (b.views || 0) - (a.views || 0));
+   358→   358→      case "favorites": return list.sort((a, b) => (b.favoriteCount || 0) - (a.favoriteCount || 0));
+   359→   359→      default: return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+   360→   360→    }
+   361→   361→  }, [sortOrder]);
+   362→   362→
+   363→   363→  if (loading) {
+   364→   364→    return (
+   365→   365→      <div className="min-h-screen bg-[#0d0d0d]">
+   366→   366→        <Header />
+   367→   367→        <div className="max-w-6xl mx-auto px-4 py-6 space-y-4">
+   368→   368→          <Skeleton className="w-full h-56 rounded-xl bg-white/5" />
+   369→   369→          <div className="flex items-center gap-4 -mt-16">
+   370→   370→            <Skeleton className="w-28 h-28 rounded-full bg-white/5 border-4 border-[#0d0d0d]" />
+   371→   371→            <div className="space-y-2">
+   372→   372→              <Skeleton className="h-6 w-48 bg-white/5" />
+   373→   373→              <Skeleton className="h-4 w-32 bg-white/5" />
+   374→   374→            </div>
+   375→   375→          </div>
+   376→   376→        </div>
+   377→   377→      </div>
+   378→   378→    );
+   379→   379→  }
+   380→   380→
+   381→   381→  if (!user) {
+   382→   382→    return (
+   383→   383→      <div className="min-h-screen bg-[#0d0d0d]">
+   384→   384→        <Header />
+   385→   385→        <EmptyState icon={Users} title={t("profile.userNotFound")} description={t("profile.userNotFoundDesc")} />
+   386→   386→      </div>
+   387→   387→    );
+   388→   388→  }
+   389→   389→
+   390→   390→  // Private profile - show limited info
+   391→   391→  if (!isProfileVisible) {
+   392→   392→    return (
+   393→   393→      <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
+   394→   394→        <Header />
+   395→   395→        <main className="flex-1">
+   396→   396→          {/* Cover - still show but no custom */}
+   397→   397→          <div className="h-44 md:h-56 relative overflow-hidden">
+   398→   398→            <div className="w-full h-full bg-gradient-to-br from-[#0063dc]/20 to-[#ff0084]/20" />
+   399→   399→          </div>
+   400→   400→          <div className="max-w-6xl mx-auto px-4 -mt-16 relative z-10">
+   401→   401→            <div className="flex items-end gap-5">
+   402→   402→              <Avatar className="h-28 w-28 md:h-36 md:w-36 border-4 border-[#0d0d0d] shadow-xl">
+   403→   403→                <AvatarImage src={user.avatar || undefined} alt={user.name} />
+   404→   404→                <AvatarFallback className="bg-[#0063dc] text-white text-4xl">
+   405→   405→                  {user.name.charAt(0).toUpperCase()}
+   406→   406→                </AvatarFallback>
+   407→   407→              </Avatar>
+   408→   408→              <div className="flex-1 min-w-0 pb-2">
+   409→   409→                <div className="flex items-center gap-3 flex-wrap">
+   410→   410→                  <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name}</h1>
+   411→   411→                  <FollowButton
+   412→   412→                    userId={user.id}
+   413→   413→                    username={user.username}
+   414→   414→                    isPrivate={user.isPublic === false}
+   415→   415→                    followStatus={followStatus}
+   416→   416→                    onStatusChange={handleFollowStatusChange}
+   417→   417→                  />
+   418→   418→                </div>
+   419→   419→              </div>
+   420→   420→            </div>
+   421→   421→            <div className="mt-8 flex flex-col items-center justify-center py-16">
+   422→   422→              {isPendingFollower ? (
+   423→   423→                <>
+   424→   424→                  <Clock className="h-16 w-16 text-amber-500/30 mb-4" />
+   425→   425→                  <h2 className="text-xl font-semibold text-amber-400/80 mb-2">{t("profile.followPending")}</h2>
+   426→   426→                  <p className="text-white/30 text-sm text-center max-w-md">{t("profile.followPendingDesc")}</p>
+   427→   427→                </>
+   428→   428→              ) : (
+   429→   429→                <>
+   430→   430→                  <Lock className="h-16 w-16 text-white/10 mb-4" />
+   431→   431→                  <h2 className="text-xl font-semibold text-white/60 mb-2">{t("profile.privateProfile")}</h2>
+   432→   432→                  <p className="text-white/30 text-sm text-center max-w-md">{t("profile.privateProfileDesc")}</p>
+   433→   433→                </>
+   434→   434→              )}
+   435→   435→            </div>
+   436→   436→          </div>
+   437→   437→        </main>
+   438→   438→      </div>
+   439→   439→    );
+   440→   440→  }
+   441→   441→
+   442→   442→  return (
+   443→   443→    <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
+   444→   444→      <Header />
+   445→   445→      <main className="flex-1">
+   446→   446→        {/* Cover banner - custom image or blurred avatar or gradient */}
+   447→   447→        <div
+   448→   448→          className="h-44 md:h-64 relative overflow-hidden group"
+   449→   449→          onMouseEnter={() => setCoverHover(true)}
+   450→   450→          onMouseLeave={() => setCoverHover(false)}
+   451→   451→        >
+   452→   452→          {user.coverImage ? (
+   453→   453→            <>
+   454→   454→              <img
+   455→   455→                src={user.coverImage}
+   456→   456→                alt=""
+   457→   457→                className="w-full h-full object-cover"
+   458→   458→              />
+   459→   459→              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0d0d0d]" />
+   460→   460→            </>
+   461→   461→          ) : user.avatar ? (
+   462→   462→            <>
+   463→   463→              <img
+   464→   464→                src={user.avatar}
+   465→   465→                alt=""
+   466→   466→                className="w-full h-full object-cover blur-2xl scale-110 opacity-60"
+   467→   467→              />
+   468→   468→              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0d0d0d]/30 to-[#0d0d0d]" />
+   469→   469→            </>
+   470→   470→          ) : (
+   471→   471→            <div className="w-full h-full bg-gradient-to-br from-[#0063dc]/30 to-[#ff0084]/30" />
+   472→   472→          )}
+   473→   473→
+   474→   474→          {/* Cover upload overlay - only for own profile */}
+   475→   475→          {isOwnProfile && (
+   476→   476→            <AnimatePresence>
+   477→   477→              {(coverHover || coverUploading) && (
+   478→   478→                <motion.div
+   479→   479→                  initial={{ opacity: 0 }}
+   480→   480→                  animate={{ opacity: 1 }}
+   481→   481→                  exit={{ opacity: 0 }}
+   482→   482→                  className="absolute inset-0 bg-black/40 flex items-center justify-center gap-3 z-10"
+   483→   483→                >
+   484→   484→                  <input
+   485→   485→                    ref={coverInputRef}
+   486→   486→                    type="file"
+   487→   487→                    accept="image/jpeg,image/png,image/gif,image/webp"
+   488→   488→                    className="hidden"
+   489→   489→                    onChange={handleCoverChange}
+   490→   490→                  />
+   491→   491→                  <Button
+   492→   492→                    size="sm"
+   493→   493→                    className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white gap-1.5 border border-white/20"
+   494→   494→                    onClick={() => coverInputRef.current?.click()}
+   495→   495→                    disabled={coverUploading}
+   496→   496→                  >
+   497→   497→                    {coverUploading ? (
+   498→   498→                      <span className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
+   499→   499→                    ) : (
+   500→   500→                      <Upload className="h-4 w-4" />
+   501→   501→                    )}
+   502→   502→                    {t("profile.changeCover")}
+   503→   503→                  </Button>
+   504→   504→                  {user.coverImage && (
+   505→   505→                    <Button
+   506→   506→                      size="sm"
+   507→   507→                      variant="destructive"
+   508→   508→                      className="bg-red-500/30 backdrop-blur-sm hover:bg-red-500/50 text-white gap-1.5 border border-red-400/20"
+   509→   509→                      onClick={handleCoverRemove}
+   510→   510→                      disabled={coverUploading}
+   511→   511→                    >
+   512→   512→                      <X className="h-4 w-4" />
+   513→   513→                      {t("profile.removeCover")}
+   514→   514→                    </Button>
+   515→   515→                  )}
+   516→   516→                </motion.div>
+   517→   517→              )}
+   518→   518→            </AnimatePresence>
+   519→   519→          )}
+   520→   520→        </div>
+   521→   521→
+   522→   522→        <div className="max-w-6xl mx-auto px-4 -mt-20 relative z-10">
+   523→   523→          {/* Profile header - Flickr style */}
+   524→   524→          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+   525→   525→            <div className="flex items-end gap-5">
+   526→   526→              {/* Avatar + Logo container */}
+   527→   527→              <div className="relative shrink-0">
+   528→   528→                <Avatar className="h-28 w-28 md:h-36 md:w-36 border-4 border-[#0d0d0d] shadow-xl">
+   529→   529→                  <AvatarImage src={user.avatar || undefined} alt={user.name} />
+   530→   530→                  <AvatarFallback className="bg-[#0063dc] text-white text-4xl">
+   531→   531→                    {user.name.charAt(0).toUpperCase()}
+   532→   532→                  </AvatarFallback>
+   533→   533→                </Avatar>
+   534→   534→
+   535→   535→                {/* Logo badge - bottom right of avatar */}
+   536→   536→                {user.logoImage && (
+   537→   537→                  <div
+   538→   538→                    className="absolute -bottom-1 -right-1 w-12 h-12 md:w-14 md:h-14 rounded-full border-3 border-[#0d0d0d] overflow-hidden shadow-lg bg-white/10"
+   539→   539→                    onMouseEnter={() => setLogoHover(true)}
+   540→   540→                    onMouseLeave={() => setLogoHover(false)}
+   541→   541→                  >
+   542→   542→                    <img
+   543→   543→                      src={user.logoImage}
+   544→   544→                      alt="Logo"
+   545→   545→                      className="w-full h-full object-cover"
+   546→   546→                    />
+   547→   547→                    {/* Logo remove overlay - only for own profile */}
+   548→   548→                    {isOwnProfile && logoHover && (
+   549→   549→                      <button
+   550→   550→                        onClick={handleLogoRemove}
+   551→   551→                        className="absolute inset-0 bg-black/60 flex items-center justify-center"
+   552→   552→                      >
+   553→   553→                        <X className="h-4 w-4 text-white" />
+   554→   554→                      </button>
+   555→   555→                    )}
+   556→   556→                  </div>
+   557→   557→                )}
+   558→   558→
+   559→   559→                {/* Logo upload button - only for own profile, shown when no logo */}
+   560→   560→                {isOwnProfile && !user.logoImage && (
+   561→   561→                  <button
+   562→   562→                    onClick={() => logoInputRef.current?.click()}
+   563→   563→                    className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full border-3 border-[#0d0d0d] bg-[#2a2a2d] hover:bg-[#3a3a3d] flex items-center justify-center shadow-lg transition-colors"
+   564→   564→                    title={t("profile.addLogo")}
+   565→   565→                  >
+   566→   566→                    <Upload className="h-4 w-4 text-white/60" />
+   567→   567→                  </button>
+   568→   568→                )}
+   569→   569→
+   570→   570→                {/* Hidden logo upload input */}
+   571→   571→                {isOwnProfile && (
+   572→   572→                  <input
+   573→   573→                    ref={logoInputRef}
+   574→   574→                    type="file"
+   575→   575→                    accept="image/jpeg,image/png,image/gif,image/webp"
+   576→   576→                    className="hidden"
+   577→   577→                    onChange={handleLogoChange}
+   578→   578→                  />
+   579→   579→                )}
+   580→   580→              </div>
+   581→   581→
+   582→   582→              {/* Name + actions */}
+   583→   583→              <div className="flex-1 min-w-0 pb-2">
+   584→   584→                <div className="flex items-center gap-3 flex-wrap">
+   585→   585→                  <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name}</h1>
+   586→   586→                  {user.logoImage && isOwnProfile && (
+   587→   587→                    <button
+   588→   588→                      onClick={() => logoInputRef.current?.click()}
+   589→   589→                      className="text-white/30 hover:text-white/60 transition-colors"
+   590→   590→                      title={t("profile.changeLogo")}
+   591→   591→                    >
+   592→   592→                      <Pencil className="h-3.5 w-3.5" />
+   593→   593→                    </button>
+   594→   594→                  )}
+   595→   595→                  <div className="flex items-center gap-2">
+   596→   596→                    {!isOwnProfile && (
+   597→   597→                      <>
+   598→   598→                        <FollowButton
+   599→   599→                          userId={user.id}
+   600→   600→                          username={user.username}
+   601→   601→                          initialFollowing={isFollowing}
+   602→   602→                          isPrivate={user.isPublic === false}
+   603→   603→                          followStatus={followStatus}
+   604→   604→                          onStatusChange={handleFollowStatusChange}
+   605→   605→                        />
+   606→   606→                        <Link href="/messaggi">
+   607→   607→                          <Button variant="outline" size="sm" className="gap-1.5 border-white/10 text-white/70 hover:bg-white/5 h-8">
+   608→   608→                            <Mail className="h-3.5 w-3.5" /> {t("profile.sendMessage")}
+   609→   609→                          </Button>
+   610→   610→                        </Link>
+   611→   611→                      </>
+   612→   612→                    )}
+   613→   613→                    {isOwnProfile && (
+   614→   614→                      <Link href="/impostazioni">
+   615→   615→                        <Button variant="outline" size="sm" className="gap-1.5 border-white/10 text-white/70 hover:bg-white/5 h-8">
+   616→   616→                          {t("profile.editProfile")}
+   617→   617→                        </Button>
+   618→   618→                      </Link>
+   619→   619→                    )}
+   620→   620→                  </div>
+   621→   621→                </div>
+   622→   622→              </div>
+   623→   623→            </div>
+   624→   624→
+   625→   625→            {/* Profile info row - Flickr style */}
+   626→   626→            <div className="flex items-center gap-5 mt-3 text-sm text-white/40 flex-wrap">
+   627→   627→              <span className="flex items-center gap-1.5">
+   628→   628→                <ImageIcon className="h-4 w-4" />
+   629→   629→                <span className="text-white/80 font-medium">{user.photoCount || photos.length}</span> {t("common.photos")}
+   630→   630→              </span>
+   631→   631→              {user.location && (
+   632→   632→                <span className="flex items-center gap-1.5">
+   633→   633→                  <MapPin className="h-4 w-4" />
+   634→   634→                  {user.location}
+   635→   635→                </span>
+   636→   636→              )}
+   637→   637→              <span className="flex items-center gap-1.5">
+   638→   638→                <Calendar className="h-4 w-4" />
+   639→   639→                {t("profile.memberSince")} {format(new Date(user.createdAt), "yyyy", { locale: dateLocale })}
+   640→   640→              </span>
+   641→   641→              <span className="flex items-center gap-1.5">
+   642→   642→                <Users className="h-4 w-4" />
+   643→   643→                <span className="text-white/80 font-medium">{user.followerCount || 0}</span> {t("common.followers")}
+   644→   644→              </span>
+   645→   645→              <span className="flex items-center gap-1.5">
+   646→   646→                <Users className="h-4 w-4" />
+   647→   647→                <span className="text-white/80 font-medium">{user.followingCount || 0}</span> {t("common.following")}
+   648→   648→              </span>
+   649→   649→              {user.website && (
+   650→   650→                <a href={user.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[#0063dc] transition-colors">
+   651→   651→                  <Globe className="h-4 w-4" />
+   652→   652→                  {user.website.replace(/^https?:\/\//, "")}
+   653→   653→                </a>
+   654→   654→              )}
+   655→   655→            </div>
+   656→   656→          </motion.div>
+   657→   657→
+   658→   658→          {/* Pending follow requests - only for own private profile */}
+   659→   659→          {isOwnProfile && user.isPublic === false && pendingRequests.length > 0 && (
+   660→   660→            <motion.div
+   661→   661→              initial={{ opacity: 0, y: 10 }}
+   662→   662→              animate={{ opacity: 1, y: 0 }}
+   663→   663→              className="mt-5 bg-amber-500/10 border border-amber-500/20 rounded-lg p-4"
+   664→   664→            >
+   665→   665→              <h3 className="text-sm font-semibold text-amber-400 flex items-center gap-2 mb-3">
+   666→   666→                <Clock className="h-4 w-4" />
+   667→   667→                {t("profile.pendingRequests")} ({pendingRequests.length})
+   668→   668→              </h3>
+   669→   669→              <div className="space-y-2 max-h-64 overflow-y-auto">
+   670→   670→                {pendingRequests.map((req: any) => (
+   671→   671→                  <div
+   672→   672→                    key={req.id}
+   673→   673→                    className="flex items-center gap-3 p-2 rounded-lg bg-white/5"
+   674→   674→                  >
+   675→   675→                    <Avatar className="h-8 w-8">
+   676→   676→                      <AvatarImage src={req.follower?.avatar || undefined} />
+   677→   677→                      <AvatarFallback className="text-xs bg-[#0063dc] text-white">
+   678→   678→                        {req.follower?.name?.charAt(0).toUpperCase()}
+   679→   679→                      </AvatarFallback>
+   680→   680→                    </Avatar>
+   681→   681→                    <div className="flex-1 min-w-0">
+   682→   682→                      <Link href={`/persone/${req.follower?.username}`} className="text-sm font-medium text-white/80 hover:underline truncate block">
+   683→   683→                        {req.follower?.name}
+   684→   684→                      </Link>
+   685→   685→                      <p className="text-xs text-white/30">@{req.follower?.username}</p>
+   686→   686→                    </div>
+   687→   687→                    <div className="flex items-center gap-1.5">
+   688→   688→                      <Button
+   689→   689→                        size="sm"
+   690→   690→                        variant="outline"
+   691→   691→                        className="h-7 text-xs gap-1 border-green-500/30 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+   692→   692→                        onClick={() => handleApproveFollow(req.id)}
+   693→   693→                      >
+   694→   694→                        <Check className="h-3 w-3" />
+   695→   695→                        {t("profile.approveFollow")}
+   696→   696→                      </Button>
+   697→   697→                      <Button
+   698→   698→                        size="sm"
+   699→   699→                        variant="outline"
+   700→   700→                        className="h-7 text-xs gap-1 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+   701→   701→                        onClick={() => handleRejectFollow(req.id)}
+   702→   702→                      >
+   703→   703→                        <X className="h-3 w-3" />
+   704→   704→                        {t("profile.rejectFollow")}
+   705→   705→                      </Button>
+   706→   706→                    </div>
+   707→   707→                  </div>
+   708→   708→                ))}
+   709→   709→              </div>
+   710→   710→            </motion.div>
+   711→   711→          )}
+   712→   712→
+   713→   713→          {/* No pending requests info */}
+   714→   714→          {isOwnProfile && user.isPublic === false && pendingRequests.length === 0 && (
+   715→   715→            <div className="mt-3 text-xs text-white/20">
+   716→   716→              {t("profile.noPendingRequests")}
+   717→   717→            </div>
+   718→   718→          )}
+   719→   719→
+   720→   720→          {/* Flickr-style tab navigation */}
+   721→   721→          <div className="mt-5 border-b border-white/10">
+   722→   722→            <nav className="flex items-center gap-0 -mb-px overflow-x-auto scrollbar-hide">
+   723→   723→              {profileTabs.map((tab) => {
+   724→   724→                const isActive = activeTab === tab.key;
+   725→   725→                return (
+   726→   726→                  <button
+   727→   727→                    key={tab.key}
+   728→   728→                    onClick={() => setActiveTab(tab.key)}
+   729→   729→                    className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+   730→   730→                      isActive
+   731→   731→                        ? "border-[#0063dc] text-white"
+   732→   732→                        : "border-transparent text-white/40 hover:text-white/60 hover:border-white/20"
+   733→   733→                    }`}
+   734→   734→                  >
+   735→   735→                    {t(tab.labelKey)}
+   736→   736→                  </button>
+   737→   737→                );
+   738→   738→              })}
+   739→   739→            </nav>
+   740→   740→          </div>
+   741→   741→
+   742→   742→          {/* Sort bar for photo tabs */}
+   743→   743→          {(activeTab === "photostream" || activeTab === "favorites") && (
+   744→   744→            <div className="flex items-center justify-between mt-4 mb-2">
+   745→   745→              <div className="flex items-center gap-2">
+   746→   746→                <DropdownMenu>
+   747→   747→                  <DropdownMenuTrigger asChild>
+   748→   748→                    <Button variant="ghost" size="sm" className="text-white/40 hover:text-white/60 hover:bg-white/5 gap-1 h-8 text-xs">
+   749→   749→                      <ArrowUpDown className="h-3.5 w-3.5" />
+   750→   750→                      {sortOrder === "date" ? t("profile.sortByDate") : sortOrder === "views" ? t("profile.sortByViews") : t("profile.sortByFavorites")}
+   751→   751→                      <ChevronDown className="h-3 w-3" />
+   752→   752→                    </Button>
+   753→   753→                  </DropdownMenuTrigger>
+   754→   754→                  <DropdownMenuContent className="bg-[#2a2a2d] border-white/10">
+   755→   755→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer text-xs" onClick={() => setSortOrder("date")}>
+   756→   756→                      {t("profile.sortByDate")}
+   757→   757→                    </DropdownMenuItem>
+   758→   758→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer text-xs" onClick={() => setSortOrder("views")}>
+   759→   759→                      {t("profile.sortByViews")}
+   760→   760→                    </DropdownMenuItem>
+   761→   761→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer text-xs" onClick={() => setSortOrder("favorites")}>
+   762→   762→                      {t("profile.sortByFavorites")}
+   763→   763→                    </DropdownMenuItem>
+   764→   764→                  </DropdownMenuContent>
+   765→   765→                </DropdownMenu>
+   766→   766→              </div>
+   767→   767→            </div>
+   768→   768→          )}
+   769→   769→
+   770→   770→          {/* Tab content */}
+   771→   771→          <div className="mt-2 pb-12">
+   772→   772→            {/* Info tab */}
+   773→   773→            {activeTab === "info" && (
+   774→   774→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+   775→   775→                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+   776→   776→                  <Card className="bg-white/5 border-white/10">
+   777→   777→                    <CardContent className="p-6 space-y-4">
+   778→   778→                      <h3 className="text-lg font-semibold text-white">{t("profile.aboutUser")}</h3>
+   779→   779→                      {user.bio ? (
+   780→   780→                        <p className="text-white/60 text-sm leading-relaxed">{user.bio}</p>
+   781→   781→                      ) : (
+   782→   782→                        <p className="text-white/30 text-sm italic">
+   783→   783→                          {isOwnProfile ? t("profile.addYourBio") : t("profile.noBio")}
+   784→   784→                        </p>
+   785→   785→                      )}
+   786→   786→                      <div className="space-y-3 text-sm">
+   787→   787→                        {user.location && (
+   788→   788→                          <div className="flex items-center gap-2 text-white/40">
+   789→   789→                            <MapPin className="h-4 w-4 shrink-0" />
+   790→   790→                            <span>{user.location}</span>
+   791→   791→                          </div>
+   792→   792→                        )}
+   793→   793→                        {user.website && (
+   794→   794→                          <div className="flex items-center gap-2 text-white/40">
+   795→   795→                            <Globe className="h-4 w-4 shrink-0" />
+   796→   796→                            <a href={user.website} target="_blank" rel="noopener noreferrer" className="hover:text-[#0063dc] transition-colors">
+   797→   797→                              {user.website.replace(/^https?:\/\//, "")}
+   798→   798→                            </a>
+   799→   799→                          </div>
+   800→   800→                        )}
+   801→   801→                        <div className="flex items-center gap-2 text-white/40">
+   802→   802→                          <Calendar className="h-4 w-4 shrink-0" />
+   803→   803→                          <span>{t("profile.memberSince")} {format(new Date(user.createdAt), "MMMM yyyy", { locale: dateLocale })}</span>
+   804→   804→                        </div>
+   805→   805→                      </div>
+   806→   806→                    </CardContent>
+   807→   807→                  </Card>
+   808→   808→                  <Card className="bg-white/5 border-white/10">
+   809→   809→                    <CardContent className="p-6 space-y-4">
+   810→   810→                      <h3 className="text-lg font-semibold text-white">{t("profile.quickStats")}</h3>
+   811→   811→                      <div className="grid grid-cols-2 gap-3">
+   812→   812→                        <div className="bg-white/5 rounded-lg p-3 text-center">
+   813→   813→                          <p className="text-xl font-bold text-white">{user.photoCount || photos.length}</p>
+   814→   814→                          <p className="text-xs text-white/40 mt-0.5">{t("common.photos")}</p>
+   815→   815→                        </div>
+   816→   816→                        <div className="bg-white/5 rounded-lg p-3 text-center">
+   817→   817→                          <p className="text-xl font-bold text-white">{albums.length}</p>
+   818→   818→                          <p className="text-xs text-white/40 mt-0.5">{t("profile.tabAlbums")}</p>
+   819→   819→                        </div>
+   820→   820→                        <div className="bg-white/5 rounded-lg p-3 text-center">
+   821→   821→                          <p className="text-xl font-bold text-white">{user.followerCount || 0}</p>
+   822→   822→                          <p className="text-xs text-white/40 mt-0.5">{t("common.followers")}</p>
+   823→   823→                        </div>
+   824→   824→                        <div className="bg-white/5 rounded-lg p-3 text-center">
+   825→   825→                          <p className="text-xl font-bold text-white">{user.followingCount || 0}</p>
+   826→   826→                          <p className="text-xs text-white/40 mt-0.5">{t("common.following")}</p>
+   827→   827→                        </div>
+   828→   828→                      </div>
+   829→   829→                    </CardContent>
+   830→   830→                  </Card>
+   831→   831→                </div>
+   832→   832→              </motion.div>
+   833→   833→            )}
+   834→   834→
+   835→   835→            {/* Photostream tab */}
+   836→   836→            {activeTab === "photostream" && (
+   837→   837→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   838→   838→                {photos.length === 0 ? (
+   839→   839→                  <EmptyState icon={Camera} title={t("profile.noPhotos")} description={isOwnProfile ? t("profile.noPhotosOwn") : t("profile.noPhotosOther")} />
+   840→   840→                ) : (
+   841→   841→                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+   842→   842→                    {sortedPhotos(photos).map((photo: any, index: number) => (
+   843→   843→                      <motion.div
+   844→   844→                        key={photo.id}
+   845→   845→                        initial={{ opacity: 0, y: 20 }}
+   846→   846→                        animate={{ opacity: 1, y: 0 }}
+   847→   847→                        transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
+   848→   848→                      >
+   849→   849→                        <PhotoCard photo={photo} showSafety={false} flickrStyle />
+   850→   850→                      </motion.div>
+   851→   851→                    ))}
+   852→   852→                  </div>
+   853→   853→                )}
+   854→   854→              </motion.div>
+   855→   855→            )}
+   856→   856→
+   857→   857→            {/* Albums tab */}
+   858→   858→            {activeTab === "albums" && (
+   859→   859→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   860→   860→                {isOwnProfile && (
+   861→   861→                  <div className="mb-4">
+   862→   862→                    <Link href="/album">
+   863→   863→                      <Button size="sm" className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white gap-1.5">
+   864→   864→                        <FolderOpen className="h-4 w-4" /> {t("albums.createNew")}
+   865→   865→                      </Button>
+   866→   866→                    </Link>
+   867→   867→                  </div>
+   868→   868→                )}
+   869→   869→                {albums.length === 0 ? (
+   870→   870→                  <EmptyState icon={FolderOpen} title={t("profile.noAlbums")} description={isOwnProfile ? t("profile.noAlbumsOwn") : t("profile.noAlbumsOther")} />
+   871→   871→                ) : (
+   872→   872→                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+   873→   873→                    {albums.map((album: any) => (
+   874→   874→                      <Link key={album.id} href={`/album/${album.id}`}>
+   875→   875→                        <Card className="group cursor-pointer overflow-hidden hover:shadow-lg transition-shadow bg-white/5 border-white/10">
+   876→   876→                          <CardContent className="p-0">
+   877→   877→                            <div className="aspect-square relative bg-white/5 overflow-hidden">
+   878→   878→                              {album.cover ? (
+   879→   879→                                <img src={album.cover} alt={album.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+   880→   880→                              ) : (
+   881→   881→                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0063dc]/10 to-[#ff0084]/10">
+   882→   882→                                  <FolderOpen className="h-10 w-10 text-white/10" />
+   883→   883→                                </div>
+   884→   884→                              )}
+   885→   885→                            </div>
+   886→   886→                            <div className="p-3">
+   887→   887→                              <h3 className="font-medium text-sm truncate text-white/80">{album.name}</h3>
+   888→   888→                              <p className="text-xs text-white/30 mt-0.5">{album.photoCount || album.photos?.length || 0} {t("common.photos")}</p>
+   889→   889→                            </div>
+   890→   890→                          </CardContent>
+   891→   891→                        </Card>
+   892→   892→                      </Link>
+   893→   893→                    ))}
+   894→   894→                  </div>
+   895→   895→                )}
+   896→   896→              </motion.div>
+   897→   897→            )}
+   898→   898→
+   899→   899→            {/* Favorites tab */}
+   900→   900→            {activeTab === "favorites" && (
+   901→   901→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   902→   902→                {favorites.length === 0 ? (
+   903→   903→                  <EmptyState icon={Heart} title={t("profile.noFavorites")} description={isOwnProfile ? t("profile.noFavoritesOwn") : t("profile.noFavoritesOther")} />
+   904→   904→                ) : (
+   905→   905→                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+   906→   906→                    {sortedPhotos(favorites).map((photo: any, index: number) => (
+   907→   907→                      <motion.div
+   908→   908→                        key={photo.id}
+   909→   909→                        initial={{ opacity: 0, y: 20 }}
+   910→   910→                        animate={{ opacity: 1, y: 0 }}
+   911→   911→                        transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
+   912→   912→                      >
+   913→   913→                        <PhotoCard photo={photo} flickrStyle />
+   914→   914→                      </motion.div>
+   915→   915→                    ))}
+   916→   916→                  </div>
+   917→   917→                )}
+   918→   918→              </motion.div>
+   919→   919→            )}
+   920→   920→
+   921→   921→            {/* Galleries tab */}
+   922→   922→            {activeTab === "galleries" && (
+   923→   923→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   924→   924→                {isOwnProfile && (
+   925→   925→                  <div className="mb-4">
+   926→   926→                    <Link href="/gallerie">
+   927→   927→                      <Button size="sm" className="bg-gradient-to-r from-[#ff0084] to-[#0063dc] hover:opacity-90 text-white gap-1.5">
+   928→   928→                        <LayoutGrid className="h-4 w-4" /> {t("galleries.createNew")}
+   929→   929→                      </Button>
+   930→   930→                    </Link>
+   931→   931→                  </div>
+   932→   932→                )}
+   933→   933→                {galleries.length === 0 ? (
+   934→   934→                  <EmptyState icon={LayoutGrid} title={t("profile.noGalleries")} description={isOwnProfile ? t("profile.noGalleriesOwn") : t("profile.noGalleriesOther")} />
+   935→   935→                ) : (
+   936→   936→                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+   937→   937→                    {galleries.map((gallery: any) => (
+   938→   938→                      <Link key={gallery.id} href={`/gallerie/${gallery.id}`}>
+   939→   939→                        <Card className="group cursor-pointer overflow-hidden hover:shadow-lg transition-shadow bg-white/5 border-white/10">
+   940→   940→                          <CardContent className="p-0">
+   941→   941→                            <div className="aspect-square relative bg-white/5 overflow-hidden">
+   942→   942→                              {gallery.cover ? (
+   943→   943→                                <img src={gallery.cover} alt={gallery.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+   944→   944→                              ) : (
+   945→   945→                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#ff0084]/10 to-[#0063dc]/10">
+   946→   946→                                  <LayoutGrid className="h-10 w-10 text-white/10" />
+   947→   947→                                </div>
+   948→   948→                              )}
+   949→   949→                            </div>
+   950→   950→                            <div className="p-3">
+   951→   951→                              <h3 className="font-medium text-sm truncate text-white/80">{gallery.name}</h3>
+   952→   952→                              <p className="text-xs text-white/30 mt-0.5">{gallery.itemCount ?? 0} {t("common.photos")}</p>
+   953→   953→                            </div>
+   954→   954→                          </CardContent>
+   955→   955→                        </Card>
+   956→   956→                      </Link>
+   957→   957→                    ))}
+   958→   958→                  </div>
+   959→   959→                )}
+   960→   960→              </motion.div>
+   961→   961→            )}
+   962→   962→
+   963→   963→            {/* Groups tab */}
+   964→   964→            {activeTab === "groups" && (
+   965→   965→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   966→   966→                {isOwnProfile && (
+   967→   967→                  <div className="mb-4">
+   968→   968→                    <Link href="/gruppi">
+   969→   969→                      <Button size="sm" className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white gap-1.5">
+   970→   970→                        <Users className="h-4 w-4" /> {t("groups.createGroup")}
+   971→   971→                      </Button>
+   972→   972→                    </Link>
+   973→   973→                  </div>
+   974→   974→                )}
+   975→   975→                {groups.length === 0 ? (
+   976→   976→                  <EmptyState icon={Users} title={t("profile.noGroups")} description={isOwnProfile ? t("profile.noGroupsOwn") : t("profile.noGroupsOther")} />
+   977→   977→                ) : (
+   978→   978→                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   979→   979→                    {groups.map((group: any) => (
+   980→   980→                      <Link key={group.id} href={`/gruppi/${group.id}`}>
+   981→   981→                        <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/[0.07] transition-colors">
+   982→   982→                          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-[#0063dc]/20 to-[#ff0084]/20 flex items-center justify-center shrink-0 overflow-hidden">
+   983→   983→                            {group.cover ? (
+   984→   984→                              <img src={group.cover} alt={group.name} className="w-14 h-14 rounded-lg object-cover" />
+   985→   985→                            ) : (
+   986→   986→                              <Users className="h-6 w-6 text-white/20" />
+   987→   987→                            )}
+   988→   988→                          </div>
+   989→   989→                          <div className="flex-1 min-w-0">
+   990→   990→                            <p className="text-sm font-medium text-white/80 truncate">{group.name}</p>
+   991→   991→                            <p className="text-xs text-white/30">{group.memberCount || 0} {t("common.members")} · {group.photoCount || 0} {t("common.photos")}</p>
+   992→   992→                          </div>
+   993→   993→                        </div>
+   994→   994→                      </Link>
+   995→   995→                    ))}
+   996→   996→                  </div>
+   997→   997→                )}
+   998→   998→              </motion.div>
+   999→   999→            )}
+  1000→  1000→          </div>
+  1001→  1001→        </div>
+  1002→  1002→      </main>
+  1003→  1003→
+  1004→  1004→      <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
+  1005→  1005→        <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
+  1006→  1006→        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
+  1007→  1007→      </footer>
+  1008→  1008→    </div>
+  1009→  1009→  );
+  1010→  1010→}
+  1011→  1011→

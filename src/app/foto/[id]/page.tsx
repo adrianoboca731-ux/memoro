@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Header } from "@/components/header";
@@ -20,6 +20,8 @@ import {
   MoreHorizontal,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   User,
   Aperture,
   Gauge,
@@ -34,6 +36,7 @@ import {
   ExternalLink,
   AlertTriangle,
   ShieldAlert,
+  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,6 +95,11 @@ export default function FotoDetailPage() {
   const [galleries, setGalleries] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
 
+  // Navigation state
+  const [navData, setNavData] = useState<{ prev: { id: string; title: string; thumbnail: string } | null; next: { id: string; title: string; thumbnail: string } | null; thumbnails: { id: string; title: string; thumbnail: string; isCurrent: boolean }[] } | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const thumbnailStripRef = useRef<HTMLDivElement | null>(null);
+
   const dateLocale = dateLocales[locale] || it;
 
   const fetchPhoto = useCallback(async () => {
@@ -121,6 +129,55 @@ export default function FotoDetailPage() {
   useEffect(() => {
     fetchPhoto();
   }, [fetchPhoto]);
+
+  // Fetch navigation data
+  useEffect(() => {
+    if (!photoId) return;
+    const fetchNav = async () => {
+      try {
+        const res = await fetch(`/api/photos/${photoId}/navigate`);
+        if (res.ok) {
+          const data = await res.json();
+          setNavData(data);
+        }
+      } catch (err) {
+        console.error("Error fetching navigation:", err);
+      }
+    };
+    fetchNav();
+  }, [photoId]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === "ArrowLeft" && navData?.prev) {
+        e.preventDefault();
+        router.push(`/foto/${navData.prev.id}`);
+      } else if (e.key === "ArrowRight" && navData?.next) {
+        e.preventDefault();
+        router.push(`/foto/${navData.next.id}`);
+      } else if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      } else if (e.key === "f" || e.key === "F") {
+        if (e.target instanceof HTMLElement && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+          setIsFullscreen((prev) => !prev);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navData, router, isFullscreen]);
+
+  // Scroll thumbnail strip to current photo
+  useEffect(() => {
+    if (thumbnailStripRef.current) {
+      const currentThumb = thumbnailStripRef.current.querySelector("[data-current=\"true\"]");
+      if (currentThumb) {
+        currentThumb.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
+    }
+  }, [navData]);
 
   const handleToggleFavorite = useCallback(async () => {
     try {
@@ -202,45 +259,114 @@ export default function FotoDetailPage() {
       <Header />
       <main className="flex-1 flex flex-col lg:flex-row">
         {/* Left side - Photo area (70%) */}
-        <div className="flex-1 lg:w-[70%] bg-[#000] flex items-center justify-center min-h-[50vh] lg:min-h-[calc(100vh-56px)] relative">
-          <motion.img
-            key={photoId}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            src={photo.filepath}
-            alt={photo.title}
-            className={`max-w-full max-h-[calc(100vh-56px)] object-contain ${
-              photo.shouldBlur && !revealed ? "blur-xl" : ""
-            }`}
-          />
-          {/* Mature/restricted content overlay */}
-          {photo.shouldBlur && !revealed && (
-            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-10 p-6">
-              {photo.safetyLevel === "restricted" ? (
-                <ShieldAlert className="h-12 w-12 text-red-400/80" />
-              ) : (
-                <AlertTriangle className="h-12 w-12 text-amber-400/80" />
-              )}
-              <p className="text-white font-semibold text-lg text-center">
-                {photo.safetyLevel === "restricted" ? t("photo.restrictedContent") : t("photo.matureContent")}
-              </p>
-              <p className="text-white/50 text-sm text-center max-w-md">
-                {photo.safetyLevel === "restricted" ? t("photo.restrictedContentDesc") : t("photo.matureContentDesc")}
-              </p>
-              <Button
-                size="default"
-                variant="outline"
-                className="mt-2 border-white/20 text-white hover:bg-white/10 gap-2"
-                onClick={() => {
-                  if (confirm(t("photo.confirmShowMature"))) {
-                    setRevealed(true);
-                  }
-                }}
+        <div className="flex-1 lg:w-[70%] bg-[#000] flex flex-col min-h-[50vh] lg:min-h-[calc(100vh-56px)] relative">
+          {/* Photo title bar */}
+          <div className="flex items-center justify-between px-4 py-2 bg-black/60 text-white/70 text-sm absolute top-0 left-0 right-0 z-20">
+            <span className="truncate max-w-[60%]">{photo.user?.username ? `${t("photo.photosOf")} ` : ""}{photo.user?.name || ""}</span>
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="p-1.5 rounded hover:bg-white/10 transition-colors"
+              title={isFullscreen ? t("photo.exitFullscreen") : t("photo.enterFullscreen")}
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Main image container */}
+          <div className="flex-1 flex items-center justify-center relative group">
+            <motion.img
+              key={photoId}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              src={photo.filepath}
+              alt={photo.title}
+              className={`max-w-full max-h-[calc(100vh-56px-80px)] object-contain ${
+                photo.shouldBlur && !revealed ? "blur-xl" : ""
+              }`}
+            />
+
+            {/* Left navigation arrow */}
+            {navData?.prev && (
+              <Link
+                href={`/foto/${navData.prev.id}`}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               >
-                <Eye className="h-4 w-4" />
-                {t("photo.showContent")}
-              </Button>
+                <div className="bg-black/60 hover:bg-black/80 rounded-full p-3 cursor-pointer transition-colors backdrop-blur-sm">
+                  <ChevronLeft className="h-8 w-8 text-white/90" />
+                </div>
+              </Link>
+            )}
+
+            {/* Right navigation arrow */}
+            {navData?.next && (
+              <Link
+                href={`/foto/${navData.next.id}`}
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              >
+                <div className="bg-black/60 hover:bg-black/80 rounded-full p-3 cursor-pointer transition-colors backdrop-blur-sm">
+                  <ChevronRight className="h-8 w-8 text-white/90" />
+                </div>
+              </Link>
+            )}
+
+            {/* Mature/restricted content overlay */}
+            {photo.shouldBlur && !revealed && (
+              <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-10 p-6">
+                {photo.safetyLevel === "restricted" ? (
+                  <ShieldAlert className="h-12 w-12 text-red-400/80" />
+                ) : (
+                  <AlertTriangle className="h-12 w-12 text-amber-400/80" />
+                )}
+                <p className="text-white font-semibold text-lg text-center">
+                  {photo.safetyLevel === "restricted" ? t("photo.restrictedContent") : t("photo.matureContent")}
+                </p>
+                <p className="text-white/50 text-sm text-center max-w-md">
+                  {photo.safetyLevel === "restricted" ? t("photo.restrictedContentDesc") : t("photo.matureContentDesc")}
+                </p>
+                <Button
+                  size="default"
+                  variant="outline"
+                  className="mt-2 border-white/20 text-white hover:bg-white/10 gap-2"
+                  onClick={() => {
+                    if (confirm(t("photo.confirmShowMature"))) {
+                      setRevealed(true);
+                    }
+                  }}
+                >
+                  <Eye className="h-4 w-4" />
+                  {t("photo.showContent")}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Thumbnail strip at bottom */}
+          {navData && navData.thumbnails.length > 1 && (
+            <div className="h-[72px] bg-[#111] border-t border-white/10 flex items-center px-2 gap-1 overflow-x-auto scrollbar-thin shrink-0">
+              <div
+                ref={thumbnailStripRef}
+                className="flex items-center gap-1.5 mx-auto"
+              >
+                {navData.thumbnails.map((thumb) => (
+                  <Link
+                    key={thumb.id}
+                    href={`/foto/${thumb.id}`}
+                    data-current={thumb.isCurrent}
+                    className={`shrink-0 rounded overflow-hidden transition-all duration-200 ${
+                      thumb.isCurrent
+                        ? "ring-2 ring-[#0063dc] opacity-100 scale-105"
+                        : "opacity-50 hover:opacity-80"
+                    }`}
+                  >
+                    <img
+                      src={thumb.thumbnail}
+                      alt={thumb.title || ""}
+                      className="h-[56px] w-[56px] object-cover"
+                    />
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
         </div>

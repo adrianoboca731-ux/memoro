@@ -561,6 +561,12 @@ const it: TranslationDict = {
   "photo.addFavorite": "Aggiungi ai preferiti",
   "photo.removeFavorite": "Rimuovi dai preferiti",
   "photo.favoriteError": "Errore nell'aggiornamento dei preferiti",
+  "photo.photosOf": "Foto di",
+  "photo.enterFullscreen": "Schermo intero",
+  "photo.exitFullscreen": "Esci dallo schermo intero",
+  "photo.prevPhoto": "Foto precedente",
+  "photo.nextPhoto": "Foto successiva",
+  "photo.photostream": "Fotostream",
 };
 
 const en: TranslationDict = {
@@ -1111,6 +1117,12 @@ const en: TranslationDict = {
   "photo.addFavorite": "Add to favorites",
   "photo.removeFavorite": "Remove from favorites",
   "photo.favoriteError": "Error updating favorites",
+  "photo.photosOf": "Photos by",
+  "photo.enterFullscreen": "Fullscreen",
+  "photo.exitFullscreen": "Exit fullscreen",
+  "photo.prevPhoto": "Previous photo",
+  "photo.nextPhoto": "Next photo",
+  "photo.photostream": "Photostream",
 };
 
 const fr: TranslationDict = {
@@ -1661,6 +1673,12 @@ const fr: TranslationDict = {
   "photo.addFavorite": "Ajouter aux favoris",
   "photo.removeFavorite": "Retirer des favoris",
   "photo.favoriteError": "Erreur lors de la mise à jour des favoris",
+  "photo.photosOf": "Photos de",
+  "photo.enterFullscreen": "Plein écran",
+  "photo.exitFullscreen": "Quitter le plein écran",
+  "photo.prevPhoto": "Photo précédente",
+  "photo.nextPhoto": "Photo suivante",
+  "photo.photostream": "Flux photo",
 };
 
 const de: TranslationDict = {
@@ -2211,6 +2229,12 @@ const de: TranslationDict = {
   "photo.addFavorite": "Zu Favoriten hinzufügen",
   "photo.removeFavorite": "Aus Favoriten entfernen",
   "photo.favoriteError": "Fehler beim Aktualisieren der Favoriten",
+  "photo.photosOf": "Fotos von",
+  "photo.enterFullscreen": "Vollbild",
+  "photo.exitFullscreen": "Vollbild beenden",
+  "photo.prevPhoto": "Vorheriges Foto",
+  "photo.nextPhoto": "Nächstes Foto",
+  "photo.photostream": "Fotostream",
 };
 
 const es: TranslationDict = {
@@ -2761,6 +2785,12 @@ const es: TranslationDict = {
   "photo.addFavorite": "Añadir a favoritos",
   "photo.removeFavorite": "Quitar de favoritos",
   "photo.favoriteError": "Error al actualizar favoritos",
+  "photo.photosOf": "Fotos de",
+  "photo.enterFullscreen": "Pantalla completa",
+  "photo.exitFullscreen": "Salir de pantalla completa",
+  "photo.prevPhoto": "Foto anterior",
+  "photo.nextPhoto": "Foto siguiente",
+  "photo.photostream": "Fotostream",
 };
 
 const ptBR: TranslationDict = {
@@ -3311,6 +3341,12 @@ const ptBR: TranslationDict = {
   "photo.addFavorite": "Adicionar aos favoritos",
   "photo.removeFavorite": "Remover dos favoritos",
   "photo.favoriteError": "Erro ao atualizar favoritos",
+  "photo.photosOf": "Fotos de",
+  "photo.enterFullscreen": "Tela cheia",
+  "photo.exitFullscreen": "Sair da tela cheia",
+  "photo.prevPhoto": "Foto anterior",
+  "photo.nextPhoto": "Próxima foto",
+  "photo.photostream": "Fluxo de fotos",
 };
 
 const ja: TranslationDict = {
@@ -3861,6 +3897,12 @@ const ja: TranslationDict = {
   "photo.addFavorite": "お気に入りに追加",
   "photo.removeFavorite": "お気に入りから削除",
   "photo.favoriteError": "お気に入りの更新エラー",
+  "photo.photosOf": "の写真",
+  "photo.enterFullscreen": "フルスクリーン",
+  "photo.exitFullscreen": "フルスクリーンを終了",
+  "photo.prevPhoto": "前の写真",
+  "photo.nextPhoto": "次の写真",
+  "photo.photostream": "フォトストリーム",
 };
 
 const ko: TranslationDict = {
@@ -4411,6 +4453,12 @@ const ko: TranslationDict = {
   "photo.addFavorite": "즐겨찾기에 추가",
   "photo.removeFavorite": "즐겨찾기에서 제거",
   "photo.favoriteError": "즐겨찾기 업데이트 오류",
+  "photo.photosOf": "의 사진",
+  "photo.enterFullscreen": "전체 화면",
+  "photo.exitFullscreen": "전체 화면 종료",
+  "photo.prevPhoto": "이전 사진",
+  "photo.nextPhoto": "다음 사진",
+  "photo.photostream": "포토스트림",
 };
 
 const zhCN: TranslationDict = {
@@ -4961,6 +5009,12 @@ const zhCN: TranslationDict = {
   "photo.addFavorite": "添加到收藏",
   "photo.removeFavorite": "从收藏中移除",
   "photo.favoriteError": "更新收藏时出错",
+  "photo.photosOf": "的照片",
+  "photo.enterFullscreen": "全屏",
+  "photo.exitFullscreen": "退出全屏",
+  "photo.prevPhoto": "上一张照片",
+  "photo.nextPhoto": "下一张照片",
+  "photo.photostream": "照片流",
 };
 
 const zhTW: TranslationDict = {
@@ -5511,6 +5565,12 @@ const zhTW: TranslationDict = {
   "photo.addFavorite": "加入收藏",
   "photo.removeFavorite": "從收藏中移除",
   "photo.favoriteError": "更新收藏時出錯",
+  "photo.photosOf": "的照片",
+  "photo.enterFullscreen": "全螢幕",
+  "photo.exitFullscreen": "退出全螢幕",
+  "photo.prevPhoto": "上一張照片",
+  "photo.nextPhoto": "下一張照片",
+  "photo.photostream": "照片串流",
 };
 
 export const translations: Record<string, TranslationDict> = { it, en, fr, de, es, "pt-BR": ptBR, ja, ko, "zh-CN": zhCN, "zh-TW": zhTW };

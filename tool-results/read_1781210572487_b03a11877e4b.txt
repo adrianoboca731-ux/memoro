@@ -1,0 +1,672 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect, useCallback } from "react";
+     4→import { useParams, useRouter } from "next/navigation";
+     5→import { useSession } from "next-auth/react";
+     6→import { Header } from "@/components/header";
+     7→import { CommentSection } from "@/components/comment-section";
+     8→import { SafetyBadge } from "@/components/safety-badge";
+     9→import { FollowButton } from "@/components/follow-button";
+    10→import {
+    11→  Heart,
+    12→  Eye,
+    13→  MessageCircle,
+    14→  Calendar,
+    15→  Tag,
+    16→  Folder,
+    17→  Camera,
+    18→  Download,
+    19→  Share2,
+    20→  MoreHorizontal,
+    21→  ChevronDown,
+    22→  ChevronUp,
+    23→  User,
+    24→  Aperture,
+    25→  Gauge,
+    26→  CircleDot,
+    27→  Image as ImageIcon,
+    28→  X,
+    29→  Edit3,
+    30→  Save,
+    31→  Trash2,
+    32→  BookmarkPlus,
+    33→  Users,
+    34→  ExternalLink,
+    35→  AlertTriangle,
+    36→  ShieldAlert,
+    37→} from "lucide-react";
+    38→import { Button } from "@/components/ui/button";
+    39→import { Input } from "@/components/ui/input";
+    40→import { Textarea } from "@/components/ui/textarea";
+    41→import { Badge } from "@/components/ui/badge";
+    42→import { Separator } from "@/components/ui/separator";
+    43→import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+    44→import { Skeleton } from "@/components/ui/skeleton";
+    45→import {
+    46→  Dialog,
+    47→  DialogContent,
+    48→  DialogHeader,
+    49→  DialogTitle,
+    50→} from "@/components/ui/dialog";
+    51→import {
+    52→  DropdownMenu,
+    53→  DropdownMenuContent,
+    54→  DropdownMenuItem,
+    55→  DropdownMenuTrigger,
+    56→} from "@/components/ui/dropdown-menu";
+    57→import {
+    58→  Select,
+    59→  SelectContent,
+    60→  SelectItem,
+    61→  SelectTrigger,
+    62→  SelectValue,
+    63→} from "@/components/ui/select";
+    64→import { motion, AnimatePresence } from "framer-motion";
+    65→import { format } from "date-fns";
+    66→import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
+    67→import Link from "next/link";
+    68→import { useI18n } from "@/lib/i18n";
+    69→
+    70→const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+    71→
+    72→export default function FotoDetailPage() {
+    73→  const params = useParams();
+    74→  const router = useRouter();
+    75→  const { data: session } = useSession();
+    76→  const photoId = params.id as string;
+    77→  const { t, locale } = useI18n();
+    78→
+    79→  const [photo, setPhoto] = useState<any>(null);
+    80→  const [loading, setLoading] = useState(true);
+    81→  const [error, setError] = useState<string | null>(null);
+    82→  const [isFavorited, setIsFavorited] = useState(false);
+    83→  const [favoriteCount, setFavoriteCount] = useState(0);
+    84→  const [isEditing, setIsEditing] = useState(false);
+    85→  const [editTitle, setEditTitle] = useState("");
+    86→  const [editDescription, setEditDescription] = useState("");
+    87→  const [editTags, setEditTags] = useState("");
+    88→  const [showExif, setShowExif] = useState(false);
+    89→  const [revealed, setRevealed] = useState(false);
+    90→  const [addToGalleryOpen, setAddToGalleryOpen] = useState(false);
+    91→  const [addToGroupOpen, setAddToGroupOpen] = useState(false);
+    92→  const [galleries, setGalleries] = useState<any[]>([]);
+    93→  const [groups, setGroups] = useState<any[]>([]);
+    94→
+    95→  const dateLocale = dateLocales[locale] || it;
+    96→
+    97→  const fetchPhoto = useCallback(async () => {
+    98→    setLoading(true);
+    99→    setError(null);
+   100→    try {
+   101→      const res = await fetch(`/api/photos/${photoId}`);
+   102→      if (res.ok) {
+   103→        const data = await res.json();
+   104→        setPhoto(data);
+   105→        setIsFavorited(data.isFavorited || false);
+   106→        setFavoriteCount(data.favoriteCount || 0);
+   107→        setEditTitle(data.title);
+   108→        setEditDescription(data.description || "");
+   109→        setEditTags(data.tags || "");
+   110→      } else {
+   111→        const data = await res.json();
+   112→        setError(data.error || t("photo.notFound"));
+   113→      }
+   114→    } catch (err) {
+   115→      setError(t("common.error"));
+   116→    } finally {
+   117→      setLoading(false);
+   118→    }
+   119→  }, [photoId]);
+   120→
+   121→  useEffect(() => {
+   122→    fetchPhoto();
+   123→  }, [fetchPhoto]);
+   124→
+   125→  const handleToggleFavorite = useCallback(async () => {
+   126→    try {
+   127→      const res = await fetch(`/api/photos/${photoId}/favorite`, { method: "POST" });
+   128→      if (res.ok) {
+   129→        setIsFavorited((prev) => !prev);
+   130→        setFavoriteCount((prev) => isFavorited ? prev - 1 : prev + 1);
+   131→      }
+   132→    } catch (err) {
+   133→      console.error("Error with favorite:", err);
+   134→    }
+   135→  }, [photoId, isFavorited]);
+   136→
+   137→  const handleSave = useCallback(async () => {
+   138→    if (!photo) return;
+   139→    try {
+   140→      const res = await fetch(`/api/photos/${photoId}`, {
+   141→        method: "PUT",
+   142→        headers: { "Content-Type": "application/json" },
+   143→        body: JSON.stringify({ title: editTitle, description: editDescription, tags: editTags }),
+   144→      });
+   145→      if (res.ok) {
+   146→        const updated = await res.json();
+   147→        setPhoto(updated);
+   148→        setIsEditing(false);
+   149→      }
+   150→    } catch (err) {
+   151→      console.error("Error saving:", err);
+   152→    }
+   153→  }, [photoId, photo, editTitle, editDescription, editTags]);
+   154→
+   155→  const handleDelete = useCallback(async () => {
+   156→    if (!confirm(t("photo.deleteConfirm"))) return;
+   157→    try {
+   158→      const res = await fetch(`/api/photos/${photoId}`, { method: "DELETE" });
+   159→      if (res.ok) {
+   160→        router.push("/esplora");
+   161→      }
+   162→    } catch (err) {
+   163→      console.error("Error deleting:", err);
+   164→    }
+   165→  }, [photoId, router]);
+   166→
+   167→  const isOwner = session?.user && photo && (session.user as any).id === photo.userId;
+   168→
+   169→  if (loading) {
+   170→    return (
+   171→      <div className="min-h-screen bg-[#0d0d0d]">
+   172→        <Header />
+   173→        <div className="flex items-center justify-center h-[calc(100vh-56px)]">
+   174→          <div className="space-y-4">
+   175→            <Skeleton className="w-[600px] h-[400px] rounded-lg bg-white/5" />
+   176→            <Skeleton className="w-48 h-6 rounded bg-white/5" />
+   177→          </div>
+   178→        </div>
+   179→      </div>
+   180→    );
+   181→  }
+   182→
+   183→  if (error || !photo) {
+   184→    return (
+   185→      <div className="min-h-screen bg-[#0d0d0d]">
+   186→        <Header />
+   187→        <div className="flex flex-col items-center justify-center h-[calc(100vh-56px)] text-white/50">
+   188→          <Camera className="h-16 w-16 mb-4 opacity-30" />
+   189→          <p className="text-lg font-medium">{error || t("photo.notFound")}</p>
+   190→          <Link href="/esplora">
+   191→            <Button variant="outline" className="mt-4 border-white/20 text-white hover:bg-white/5">
+   192→              {t("photo.backToExplore")}
+   193→            </Button>
+   194→          </Link>
+   195→        </div>
+   196→      </div>
+   197→    );
+   198→  }
+   199→
+   200→  return (
+   201→    <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
+   202→      <Header />
+   203→      <main className="flex-1 flex flex-col lg:flex-row">
+   204→        {/* Left side - Photo area (70%) */}
+   205→        <div className="flex-1 lg:w-[70%] bg-[#000] flex items-center justify-center min-h-[50vh] lg:min-h-[calc(100vh-56px)] relative">
+   206→          <motion.img
+   207→            key={photoId}
+   208→            initial={{ opacity: 0 }}
+   209→            animate={{ opacity: 1 }}
+   210→            transition={{ duration: 0.4 }}
+   211→            src={photo.filepath}
+   212→            alt={photo.title}
+   213→            className={`max-w-full max-h-[calc(100vh-56px)] object-contain ${
+   214→              photo.shouldBlur && !revealed ? "blur-xl" : ""
+   215→            }`}
+   216→          />
+   217→          {/* Mature/restricted content overlay */}
+   218→          {photo.shouldBlur && !revealed && (
+   219→            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-10 p-6">
+   220→              {photo.safetyLevel === "restricted" ? (
+   221→                <ShieldAlert className="h-12 w-12 text-red-400/80" />
+   222→              ) : (
+   223→                <AlertTriangle className="h-12 w-12 text-amber-400/80" />
+   224→              )}
+   225→              <p className="text-white font-semibold text-lg text-center">
+   226→                {photo.safetyLevel === "restricted" ? t("photo.restrictedContent") : t("photo.matureContent")}
+   227→              </p>
+   228→              <p className="text-white/50 text-sm text-center max-w-md">
+   229→                {photo.safetyLevel === "restricted" ? t("photo.restrictedContentDesc") : t("photo.matureContentDesc")}
+   230→              </p>
+   231→              <Button
+   232→                size="default"
+   233→                variant="outline"
+   234→                className="mt-2 border-white/20 text-white hover:bg-white/10 gap-2"
+   235→                onClick={() => {
+   236→                  if (confirm(t("photo.confirmShowMature"))) {
+   237→                    setRevealed(true);
+   238→                  }
+   239→                }}
+   240→              >
+   241→                <Eye className="h-4 w-4" />
+   242→                {t("photo.showContent")}
+   243→              </Button>
+   244→            </div>
+   245→          )}
+   246→        </div>
+   247→
+   248→        {/* Right sidebar (30%) */}
+   249→        <div className="lg:w-[30%] bg-[#1c1c1c] border-l border-white/5 overflow-y-auto lg:max-h-[calc(100vh-56px)]">
+   250→          <div className="p-5 space-y-5 text-white">
+   251→            {/* Title & Description */}
+   252→            <div>
+   253→              {isEditing ? (
+   254→                <Input
+   255→                  value={editTitle}
+   256→                  onChange={(e) => setEditTitle(e.target.value)}
+   257→                  className="text-xl font-bold bg-white/10 border-white/20 text-white mb-2"
+   258→                />
+   259→              ) : (
+   260→                <h1 className="text-xl font-bold">{photo.title}</h1>
+   261→              )}
+   262→              {isEditing ? (
+   263→                <Textarea
+   264→                  value={editDescription}
+   265→                  onChange={(e) => setEditDescription(e.target.value)}
+   266→                  placeholder={t("photo.addDescription")}
+   267→                  rows={3}
+   268→                  className="bg-white/10 border-white/20 text-white text-sm resize-none"
+   269→                />
+   270→              ) : (
+   271→                photo.description && (
+   272→                  <p className="text-sm text-white/60 mt-2 leading-relaxed">{photo.description}</p>
+   273→                )
+   274→              )}
+   275→            </div>
+   276→
+   277→            <Separator className="bg-white/10" />
+   278→
+   279→            {/* User info */}
+   280→            {photo.user && (
+   281→              <div className="flex items-center gap-3">
+   282→                <Link href={`/persone/${photo.user.username}`}>
+   283→                  <Avatar className="h-10 w-10">
+   284→                    <AvatarImage src={photo.user.avatar || undefined} />
+   285→                    <AvatarFallback className="bg-[#0063dc] text-white">
+   286→                      {photo.user.name.charAt(0).toUpperCase()}
+   287→                    </AvatarFallback>
+   288→                  </Avatar>
+   289→                </Link>
+   290→                <div className="flex-1 min-w-0">
+   291→                  <Link href={`/persone/${photo.user.username}`} className="font-medium text-sm hover:underline">
+   292→                    {photo.user.name}
+   293→                  </Link>
+   294→                  <p className="text-xs text-white/40">@{photo.user.username}</p>
+   295→                </div>
+   296→                <FollowButton userId={photo.user.id} username={photo.user.username} />
+   297→              </div>
+   298→            )}
+   299→
+   300→            <Separator className="bg-white/10" />
+   301→
+   302→            {/* Stats */}
+   303→            <div className="flex items-center gap-5 text-sm">
+   304→              <span className="flex items-center gap-1.5 text-white/60">
+   305→                <Eye className="h-4 w-4" /> {photo.views}
+   306→              </span>
+   307→              <span className="flex items-center gap-1.5 text-white/60">
+   308→                <Heart className={`h-4 w-4 ${isFavorited ? "fill-[#ff0084] text-[#ff0084]" : ""}`} />
+   309→                {favoriteCount}
+   310→              </span>
+   311→              <span className="flex items-center gap-1.5 text-white/60">
+   312→                <MessageCircle className="h-4 w-4" /> {photo.commentCount || 0}
+   313→              </span>
+   314→            </div>
+   315→
+   316→            {/* Action buttons */}
+   317→            <div className="flex items-center gap-2 flex-wrap">
+   318→              <Button
+   319→                variant="outline"
+   320→                size="sm"
+   321→                onClick={handleToggleFavorite}
+   322→                className={`gap-1.5 border-white/10 ${
+   323→                  isFavorited
+   324→                    ? "bg-[#ff0084]/10 border-[#ff0084]/30 text-[#ff0084]"
+   325→                    : "text-white/70 hover:text-white hover:bg-white/5"
+   326→                }`}
+   327→              >
+   328→                <Heart className={`h-4 w-4 ${isFavorited ? "fill-[#ff0084]" : ""}`} />
+   329→                {t("photo.favorite")}
+   330→              </Button>
+   331→
+   332→              <Button
+   333→                variant="outline"
+   334→                size="sm"
+   335→                onClick={() => setAddToGalleryOpen(true)}
+   336→                className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+   337→              >
+   338→                <BookmarkPlus className="h-4 w-4" />
+   339→                {t("photo.gallery")}
+   340→              </Button>
+   341→
+   342→              <Button
+   343→                variant="outline"
+   344→                size="sm"
+   345→                className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+   346→                onClick={() => {
+   347→                  const shareUrl = `https://my-project-ten-psi-39.vercel.app/foto/${photoId}`;
+   348→                  if (navigator.share) {
+   349→                    navigator.share({ title: photo.title, url: shareUrl });
+   350→                  } else {
+   351→                    navigator.clipboard.writeText(shareUrl);
+   352→                  }
+   353→                }}
+   354→              >
+   355→                <Share2 className="h-4 w-4" />
+   356→                {t("photo.share")}
+   357→              </Button>
+   358→
+   359→              {/* Share on Flickr */}
+   360→              <Button
+   361→                variant="outline"
+   362→                size="sm"
+   363→                className="gap-1.5 border-white/10 text-[#ff0084]/70 hover:text-[#ff0084] hover:bg-[#ff0084]/5"
+   364→                onClick={() => {
+   365→                  const url = encodeURIComponent(`https://my-project-ten-psi-39.vercel.app/foto/${photoId}`);
+   366→                  const title = encodeURIComponent(photo.title || 'Check out this photo on Memoro!');
+   367→                  window.open(`https://www.flickr.com/share?url=${url}&title=${title}`, '_blank', 'width=600,height=400');
+   368→                }}
+   369→              >
+   370→                <ExternalLink className="h-4 w-4" />
+   371→                Flickr
+   372→              </Button>
+   373→
+   374→              <Button
+   375→                variant="outline"
+   376→                size="sm"
+   377→                asChild
+   378→                className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+   379→              >
+   380→                <a href={photo.filepath} download target="_blank" rel="noopener noreferrer">
+   381→                  <Download className="h-4 w-4" />
+   382→                  {t("photo.download")}
+   383→                </a>
+   384→              </Button>
+   385→
+   386→              <DropdownMenu>
+   387→                <DropdownMenuTrigger asChild>
+   388→                  <Button variant="outline" size="sm" className="border-white/10 text-white/70 hover:text-white hover:bg-white/5">
+   389→                    <MoreHorizontal className="h-4 w-4" />
+   390→                  </Button>
+   391→                </DropdownMenuTrigger>
+   392→                <DropdownMenuContent className="bg-[#2a2a2d] border-white/10">
+   393→                  {isOwner && (
+   394→                    <>
+   395→                      <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setIsEditing(true)}>
+   396→                        <Edit3 className="h-4 w-4 mr-2" /> {t("photo.edit")}
+   397→                      </DropdownMenuItem>
+   398→                      <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setAddToGroupOpen(true)}>
+   399→                        <Users className="h-4 w-4 mr-2" /> {t("photo.addToGroups")}
+   400→                      </DropdownMenuItem>
+   401→                      <DropdownMenuItem className="text-red-400 focus:text-red-300 focus:bg-white/5 cursor-pointer" onClick={handleDelete}>
+   402→                        <Trash2 className="h-4 w-4 mr-2" /> {t("photo.deletePhoto")}
+   403→                      </DropdownMenuItem>
+   404→                    </>
+   405→                  )}
+   406→                  {!isOwner && (
+   407→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer">
+   408→                      {t("photo.report")}
+   409→                    </DropdownMenuItem>
+   410→                  )}
+   411→                </DropdownMenuContent>
+   412→              </DropdownMenu>
+   413→            </div>
+   414→
+   415→            {/* Editing save/cancel */}
+   416→            {isEditing && (
+   417→              <div className="flex gap-2">
+   418→                <Button size="sm" onClick={handleSave} className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1.5">
+   419→                  <Save className="h-4 w-4" /> {t("common.save")}
+   420→                </Button>
+   421→                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} className="border-white/20 text-white/70">
+   422→                  {t("common.cancel")}
+   423→                </Button>
+   424→              </div>
+   425→            )}
+   426→
+   427→            <Separator className="bg-white/10" />
+   428→
+   429→            {/* Tags */}
+   430→            {(photo.tags || isEditing) && (
+   431→              <div className="space-y-2">
+   432→                <p className="text-xs font-medium text-white/40 uppercase tracking-wider">{t("photo.tag")}</p>
+   433→                {isEditing ? (
+   434→                  <Input
+   435→                    value={editTags}
+   436→                    onChange={(e) => setEditTags(e.target.value)}
+   437→                    placeholder={t("photo.tagPlaceholder")}
+   438→                    className="bg-white/5 border-white/10 text-white text-sm"
+   439→                  />
+   440→                ) : (
+   441→                  photo.tags && (
+   442→                    <div className="flex flex-wrap gap-1.5">
+   443→                      {photo.tags.split(",").map((tag: string) => (
+   444→                        <Link key={tag.trim()} href={`/cerca?q=${tag.trim()}`}>
+   445→                          <Badge variant="secondary" className="text-xs bg-white/10 text-white/60 hover:bg-white/15 border-0 cursor-pointer">
+   446→                            <Tag className="h-2.5 w-2.5 mr-1" />
+   447→                            {tag.trim()}
+   448→                          </Badge>
+   449→                        </Link>
+   450→                      ))}
+   451→                    </div>
+   452→                  )
+   453→                )}
+   454→              </div>
+   455→            )}
+   456→
+   457→            {/* Safety level */}
+   458→            {photo.safetyLevel && photo.safetyLevel !== "safe" && (
+   459→              <div className="flex items-center gap-2">
+   460→                <span className="text-xs text-white/40">{t("safety.level")}</span>
+   461→                <SafetyBadge level={photo.safetyLevel} />
+   462→              </div>
+   463→            )}
+   464→
+   465→            <Separator className="bg-white/10" />
+   466→
+   467→            {/* EXIF data - collapsible */}
+   468→            {photo.exif && (
+   469→              <div>
+   470→                <button
+   471→                  className="flex items-center justify-between w-full text-left"
+   472→                  onClick={() => setShowExif(!showExif)}
+   473→                >
+   474→                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider flex items-center gap-1.5">
+   475→                    <Camera className="h-3.5 w-3.5" /> {t("photo.exifData")}
+   476→                  </p>
+   477→                  {showExif ? (
+   478→                    <ChevronUp className="h-4 w-4 text-white/30" />
+   479→                  ) : (
+   480→                    <ChevronDown className="h-4 w-4 text-white/30" />
+   481→                  )}
+   482→                </button>
+   483→                <AnimatePresence>
+   484→                  {showExif && (
+   485→                    <motion.div
+   486→                      initial={{ height: 0, opacity: 0 }}
+   487→                      animate={{ height: "auto", opacity: 1 }}
+   488→                      exit={{ height: 0, opacity: 0 }}
+   489→                      className="overflow-hidden"
+   490→                    >
+   491→                      <div className="space-y-2.5 mt-3 text-sm">
+   492→                        {photo.exif.camera && (
+   493→                          <div className="flex justify-between">
+   494→                            <span className="text-white/40 flex items-center gap-1.5">
+   495→                              <Camera className="h-3 w-3" /> {t("photo.camera")}
+   496→                            </span>
+   497→                            <span className="text-white/70">{photo.exif.camera}</span>
+   498→                          </div>
+   499→                        )}
+   500→                        {photo.exif.lens && (
+   501→                          <div className="flex justify-between">
+   502→                            <span className="text-white/40 flex items-center gap-1.5">
+   503→                              <Aperture className="h-3 w-3" /> {t("photo.lens")}
+   504→                            </span>
+   505→                            <span className="text-white/70">{photo.exif.lens}</span>
+   506→                          </div>
+   507→                        )}
+   508→                        {photo.exif.focalLength && (
+   509→                          <div className="flex justify-between">
+   510→                            <span className="text-white/40">{t("photo.focalLength")}</span>
+   511→                            <span className="text-white/70">{photo.exif.focalLength}</span>
+   512→                          </div>
+   513→                        )}
+   514→                        {photo.exif.aperture && (
+   515→                          <div className="flex justify-between">
+   516→                            <span className="text-white/40 flex items-center gap-1.5">
+   517→                              <Gauge className="h-3 w-3" /> {t("photo.aperture")}
+   518→                            </span>
+   519→                            <span className="text-white/70">f/{photo.exif.aperture}</span>
+   520→                          </div>
+   521→                        )}
+   522→                        {photo.exif.shutterSpeed && (
+   523→                          <div className="flex justify-between">
+   524→                            <span className="text-white/40">{t("photo.shutterSpeed")}</span>
+   525→                            <span className="text-white/70">{photo.exif.shutterSpeed}</span>
+   526→                          </div>
+   527→                        )}
+   528→                        {photo.exif.iso && (
+   529→                          <div className="flex justify-between">
+   530→                            <span className="text-white/40 flex items-center gap-1.5">
+   531→                              <CircleDot className="h-3 w-3" /> ISO
+   532→                            </span>
+   533→                            <span className="text-white/70">{photo.exif.iso}</span>
+   534→                          </div>
+   535→                        )}
+   536→                      </div>
+   537→                    </motion.div>
+   538→                  )}
+   539→                </AnimatePresence>
+   540→              </div>
+   541→            )}
+   542→
+   543→            {/* Photo details */}
+   544→            <div className="space-y-2.5 text-sm">
+   545→              <p className="text-xs font-medium text-white/40 uppercase tracking-wider">{t("photo.details")}</p>
+   546→              {photo.width && photo.height && (
+   547→                <div className="flex justify-between">
+   548→                  <span className="text-white/40">{t("photo.dimensions")}</span>
+   549→                  <span className="text-white/70">{photo.width} × {photo.height}</span>
+   550→                </div>
+   551→              )}
+   552→              <div className="flex justify-between">
+   553→                <span className="text-white/40 flex items-center gap-1.5">
+   554→                  <Calendar className="h-3 w-3" /> {t("photo.uploadedOn")}
+   555→                </span>
+   556→                <span className="text-white/70">
+   557→                  {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: dateLocale })}
+   558→                </span>
+   559→              </div>
+   560→              {photo.album && (
+   561→                <div className="flex justify-between items-center">
+   562→                  <span className="text-white/40 flex items-center gap-1.5">
+   563→                    <Folder className="h-3 w-3" /> {t("photo.album")}
+   564→                  </span>
+   565→                  <Link href={`/album/${photo.album.id}`}>
+   566→                    <Badge variant="secondary" className="text-xs bg-white/10 text-white/60 border-0 hover:bg-white/15 cursor-pointer">
+   567→                      {photo.album.name}
+   568→                    </Badge>
+   569→                  </Link>
+   570→                </div>
+   571→              )}
+   572→              <div className="flex justify-between">
+   573→                <span className="text-white/40">{t("photo.fileSize")}</span>
+   574→                <span className="text-white/70">
+   575→                  {photo.size > 1048576
+   576→                    ? `${(photo.size / 1048576).toFixed(1)} MB`
+   577→                    : `${(photo.size / 1024).toFixed(0)} KB`}
+   578→                </span>
+   579→              </div>
+   580→            </div>
+   581→
+   582→            <Separator className="bg-white/10" />
+   583→
+   584→            {/* Comments section */}
+   585→            <CommentSection
+   586→              photoId={photoId}
+   587→              comments={photo.comments || []}
+   588→            />
+   589→          </div>
+   590→        </div>
+   591→      </main>
+   592→
+   593→      {/* Add to Gallery Dialog */}
+   594→      <Dialog open={addToGalleryOpen} onOpenChange={setAddToGalleryOpen}>
+   595→        <DialogContent className="bg-[#2a2a2d] border-white/10">
+   596→          <DialogHeader>
+   597→            <DialogTitle className="text-white">{t("photo.addToGallery")}</DialogTitle>
+   598→          </DialogHeader>
+   599→          <div className="space-y-3 max-h-64 overflow-y-auto">
+   600→            {galleries.length === 0 ? (
+   601→              <p className="text-sm text-white/40 text-center py-4">
+   602→                {t("photo.noGalleries")}
+   603→                <Link href="/gallerie" className="text-[#0063dc] hover:underline ml-1">{t("photo.createGallery")}</Link>
+   604→              </p>
+   605→            ) : (
+   606→              galleries.map((g) => (
+   607→                <button
+   608→                  key={g.id}
+   609→                  className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-left"
+   610→                  onClick={async () => {
+   611→                    try {
+   612→                      await fetch(`/api/galleries/${g.id}/items`, {
+   613→                        method: "POST",
+   614→                        headers: { "Content-Type": "application/json" },
+   615→                        body: JSON.stringify({ photoId }),
+   616→                      });
+   617→                      setAddToGalleryOpen(false);
+   618→                    } catch {}
+   619→                  }}
+   620→                >
+   621→                  <ImageIcon className="h-8 w-8 text-white/20" />
+   622→                  <span className="text-sm text-white/80">{g.name}</span>
+   623→                </button>
+   624→              ))
+   625→            )}
+   626→          </div>
+   627→        </DialogContent>
+   628→      </Dialog>
+   629→
+   630→      {/* Add to Group Dialog */}
+   631→      <Dialog open={addToGroupOpen} onOpenChange={setAddToGroupOpen}>
+   632→        <DialogContent className="bg-[#2a2a2d] border-white/10">
+   633→          <DialogHeader>
+   634→            <DialogTitle className="text-white">{t("photo.addToGroup")}</DialogTitle>
+   635→          </DialogHeader>
+   636→          <div className="space-y-3 max-h-64 overflow-y-auto">
+   637→            {groups.length === 0 ? (
+   638→              <p className="text-sm text-white/40 text-center py-4">
+   639→                {t("photo.noGroups")}
+   640→                <Link href="/gruppi" className="text-[#0063dc] hover:underline ml-1">{t("photo.exploreGroups")}</Link>
+   641→              </p>
+   642→            ) : (
+   643→              groups.map((g) => (
+   644→                <button
+   645→                  key={g.id}
+   646→                  className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-left"
+   647→                  onClick={async () => {
+   648→                    try {
+   649→                      await fetch(`/api/groups/${g.id}/photos`, {
+   650→                        method: "POST",
+   651→                        headers: { "Content-Type": "application/json" },
+   652→                        body: JSON.stringify({ photoId }),
+   653→                      });
+   654→                      setAddToGroupOpen(false);
+   655→                    } catch {}
+   656→                  }}
+   657→                >
+   658→                  <Users className="h-8 w-8 text-white/20" />
+   659→                  <div>
+   660→                    <span className="text-sm text-white/80 block">{g.name}</span>
+   661→                    <span className="text-xs text-white/30">{g.memberCount} {t("common.members")}</span>
+   662→                  </div>
+   663→                </button>
+   664→              ))
+   665→            )}
+   666→          </div>
+   667→        </DialogContent>
+   668→      </Dialog>
+   669→    </div>
+   670→  );
+   671→}
+   672→
