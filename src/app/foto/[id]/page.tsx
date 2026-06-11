@@ -64,7 +64,6 @@ import { format } from "date-fns";
 import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
-import { PromoBanner } from "@/components/ad-banner";
 
 const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
 
@@ -242,9 +241,6 @@ export default function FotoDetailPage() {
             </div>
 
             <Separator className="bg-white/10" />
-
-            {/* Promo Banner — In-content */}
-            <PromoBanner variant="banner" />
 
             {/* User info */}
             {photo.user && (

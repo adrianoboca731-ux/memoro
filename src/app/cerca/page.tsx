@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
-import { PromoBanner } from "@/components/ad-banner";
+
 
 export default function CercaPage() {
   return (
@@ -211,9 +211,6 @@ function CercaContent() {
           )}
         </div>
       </main>
-
-      {/* Promo Banner — Footer Leaderboard */}
-      <PromoBanner variant="leaderboard" />
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
