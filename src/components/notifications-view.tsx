@@ -15,8 +15,10 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import { useI18n } from "@/lib/i18n";
+
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
 
 const getNotifIcon = (type: string) => {
   switch (type) {
@@ -44,7 +46,8 @@ export function NotificationsView() {
     markNotificationRead,
     markAllNotificationsRead,
   } = useAppStore();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const dateLocale = dateLocales[locale] || it;
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -139,7 +142,7 @@ export function NotificationsView() {
                         {notif.message}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-1">
-                        {format(new Date(notif.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}
+                        {format(new Date(notif.createdAt), "d MMMM yyyy '" + t("comments.at") + "' HH:mm", { locale: dateLocale })}
                       </p>
                     </div>
                     {!notif.isRead && (

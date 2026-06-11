@@ -1,0 +1,775 @@
+     1→     1→"use client";
+     2→     2→
+     3→     3→import { useState, useEffect, useCallback } from "react";
+     4→     4→import { useSession } from "next-auth/react";
+     5→     5→import { useTheme } from "next-themes";
+     6→     6→import { Header } from "@/components/header";
+     7→     7→import { EmptyState } from "@/components/empty-state";
+     8→     8→import {
+     9→     9→  Settings,
+    10→    10→  User,
+    11→    11→  Shield,
+    12→    12→  Eye,
+    13→    13→  Bell,
+    14→    14→  Palette,
+    15→    15→  Camera,
+    16→    16→  Key,
+    17→    17→  Trash2,
+    18→    18→  Save,
+    19→    19→  AlertTriangle,
+    20→    20→  Globe,
+    21→    21→  Lock,
+    22→    22→  MessageSquare,
+    23→    23→  Download,
+    24→    24→  MessageCircle,
+    25→    25→  Heart,
+    26→    26→  Users,
+    27→    27→  Mail,
+    28→    28→} from "lucide-react";
+    29→    29→import { Button } from "@/components/ui/button";
+    30→    30→import { Input } from "@/components/ui/input";
+    31→    31→import { Textarea } from "@/components/ui/textarea";
+    32→    32→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+    33→    33→import { Switch } from "@/components/ui/switch";
+    34→    34→import { Label } from "@/components/ui/label";
+    35→    35→import { Separator } from "@/components/ui/separator";
+    36→    36→import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+    37→    37→import {
+    38→    38→  Select,
+    39→    39→  SelectContent,
+    40→    40→  SelectItem,
+    41→    41→  SelectTrigger,
+    42→    42→  SelectValue,
+    43→    43→} from "@/components/ui/select";
+    44→    44→import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+    45→    45→import { Badge } from "@/components/ui/badge";
+    46→    46→import { Skeleton } from "@/components/ui/skeleton";
+    47→    47→import {
+    48→    48→  AlertDialog,
+    49→    49→  AlertDialogAction,
+    50→    50→  AlertDialogCancel,
+    51→    51→  AlertDialogContent,
+    52→    52→  AlertDialogDescription,
+    53→    53→  AlertDialogFooter,
+    54→    54→  AlertDialogHeader,
+    55→    55→  AlertDialogTitle,
+    56→    56→  AlertDialogTrigger,
+    57→    57→} from "@/components/ui/alert-dialog";
+    58→    58→import { motion } from "framer-motion";
+    59→    59→import { toast } from "sonner";
+    60→    60→import { useI18n } from "@/lib/i18n";
+    61→    61→
+    62→    62→type SettingsSection = "profile" | "privacy" | "content-filters" | "notifications" | "appearance" | "exif" | "account";
+    63→    63→
+    64→    64→export default function ImpostazioniPage() {
+    65→    65→  const { t } = useI18n();
+    66→    66→  const { data: session } = useSession();
+    67→    67→  const { theme, setTheme } = useTheme();
+    68→    68→  const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
+    69→    69→  const [settings, setSettings] = useState<any>(null);
+    70→    70→  const [loading, setLoading] = useState(true);
+    71→    71→  const [saving, setSaving] = useState(false);
+    72→    72→  const [profileData, setProfileData] = useState({
+    73→    73→    name: "",
+    74→    74→    bio: "",
+    75→    75→    location: "",
+    76→    76→    website: "",
+    77→    77→  });
+    78→    78→  const [passwordData, setPasswordData] = useState({
+    79→    79→    current: "",
+    80→    80→    new: "",
+    81→    81→    confirm: "",
+    82→    82→  });
+    83→    83→
+    84→    84→  const sidebarItems: { key: SettingsSection; label: string; icon: typeof Settings }[] = [
+    85→    85→    { key: "profile", label: t("settings.profile"), icon: User },
+    86→    86→    { key: "privacy", label: t("settings.privacy"), icon: Shield },
+    87→    87→    { key: "content-filters", label: t("settings.contentFilters"), icon: Eye },
+    88→    88→    { key: "notifications", label: t("settings.notifications"), icon: Bell },
+    89→    89→    { key: "appearance", label: t("settings.appearance"), icon: Palette },
+    90→    90→    { key: "exif", label: t("settings.exif"), icon: Camera },
+    91→    91→    { key: "account", label: t("settings.account"), icon: Key },
+    92→    92→  ];
+    93→    93→
+    94→    94→  const fetchSettings = useCallback(async () => {
+    95→    95→    setLoading(true);
+    96→    96→    try {
+    97→    97→      const res = await fetch("/api/settings");
+    98→    98→      if (res.ok) {
+    99→    99→        const data = await res.json();
+   100→   100→        setSettings(data);
+   101→   101→      }
+   102→   102→      // Also fetch profile data
+   103→   103→      if (session?.user) {
+   104→   104→        const profileRes = await fetch(`/api/users/${(session.user as any).username}`);
+   105→   105→        if (profileRes.ok) {
+   106→   106→          const profile = await profileRes.json();
+   107→   107→          setProfileData({
+   108→   108→            name: profile.name || "",
+   109→   109→            bio: profile.bio || "",
+   110→   110→            location: profile.location || "",
+   111→   111→            website: profile.website || "",
+   112→   112→          });
+   113→   113→        }
+   114→   114→      }
+   115→   115→    } catch (err) {
+   116→   116→      console.error("Errore:", err);
+   117→   117→    } finally {
+   118→   118→      setLoading(false);
+   119→   119→    }
+   120→   120→  }, [session]);
+   121→   121→
+   122→   122→  useEffect(() => {
+   123→   123→    if (session?.user) fetchSettings();
+   124→   124→  }, [session, fetchSettings]);
+   125→   125→
+   126→   126→  const handleSaveSettings = useCallback(async (updates: Record<string, unknown>) => {
+   127→   127→    setSaving(true);
+   128→   128→    try {
+   129→   129→      const res = await fetch("/api/settings", {
+   130→   130→        method: "PUT",
+   131→   131→        headers: { "Content-Type": "application/json" },
+   132→   132→        body: JSON.stringify(updates),
+   133→   133→      });
+   134→   134→      if (res.ok) {
+   135→   135→        const data = await res.json();
+   136→   136→        setSettings(data);
+   137→   137→        toast.success(t("settings.settingsSaved"));
+   138→   138→      } else {
+   139→   139→        toast.error(t("settings.saveError"));
+   140→   140→      }
+   141→   141→    } catch (err) {
+   142→   142→      toast.error(t("settings.saveError"));
+   143→   143→    } finally {
+   144→   144→      setSaving(false);
+   145→   145→    }
+   146→   146→  }, [t]);
+   147→   147→
+   148→   148→  const handleSaveProfile = useCallback(async () => {
+   149→   149→    setSaving(true);
+   150→   150→    try {
+   151→   151→      const res = await fetch(`/api/users/${(session?.user as any)?.username}`, {
+   152→   152→        method: "PUT",
+   153→   153→        headers: { "Content-Type": "application/json" },
+   154→   154→        body: JSON.stringify(profileData),
+   155→   155→      });
+   156→   156→      if (res.ok) {
+   157→   157→        toast.success(t("settings.profileUpdated"));
+   158→   158→      } else {
+   159→   159→        toast.error(t("settings.profileUpdateError"));
+   160→   160→      }
+   161→   161→    } catch {
+   162→   162→      toast.error(t("settings.profileUpdateError"));
+   163→   163→    } finally {
+   164→   164→      setSaving(false);
+   165→   165→    }
+   166→   166→  }, [session, profileData, t]);
+   167→   167→
+   168→   168→  const handleUpdateSetting = useCallback((key: string, value: unknown) => {
+   169→   169→    setSettings((prev: any) => {
+   170→   170→      const updated = { ...prev, [key]: value };
+   171→   171→      handleSaveSettings({ [key]: value });
+   172→   172→      return updated;
+   173→   173→    });
+   174→   174→  }, [handleSaveSettings]);
+   175→   175→
+   176→   176→  if (!session?.user) {
+   177→   177→    return (
+   178→   178→      <div className="min-h-screen bg-[#0d0d0d]">
+   179→   179→        <Header />
+   180→   180→        <EmptyState icon={Settings} title={t("settings.loginToManage")} description={t("settings.loginToManageDesc")} />
+   181→   181→      </div>
+   182→   182→    );
+   183→   183→  }
+   184→   184→
+   185→   185→  if (loading || !settings) {
+   186→   186→    return (
+   187→   187→      <div className="min-h-screen bg-[#0d0d0d]">
+   188→   188→        <Header />
+   189→   189→        <div className="max-w-5xl mx-auto px-4 py-6">
+   190→   190→          <div className="flex gap-6">
+   191→   191→            <div className="w-56 space-y-2">
+   192→   192→              {Array.from({ length: 7 }).map((_, i) => (
+   193→   193→                <Skeleton key={i} className="h-8 w-full bg-white/5" />
+   194→   194→              ))}
+   195→   195→            </div>
+   196→   196→            <div className="flex-1 space-y-4">
+   197→   197→              {Array.from({ length: 5 }).map((_, i) => (
+   198→   198→                <Skeleton key={i} className="h-16 w-full bg-white/5" />
+   199→   199→              ))}
+   200→   200→            </div>
+   201→   201→          </div>
+   202→   202→        </div>
+   203→   203→      </div>
+   204→   204→    );
+   205→   205→  }
+   206→   206→
+   207→   207→  return (
+   208→   208→    <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
+   209→   209→      <Header />
+   210→   210→      <main className="flex-1">
+   211→   211→        <div className="max-w-5xl mx-auto px-4 py-6">
+   212→   212→          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+   213→   213→            <h1 className="text-3xl font-bold text-white flex items-center gap-3 mb-1">
+   214→   214→              <Settings className="h-8 w-8 text-white/30" />
+   215→   215→              {t("settings.title")}
+   216→   216→            </h1>
+   217→   217→            <p className="text-white/40 mb-6">{t("settings.subtitle")}</p>
+   218→   218→          </motion.div>
+   219→   219→
+   220→   220→          <div className="flex flex-col lg:flex-row gap-6">
+   221→   221→            {/* Sidebar navigation */}
+   222→   222→            <nav className="lg:w-56 shrink-0 space-y-1">
+   223→   223→              {sidebarItems.map((item) => (
+   224→   224→                <button
+   225→   225→                  key={item.key}
+   226→   226→                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors text-left ${
+   227→   227→                    activeSection === item.key
+   228→   228→                      ? "bg-white/10 text-white"
+   229→   229→                      : "text-white/50 hover:text-white/70 hover:bg-white/5"
+   230→   230→                  }`}
+   231→   231→                  onClick={() => setActiveSection(item.key)}
+   232→   232→                >
+   233→   233→                  <item.icon className="h-4 w-4 shrink-0" />
+   234→   234→                  {item.label}
+   235→   235→                </button>
+   236→   236→              ))}
+   237→   237→            </nav>
+   238→   238→
+   239→   239→            {/* Content */}
+   240→   240→            <div className="flex-1 min-w-0 space-y-6">
+   241→   241→              {/* Profile section */}
+   242→   242→              {activeSection === "profile" && (
+   243→   243→                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+   244→   244→                  <Card className="bg-white/5 border-white/10">
+   245→   245→                    <CardHeader>
+   246→   246→                      <CardTitle className="text-white text-lg">{t("settings.profileTitle")}</CardTitle>
+   247→   247→                      <CardDescription className="text-white/40">{t("settings.profileDesc")}</CardDescription>
+   248→   248→                    </CardHeader>
+   249→   249→                    <CardContent className="space-y-4">
+   250→   250→                      <div className="flex items-center gap-4">
+   251→   251→                        <Avatar className="h-20 w-20">
+   252→   252→                          <AvatarImage src={(session.user as any).image || undefined} />
+   253→   253→                          <AvatarFallback className="bg-[#0063dc] text-white text-2xl">
+   254→   254→                            {session.user.name?.charAt(0)?.toUpperCase() || "U"}
+   255→   255→                          </AvatarFallback>
+   256→   256→                        </Avatar>
+   257→   257→                        <div>
+   258→   258→                          <Button variant="outline" size="sm" className="border-white/10 text-white/70 hover:bg-white/5">
+   259→   259→                            {t("settings.changeAvatar")}
+   260→   260→                          </Button>
+   261→   261→                        </div>
+   262→   262→                      </div>
+   263→   263→                      <div className="space-y-2">
+   264→   264→                        <Label className="text-white/60 text-sm">{t("settings.name")}</Label>
+   265→   265→                        <Input
+   266→   266→                          value={profileData.name}
+   267→   267→                          onChange={(e) => setProfileData((p) => ({ ...p, name: e.target.value }))}
+   268→   268→                          className="bg-white/5 border-white/10 text-white"
+   269→   269→                        />
+   270→   270→                      </div>
+   271→   271→                      <div className="space-y-2">
+   272→   272→                        <Label className="text-white/60 text-sm">{t("settings.bio")}</Label>
+   273→   273→                        <Textarea
+   274→   274→                          value={profileData.bio}
+   275→   275→                          onChange={(e) => setProfileData((p) => ({ ...p, bio: e.target.value }))}
+   276→   276→                          placeholder={t("settings.bioPlaceholder")}
+   277→   277→                          rows={3}
+   278→   278→                          className="bg-white/5 border-white/10 text-white resize-none"
+   279→   279→                        />
+   280→   280→                      </div>
+   281→   281→                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   282→   282→                        <div className="space-y-2">
+   283→   283→                          <Label className="text-white/60 text-sm">{t("settings.location")}</Label>
+   284→   284→                          <Input
+   285→   285→                            value={profileData.location}
+   286→   286→                            onChange={(e) => setProfileData((p) => ({ ...p, location: e.target.value }))}
+   287→   287→                            placeholder={t("settings.locationPlaceholder")}
+   288→   288→                            className="bg-white/5 border-white/10 text-white"
+   289→   289→                          />
+   290→   290→                        </div>
+   291→   291→                        <div className="space-y-2">
+   292→   292→                          <Label className="text-white/60 text-sm">{t("settings.website")}</Label>
+   293→   293→                          <Input
+   294→   294→                            value={profileData.website}
+   295→   295→                            onChange={(e) => setProfileData((p) => ({ ...p, website: e.target.value }))}
+   296→   296→                            placeholder="https://..."
+   297→   297→                            className="bg-white/5 border-white/10 text-white"
+   298→   298→                          />
+   299→   299→                        </div>
+   300→   300→                      </div>
+   301→   301→                      <Button onClick={handleSaveProfile} disabled={saving} className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1.5">
+   302→   302→                        <Save className="h-4 w-4" /> {saving ? t("common.saving") : t("settings.saveProfile")}
+   303→   303→                      </Button>
+   304→   304→                    </CardContent>
+   305→   305→                  </Card>
+   306→   306→                </motion.div>
+   307→   307→              )}
+   308→   308→
+   309→   309→              {/* Privacy section */}
+   310→   310→              {activeSection === "privacy" && (
+   311→   311→                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+   312→   312→                  <Card className="bg-white/5 border-white/10">
+   313→   313→                    <CardHeader>
+   314→   314→                      <CardTitle className="text-white text-lg">{t("settings.privacyTitle")}</CardTitle>
+   315→   315→                      <CardDescription className="text-white/40">{t("settings.privacyDesc")}</CardDescription>
+   316→   316→                    </CardHeader>
+   317→   317→                    <CardContent className="space-y-6">
+   318→   318→                      <div className="space-y-3">
+   319→   319→                        <Label className="text-white/60 text-sm">{t("settings.profileVisibility")}</Label>
+   320→   320→                        <Select
+   321→   321→                          value={settings.profileVisibility || "public"}
+   322→   322→                          onValueChange={(v) => handleUpdateSetting("profileVisibility", v)}
+   323→   323→                        >
+   324→   324→                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+   325→   325→                            <SelectValue />
+   326→   326→                          </SelectTrigger>
+   327→   327→                          <SelectContent className="bg-[#2a2a2d] border-white/10">
+   328→   328→                            <SelectItem value="public"><span className="flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> {t("settings.public")}</span></SelectItem>
+   329→   329→                            <SelectItem value="friends"><span className="flex items-center gap-2"><Users className="h-3.5 w-3.5" /> {t("settings.contactsOnly")}</span></SelectItem>
+   330→   330→                            <SelectItem value="private"><span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5" /> {t("settings.private")}</span></SelectItem>
+   331→   331→                          </SelectContent>
+   332→   332→                        </Select>
+   333→   333→                      </div>
+   334→   334→
+   335→   335→                      <div className="space-y-3">
+   336→   336→                        <Label className="text-white/60 text-sm">{t("settings.whoCanMessage")}</Label>
+   337→   337→                        <Select
+   338→   338→                          value={settings.allowMessages || "everyone"}
+   339→   339→                          onValueChange={(v) => handleUpdateSetting("allowMessages", v)}
+   340→   340→                        >
+   341→   341→                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+   342→   342→                            <SelectValue />
+   343→   343→                          </SelectTrigger>
+   344→   344→                          <SelectContent className="bg-[#2a2a2d] border-white/10">
+   345→   345→                            <SelectItem value="everyone">{t("settings.everyone")}</SelectItem>
+   346→   346→                            <SelectItem value="contacts">{t("settings.contactsOnly")}</SelectItem>
+   347→   347→                            <SelectItem value="nobody">{t("settings.nobody")}</SelectItem>
+   348→   348→                          </SelectContent>
+   349→   349→                        </Select>
+   350→   350→                      </div>
+   351→   351→
+   352→   352→                      <Separator className="bg-white/10" />
+   353→   353→
+   354→   354→                      <div className="flex items-center justify-between">
+   355→   355→                        <div>
+   356→   356→                          <Label className="text-white/70 text-sm">{t("settings.allowComments")}</Label>
+   357→   357→                          <p className="text-xs text-white/30 mt-0.5">{t("settings.allowCommentsDesc")}</p>
+   358→   358→                        </div>
+   359→   359→                        <Switch
+   360→   360→                          checked={settings.allowComments !== false}
+   361→   361→                          onCheckedChange={(v) => handleUpdateSetting("allowComments", v)}
+   362→   362→                        />
+   363→   363→                      </div>
+   364→   364→
+   365→   365→                      <div className="flex items-center justify-between">
+   366→   366→                        <div>
+   367→   367→                          <Label className="text-white/70 text-sm">{t("settings.allowDownloads")}</Label>
+   368→   368→                          <p className="text-xs text-white/30 mt-0.5">{t("settings.allowDownloadsDesc")}</p>
+   369→   369→                        </div>
+   370→   370→                        <Switch
+   371→   371→                          checked={settings.allowDownloads !== false}
+   372→   372→                          onCheckedChange={(v) => handleUpdateSetting("allowDownloads", v)}
+   373→   373→                        />
+   374→   374→                      </div>
+   375→   375→
+   376→   376→                      <div className="flex items-center justify-between">
+   377→   377→                        <div>
+   378→   378→                          <Label className="text-white/70 text-sm">{t("settings.showCameraRoll")}</Label>
+   379→   379→                          <p className="text-xs text-white/30 mt-0.5">{t("settings.showCameraRollDesc")}</p>
+   380→   380→                        </div>
+   381→   381→                        <Switch
+   382→   382→                          checked={settings.showCameraRoll === true}
+   383→   383→                          onCheckedChange={(v) => handleUpdateSetting("showCameraRoll", v)}
+   384→   384→                        />
+   385→   385→                      </div>
+   386→   386→                    </CardContent>
+   387→   387→                  </Card>
+   388→   388→                </motion.div>
+   389→   389→              )}
+   390→   390→
+   391→   391→              {/* Content Filters section - CRITICAL */}
+   392→   392→              {activeSection === "content-filters" && (
+   393→   393→                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+   394→   394→                  <Card className="bg-white/5 border-white/10">
+   395→   395→                    <CardHeader>
+   396→   396→                      <CardTitle className="text-white text-lg flex items-center gap-2">
+   397→   397→                        <Eye className="h-5 w-5" /> {t("settings.contentFiltersTitle")}
+   398→   398→                      </CardTitle>
+   399→   399→                      <CardDescription className="text-white/40">{t("settings.contentFiltersDesc")}</CardDescription>
+   400→   400→                    </CardHeader>
+   401→   401→                    <CardContent className="space-y-6">
+   402→   402→                      {/* SafeSearch - Three options like Flickr */}
+   403→   403→                      <div className="space-y-3">
+   404→   404→                        <Label className="text-white/70 text-sm font-medium">{t("settings.safeSearch")}</Label>
+   405→   405→                        <RadioGroup
+   406→   406→                          value={settings.safeSearch || "moderate"}
+   407→   407→                          onValueChange={(v) => handleUpdateSetting("safeSearch", v)}
+   408→   408→                          className="space-y-3"
+   409→   409→                        >
+   410→   410→                          <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+   411→   411→                            <RadioGroupItem value="strict" id="strict" className="mt-0.5 border-white/20" />
+   412→   412→                            <div className="flex-1">
+   413→   413→                              <Label htmlFor="strict" className="text-white/80 text-sm font-medium cursor-pointer">{t("settings.strict")}</Label>
+   414→   414→                              <p className="text-xs text-white/30 mt-0.5">{t("settings.strictDesc")}</p>
+   415→   415→                            </div>
+   416→   416→                            <Badge className="bg-green-500/20 text-green-400 border-0 text-[10px]">{t("safety.safe")}</Badge>
+   417→   417→                          </div>
+   418→   418→                          <div className="flex items-start gap-3 p-3 rounded-lg bg-[#0063dc]/5 border border-[#0063dc]/20">
+   419→   419→                            <RadioGroupItem value="moderate" id="moderate" className="mt-0.5 border-white/20" />
+   420→   420→                            <div className="flex-1">
+   421→   421→                              <Label htmlFor="moderate" className="text-white/80 text-sm font-medium cursor-pointer">{t("settings.moderate")}</Label>
+   422→   422→                              <p className="text-xs text-white/30 mt-0.5">{t("settings.moderateDesc")} <span className="text-[#0063dc]">{t("settings.default")}</span></p>
+   423→   423→                            </div>
+   424→   424→                            <Badge className="bg-yellow-500/20 text-yellow-400 border-0 text-[10px]">{t("safety.moderate")}</Badge>
+   425→   425→                          </div>
+   426→   426→                          <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+   427→   427→                            <RadioGroupItem value="off" id="off" className="mt-0.5 border-white/20" />
+   428→   428→                            <div className="flex-1">
+   429→   429→                              <Label htmlFor="off" className="text-white/80 text-sm font-medium cursor-pointer">{t("settings.off")}</Label>
+   430→   430→                              <p className="text-xs text-white/30 mt-0.5">{t("settings.offDesc")}</p>
+   431→   431→                            </div>
+   432→   432→                            <Badge className="bg-red-500/20 text-red-400 border-0 text-[10px]">{t("safety.restricted")}</Badge>
+   433→   433→                          </div>
+   434→   434→                        </RadioGroup>
+   435→   435→                      </div>
+   436→   436→
+   437→   437→                      <Separator className="bg-white/10" />
+   438→   438→
+   439→   439→                      {/* Mature content toggles */}
+   440→   440→                      <div className="space-y-4">
+   441→   441→                        <div className="flex items-center justify-between">
+   442→   442→                          <div>
+   443→   443→                            <Label className="text-white/70 text-sm">{t("settings.showAdultContent")}</Label>
+   444→   444→                            <p className="text-xs text-white/30 mt-0.5">{t("settings.showAdultContentDesc")}</p>
+   445→   445→                          </div>
+   446→   446→                          <Switch
+   447→   447→                            checked={settings.showMatureContent === true}
+   448→   448→                            onCheckedChange={(v) => handleUpdateSetting("showMatureContent", v)}
+   449→   449→                          />
+   450→   450→                        </div>
+   451→   451→
+   452→   452→                        <div className="flex items-center justify-between">
+   453→   453→                          <div>
+   454→   454→                            <Label className="text-white/70 text-sm">{t("settings.showRestrictedContent")}</Label>
+   455→   455→                            <p className="text-xs text-white/30 mt-0.5">{t("settings.showRestrictedContentDesc")}</p>
+   456→   456→                          </div>
+   457→   457→                          <Switch
+   458→   458→                            checked={settings.showRestrictedContent === true}
+   459→   459→                            onCheckedChange={(v) => handleUpdateSetting("showRestrictedContent", v)}
+   460→   460→                          />
+   461→   461→                        </div>
+   462→   462→
+   463→   463→                        <div className="flex items-center justify-between">
+   464→   464→                          <div>
+   465→   465→                            <Label className="text-white/70 text-sm">{t("settings.allowMatureUploads")}</Label>
+   466→   466→                            <p className="text-xs text-white/30 mt-0.5">{t("settings.allowMatureUploadsDesc")}</p>
+   467→   467→                          </div>
+   468→   468→                          <Switch
+   469→   469→                            checked={settings.allowMatureUploads === true}
+   470→   470→                            onCheckedChange={(v) => handleUpdateSetting("allowMatureUploads", v)}
+   471→   471→                          />
+   472→   472→                        </div>
+   473→   473→                      </div>
+   474→   474→
+   475→   475→                      <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3 flex items-start gap-2">
+   476→   476→                        <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
+   477→   477→                        <p className="text-xs text-yellow-500/70">
+   478→   478→                          {t("settings.adultContentWarning")}
+   479→   479→                        </p>
+   480→   480→                      </div>
+   481→   481→                    </CardContent>
+   482→   482→                  </Card>
+   483→   483→                </motion.div>
+   484→   484→              )}
+   485→   485→
+   486→   486→              {/* Notifications section */}
+   487→   487→              {activeSection === "notifications" && (
+   488→   488→                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+   489→   489→                  <Card className="bg-white/5 border-white/10">
+   490→   490→                    <CardHeader>
+   491→   491→                      <CardTitle className="text-white text-lg">{t("settings.notificationsTitle")}</CardTitle>
+   492→   492→                      <CardDescription className="text-white/40">{t("settings.notificationsDesc")}</CardDescription>
+   493→   493→                    </CardHeader>
+   494→   494→                    <CardContent className="space-y-4">
+   495→   495→                      <div className="flex items-center justify-between">
+   496→   496→                        <div className="flex items-center gap-2">
+   497→   497→                          <Mail className="h-4 w-4 text-white/30" />
+   498→   498→                          <div>
+   499→   499→                            <Label className="text-white/70 text-sm">{t("settings.emailNotifications")}</Label>
+   500→   500→                            <p className="text-xs text-white/30">{t("settings.emailNotificationsDesc")}</p>
+   501→   501→                          </div>
+   502→   502→                        </div>
+   503→   503→                        <Switch
+   504→   504→                          checked={settings.emailNotifications !== false}
+   505→   505→                          onCheckedChange={(v) => handleUpdateSetting("emailNotifications", v)}
+   506→   506→                        />
+   507→   507→                      </div>
+   508→   508→                      <Separator className="bg-white/10" />
+   509→   509→                      <div className="flex items-center justify-between">
+   510→   510→                        <div className="flex items-center gap-2">
+   511→   511→                          <Heart className="h-4 w-4 text-[#ff0084]" />
+   512→   512→                          <div>
+   513→   513→                            <Label className="text-white/70 text-sm">{t("settings.notifyFavorites")}</Label>
+   514→   514→                            <p className="text-xs text-white/30">{t("settings.notifyFavoritesDesc")}</p>
+   515→   515→                          </div>
+   516→   516→                        </div>
+   517→   517→                        <Switch
+   518→   518→                          checked={settings.notifyFavorites !== false}
+   519→   519→                          onCheckedChange={(v) => handleUpdateSetting("notifyFavorites", v)}
+   520→   520→                        />
+   521→   521→                      </div>
+   522→   522→                      <div className="flex items-center justify-between">
+   523→   523→                        <div className="flex items-center gap-2">
+   524→   524→                          <MessageCircle className="h-4 w-4 text-green-500" />
+   525→   525→                          <div>
+   526→   526→                            <Label className="text-white/70 text-sm">{t("settings.notifyComments")}</Label>
+   527→   527→                            <p className="text-xs text-white/30">{t("settings.notifyCommentsDesc")}</p>
+   528→   528→                          </div>
+   529→   529→                        </div>
+   530→   530→                        <Switch
+   531→   531→                          checked={settings.notifyComments !== false}
+   532→   532→                          onCheckedChange={(v) => handleUpdateSetting("notifyComments", v)}
+   533→   533→                        />
+   534→   534→                      </div>
+   535→   535→                      <div className="flex items-center justify-between">
+   536→   536→                        <div className="flex items-center gap-2">
+   537→   537→                          <Users className="h-4 w-4 text-purple-500" />
+   538→   538→                          <div>
+   539→   539→                            <Label className="text-white/70 text-sm">{t("settings.notifyFollows")}</Label>
+   540→   540→                            <p className="text-xs text-white/30">{t("settings.notifyFollowsDesc")}</p>
+   541→   541→                          </div>
+   542→   542→                        </div>
+   543→   543→                        <Switch
+   544→   544→                          checked={settings.notifyFollows !== false}
+   545→   545→                          onCheckedChange={(v) => handleUpdateSetting("notifyFollows", v)}
+   546→   546→                        />
+   547→   547→                      </div>
+   548→   548→                      <div className="flex items-center justify-between">
+   549→   549→                        <div className="flex items-center gap-2">
+   550→   550→                          <Users className="h-4 w-4 text-orange-500" />
+   551→   551→                          <div>
+   552→   552→                            <Label className="text-white/70 text-sm">{t("settings.notifyGroupInvites")}</Label>
+   553→   553→                            <p className="text-xs text-white/30">{t("settings.notifyGroupInvitesDesc")}</p>
+   554→   554→                          </div>
+   555→   555→                        </div>
+   556→   556→                        <Switch
+   557→   557→                          checked={settings.notifyGroupInvites !== false}
+   558→   558→                          onCheckedChange={(v) => handleUpdateSetting("notifyGroupInvites", v)}
+   559→   559→                        />
+   560→   560→                      </div>
+   561→   561→                      <div className="flex items-center justify-between">
+   562→   562→                        <div className="flex items-center gap-2">
+   563→   563→                          <MessageSquare className="h-4 w-4 text-[#0063dc]" />
+   564→   564→                          <div>
+   565→   565→                            <Label className="text-white/70 text-sm">{t("settings.notifyMessages")}</Label>
+   566→   566→                            <p className="text-xs text-white/30">{t("settings.notifyMessagesDesc")}</p>
+   567→   567→                          </div>
+   568→   568→                        </div>
+   569→   569→                        <Switch
+   570→   570→                          checked={settings.notifyMessages !== false}
+   571→   571→                          onCheckedChange={(v) => handleUpdateSetting("notifyMessages", v)}
+   572→   572→                        />
+   573→   573→                      </div>
+   574→   574→                    </CardContent>
+   575→   575→                  </Card>
+   576→   576→                </motion.div>
+   577→   577→              )}
+   578→   578→
+   579→   579→              {/* Appearance section */}
+   580→   580→              {activeSection === "appearance" && (
+   581→   581→                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+   582→   582→                  <Card className="bg-white/5 border-white/10">
+   583→   583→                    <CardHeader>
+   584→   584→                      <CardTitle className="text-white text-lg">{t("settings.appearanceTitle")}</CardTitle>
+   585→   585→                      <CardDescription className="text-white/40">{t("settings.appearanceDesc")}</CardDescription>
+   586→   586→                    </CardHeader>
+   587→   587→                    <CardContent className="space-y-6">
+   588→   588→                      <div className="space-y-3">
+   589→   589→                        <Label className="text-white/70 text-sm">{t("settings.theme")}</Label>
+   590→   590→                        <div className="flex gap-3">
+   591→   591→                          {[
+   592→   592→                            { value: "dark", label: t("settings.dark"), color: "bg-[#0d0d0d]" },
+   593→   593→                            { value: "light", label: t("settings.light"), color: "bg-[#f3f5f6]" },
+   594→   594→                            { value: "system", label: t("settings.system"), color: "bg-gradient-to-br from-[#0d0d0d] to-[#f3f5f6]" },
+   595→   595→                          ].map((themeOpt) => (
+   596→   596→                            <button
+   597→   597→                              key={themeOpt.value}
+   598→   598→                              className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors ${
+   599→   599→                                theme === themeOpt.value
+   600→   600→                                  ? "border-[#0063dc] bg-[#0063dc]/5"
+   601→   601→                                  : "border-white/10 hover:border-white/20"
+   602→   602→                              }`}
+   603→   603→                              onClick={() => setTheme(themeOpt.value)}
+   604→   604→                            >
+   605→   605→                              <div className={`w-12 h-8 rounded ${themeOpt.color} border border-white/10`} />
+   606→   606→                              <span className="text-xs text-white/60">{themeOpt.label}</span>
+   607→   607→                            </button>
+   608→   608→                          ))}
+   609→   609→                        </div>
+   610→   610→                      </div>
+   611→   611→
+   612→   612→                      <div className="space-y-3">
+   613→   613→                        <Label className="text-white/70 text-sm">{t("settings.defaultView")}</Label>
+   614→   614→                        <Select
+   615→   615→                          value={settings.defaultView || "grid"}
+   616→   616→                          onValueChange={(v) => handleUpdateSetting("defaultView", v)}
+   617→   617→                        >
+   618→   618→                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+   619→   619→                            <SelectValue />
+   620→   620→                          </SelectTrigger>
+   621→   621→                          <SelectContent className="bg-[#2a2a2d] border-white/10">
+   622→   622→                            <SelectItem value="grid">{t("settings.gridView")}</SelectItem>
+   623→   623→                            <SelectItem value="list">{t("settings.listView")}</SelectItem>
+   624→   624→                            <SelectItem value="justified">{t("settings.justifiedView")}</SelectItem>
+   625→   625→                          </SelectContent>
+   626→   626→                        </Select>
+   627→   627→                      </div>
+   628→   628→
+   629→   629→                      <div className="space-y-3">
+   630→   630→                        <Label className="text-white/70 text-sm">{t("common.language")}</Label>
+   631→   631→                        <Select
+   632→   632→                          value={settings.language || "it"}
+   633→   633→                          onValueChange={(v) => handleUpdateSetting("language", v)}
+   634→   634→                        >
+   635→   635→                          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+   636→   636→                            <SelectValue />
+   637→   637→                          </SelectTrigger>
+   638→   638→                          <SelectContent className="bg-[#2a2a2d] border-white/10">
+   639→   639→                            <SelectItem value="it">Italiano</SelectItem>
+   640→   640→                            <SelectItem value="en">English</SelectItem>
+   641→   641→                            <SelectItem value="fr">Français</SelectItem>
+   642→   642→                            <SelectItem value="de">Deutsch</SelectItem>
+   643→   643→                            <SelectItem value="es">Español</SelectItem>
+   644→   644→                          </SelectContent>
+   645→   645→                        </Select>
+   646→   646→                      </div>
+   647→   647→                    </CardContent>
+   648→   648→                  </Card>
+   649→   649→                </motion.div>
+   650→   650→              )}
+   651→   651→
+   652→   652→              {/* EXIF section */}
+   653→   653→              {activeSection === "exif" && (
+   654→   654→                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+   655→   655→                  <Card className="bg-white/5 border-white/10">
+   656→   656→                    <CardHeader>
+   657→   657→                      <CardTitle className="text-white text-lg">{t("settings.exifTitle")}</CardTitle>
+   658→   658→                      <CardDescription className="text-white/40">{t("settings.exifDesc")}</CardDescription>
+   659→   659→                    </CardHeader>
+   660→   660→                    <CardContent className="space-y-4">
+   661→   661→                      <div className="flex items-center justify-between">
+   662→   662→                        <div>
+   663→   663→                          <Label className="text-white/70 text-sm">{t("settings.showExif")}</Label>
+   664→   664→                          <p className="text-xs text-white/30 mt-0.5">{t("settings.showExifDesc")}</p>
+   665→   665→                        </div>
+   666→   666→                        <Switch
+   667→   667→                          checked={settings.showEXIF !== false}
+   668→   668→                          onCheckedChange={(v) => handleUpdateSetting("showEXIF", v)}
+   669→   669→                        />
+   670→   670→                      </div>
+   671→   671→                    </CardContent>
+   672→   672→                  </Card>
+   673→   673→                </motion.div>
+   674→   674→              )}
+   675→   675→
+   676→   676→              {/* Account section */}
+   677→   677→              {activeSection === "account" && (
+   678→   678→                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+   679→   679→                  <Card className="bg-white/5 border-white/10">
+   680→   680→                    <CardHeader>
+   681→   681→                      <CardTitle className="text-white text-lg">{t("settings.changePassword")}</CardTitle>
+   682→   682→                      <CardDescription className="text-white/40">{t("settings.changePasswordDesc")}</CardDescription>
+   683→   683→                    </CardHeader>
+   684→   684→                    <CardContent className="space-y-4">
+   685→   685→                      <div className="space-y-2">
+   686→   686→                        <Label className="text-white/60 text-sm">{t("settings.currentPassword")}</Label>
+   687→   687→                        <Input
+   688→   688→                          type="password"
+   689→   689→                          value={passwordData.current}
+   690→   690→                          onChange={(e) => setPasswordData((p) => ({ ...p, current: e.target.value }))}
+   691→   691→                          className="bg-white/5 border-white/10 text-white"
+   692→   692→                        />
+   693→   693→                      </div>
+   694→   694→                      <div className="space-y-2">
+   695→   695→                        <Label className="text-white/60 text-sm">{t("settings.newPassword")}</Label>
+   696→   696→                        <Input
+   697→   697→                          type="password"
+   698→   698→                          value={passwordData.new}
+   699→   699→                          onChange={(e) => setPasswordData((p) => ({ ...p, new: e.target.value }))}
+   700→   700→                          className="bg-white/5 border-white/10 text-white"
+   701→   701→                        />
+   702→   702→                      </div>
+   703→   703→                      <div className="space-y-2">
+   704→   704→                        <Label className="text-white/60 text-sm">{t("settings.confirmNewPassword")}</Label>
+   705→   705→                        <Input
+   706→   706→                          type="password"
+   707→   707→                          value={passwordData.confirm}
+   708→   708→                          onChange={(e) => setPasswordData((p) => ({ ...p, confirm: e.target.value }))}
+   709→   709→                          className="bg-white/5 border-white/10 text-white"
+   710→   710→                        />
+   711→   711→                      </div>
+   712→   712→                      <Button
+   713→   713→                        onClick={async () => {
+   714→   714→                          if (passwordData.new !== passwordData.confirm) {
+   715→   715→                            toast.error(t("settings.passwordMismatch"));
+   716→   716→                            return;
+   717→   717→                          }
+   718→   718→                          toast.success(t("settings.passwordUpdated"));
+   719→   719→                          setPasswordData({ current: "", new: "", confirm: "" });
+   720→   720→                        }}
+   721→   721→                        className="bg-[#0063dc] hover:bg-[#0052b5] text-white"
+   722→   722→                      >
+   723→   723→                        {t("settings.updatePassword")}
+   724→   724→                      </Button>
+   725→   725→                    </CardContent>
+   726→   726→                  </Card>
+   727→   727→
+   728→   728→                  <Card className="bg-red-500/5 border-red-500/10">
+   729→   729→                    <CardHeader>
+   730→   730→                      <CardTitle className="text-red-400 text-lg flex items-center gap-2">
+   731→   731→                        <Trash2 className="h-5 w-5" /> {t("settings.deleteAccount")}
+   732→   732→                      </CardTitle>
+   733→   733→                      <CardDescription className="text-white/40">
+   734→   734→                        {t("settings.deleteAccountDesc")}
+   735→   735→                      </CardDescription>
+   736→   736→                    </CardHeader>
+   737→   737→                    <CardContent>
+   738→   738→                      <AlertDialog>
+   739→   739→                        <AlertDialogTrigger asChild>
+   740→   740→                          <Button variant="destructive" className="gap-1.5">
+   741→   741→                            <Trash2 className="h-4 w-4" /> {t("settings.deleteMyAccount")}
+   742→   742→                          </Button>
+   743→   743→                        </AlertDialogTrigger>
+   744→   744→                        <AlertDialogContent className="bg-[#2a2a2d] border-white/10">
+   745→   745→                          <AlertDialogHeader>
+   746→   746→                            <AlertDialogTitle className="text-white">{t("settings.areYouSure")}</AlertDialogTitle>
+   747→   747→                            <AlertDialogDescription className="text-white/50">
+   748→   748→                              {t("settings.deleteWarning")}
+   749→   749→                            </AlertDialogDescription>
+   750→   750→                          </AlertDialogHeader>
+   751→   751→                          <AlertDialogFooter>
+   752→   752→                            <AlertDialogCancel className="border-white/10 text-white/70">{t("common.cancel")}</AlertDialogCancel>
+   753→   753→                            <AlertDialogAction className="bg-red-500 hover:bg-red-600 text-white">
+   754→   754→                              {t("settings.yesDeleteAccount")}
+   755→   755→                            </AlertDialogAction>
+   756→   756→                          </AlertDialogFooter>
+   757→   757→                        </AlertDialogContent>
+   758→   758→                      </AlertDialog>
+   759→   759→                    </CardContent>
+   760→   760→                  </Card>
+   761→   761→                </motion.div>
+   762→   762→              )}
+   763→   763→            </div>
+   764→   764→          </div>
+   765→   765→        </div>
+   766→   766→      </main>
+   767→   767→
+   768→   768→      <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
+   769→   769→        <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
+   770→   770→        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
+   771→   771→      </footer>
+   772→   772→    </div>
+   773→   773→  );
+   774→   774→}
+   775→   775→

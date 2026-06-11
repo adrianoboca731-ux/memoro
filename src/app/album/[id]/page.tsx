@@ -24,12 +24,15 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+
 export default function AlbumDetailPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const dateLocale = dateLocales[locale] || it;
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
@@ -60,7 +63,7 @@ export default function AlbumDetailPage() {
         setPhotos(photosData.photos || photosData);
       }
     } catch (err) {
-      console.error("Errore nel caricamento:", err);
+      console.error("Error loading:", err);
     } finally {
       setLoading(false);
     }
@@ -85,7 +88,7 @@ export default function AlbumDetailPage() {
         setIsEditing(false);
       }
     } catch (err) {
-      console.error("Errore nel salvataggio:", err);
+      console.error("Error saving:", err);
     }
   }, [albumId, album, editName, editDescription]);
 
@@ -95,7 +98,7 @@ export default function AlbumDetailPage() {
       const res = await fetch(`/api/albums/${albumId}`, { method: "DELETE" });
       if (res.ok) router.push("/album");
     } catch (err) {
-      console.error("Errore nell'eliminazione:", err);
+      console.error("Error deleting:", err);
     }
   }, [albumId, router]);
 
@@ -199,7 +202,7 @@ export default function AlbumDetailPage() {
                 <ImageIcon className="h-4 w-4" /> {photos.length} {t("common.photos")}
               </span>
               <span>&bull;</span>
-              <span>{t("common.createdAt")} {format(new Date(album.createdAt), "d MMMM yyyy", { locale: it })}</span>
+              <span>{t("common.createdAt")} {format(new Date(album.createdAt), "d MMMM yyyy", { locale: dateLocale })}</span>
             </div>
             {isOwner && (
               <div className="flex items-center gap-2">

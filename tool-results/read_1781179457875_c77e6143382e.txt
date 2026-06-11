@@ -1,0 +1,555 @@
+     1→     1→# Worklog - creami Memoro (Flickr Clone)
+     2→     2→
+     3→     3→## Task ID: 1
+     4→     4→
+     5→     5→### Completed Steps
+     6→     6→
+     7→     7→1. **Environment Initialization**
+     8→     8→   - Ran fullstack init script
+     9→     9→   - Verified project structure and dependencies
+    10→    10→
+    11→    11→2. **Prisma Schema & Database**
+    12→    12→   - Replaced default User/Post schema with Photo/Album/Comment models
+    13→    13→   - Ran `prisma db push` to sync schema with SQLite database
+    14→    14→   - Ran `prisma generate` for client generation
+    15→    15→
+    16→    16→3. **API Routes** (7 endpoints)
+    17→    17→   - `/api/photos` - GET (list with search/filter), POST (create)
+    18→    18→   - `/api/photos/[id]` - GET (with view increment), PATCH, DELETE
+    19→    19→   - `/api/photos/[id]/comments` - GET, POST
+    20→    20→   - `/api/albums` - GET (with photo count), POST
+    21→    21→   - `/api/albums/[id]` - GET, PATCH, DELETE
+    22→    22→   - `/api/upload` - POST (multipart file upload with sharp thumbnails)
+    23→    23→   - `/api/stats` - GET (totals)
+    24→    24→
+    25→    25→4. **Zustand Store** (`src/lib/store.ts`)
+    26→    26→   - Full state management for navigation, data, and loading states
+    27→    27→   - Actions for all CRUD operations and view navigation
+    28→    28→
+    29→    29→5. **UI Components**
+    30→    30→   - `theme-provider.tsx` - next-themes wrapper
+    31→    31→   - `header.tsx` - Logo, search, nav, upload button, theme toggle
+    32→    32→   - `photo-grid.tsx` - Masonry grid with hover overlays
+    33→    33→   - `photo-detail.tsx` - Lightbox with editing, comments, keyboard nav
+    34→    34→   - `upload-modal.tsx` - Drag-and-drop with progress tracking
+    35→    35→   - `albums-view.tsx` - Album cards, create/delete, album detail
+    36→    36→
+    37→    37→6. **Main Page** (`src/app/page.tsx`)
+    38→    38→   - SPA architecture with client-side routing
+    39→    39→   - Data fetching on mount
+    40→    40→   - View switching: explore, albums, favorites, recent, search
+    41→    41→   - Stats bar, responsive layout
+    42→    42→
+    43→    43→7. **Theme Support**
+    44→    44→   - Dark/light mode via next-themes
+    45→    45→   - Fixed lint issue with useSyncExternalStore for mounted state
+    46→    46→   - Custom CSS for scrollbar, masonry, animations
+    47→    47→
+    48→    48→8. **Sample Data**
+    49→    49→   - Generated 12 AI photos (z-ai-generate CLI)
+    50→    50→   - Created thumbnails with sharp
+    51→    51→   - Seeded DB with 4 albums, 12 photos (Italian titles/tags/descriptions), 32 comments
+    52→    52→
+    53→    53→9. **Testing & Verification**
+    54→    54→   - All API endpoints returning 200
+    55→    55→   - Page rendering correctly with data
+    56→    56→   - ESLint passes with no errors
+    57→    57→   - Next.js config updated for allowedDevOrigins
+    58→    58→
+    59→    59→### Key Decisions
+    60→    60→- Used `useSyncExternalStore` instead of `useEffect` + `useState` for mounted state (lint compliance)
+    61→    61→- Flickr color scheme: #0063dc (blue) primary, #ff0084 (pink) for favorites
+    62→    62→- Italian language throughout the UI
+    63→    63→- CSS columns for masonry effect (lightweight, responsive)
+    64→    64→- Thumbnails: 400px wide, JPEG 80% quality
+    65→    65→
+    66→    66→---
+    67→    67→
+    68→    68→## Task ID: vercel-migration
+    69→    69→
+    70→    70→### Vercel Deployment Migration (SQLite → Vercel Postgres + Vercel Blob)
+    71→    71→
+    72→    72→#### Completed Changes
+    73→    73→
+    74→    74→1. **Prisma Schema → PostgreSQL** (`prisma/schema.prisma`)
+    75→    75→   - Changed `provider` from `"sqlite"` to `"postgresql"`
+    76→    76→   - Added `@map` annotations for PostgreSQL column naming:
+    77→    77→     - `albumId` → `album_id`, `photoId` → `photo_id`
+    78→    78→     - `createdAt` → `created_at`, `updatedAt` → `updated_at`
+    79→    79→   - Added `@@map` table names: `photos`, `albums`, `comments`
+    80→    80→   - Added `thumbnail` field (String?) to Photo model for storing blob thumbnail URLs
+    81→    81→   - Did NOT run `db:push` (requires actual Postgres URL; will run on Vercel)
+    82→    82→
+    83→    83→2. **Installed @vercel/blob** (`package.json`)
+    84→    84→   - `bun add @vercel/blob` — installed v2.4.0
+    85→    85→
+    86→    86→3. **Upload API Route** (`src/app/api/upload/route.ts`)
+    87→    87→   - Replaced `fs/promises` (writeFile, mkdir) with `@vercel/blob` `put()`
+    88→    88→   - Original file uploaded to `photos/{uniqueName}` via `put()`
+    89→    89→   - Thumbnail created with sharp, then uploaded to `photos/thumb-{uniqueName}` via `put()`
+    90→    90→   - Returns blob URLs as `filepath` and `thumbnail`
+    91→    91→   - Removed all local filesystem references (UPLOAD_DIR, writeFile, mkdir)
+    92→    92→
+    93→    93→4. **Photo Delete API Route** (`src/app/api/photos/[id]/route.ts`)
+    94→    94→   - Added `import { del } from '@vercel/blob'`
+    95→    95→   - Before deleting from DB, now deletes blob files (both original and thumbnail)
+    96→    96→   - Only deletes if URL contains `blob.vercel-storage.com` (safe for local dev)
+    97→    97→
+    98→    98→5. **Photos POST Route** (`src/app/api/photos/route.ts`)
+    99→    99→   - Added `thumbnail` field extraction from FormData
+   100→   100→   - Included `thumbnail` in `db.photo.create()` data
+   101→   101→
+   102→   102→6. **Upload Modal** (`src/components/upload-modal.tsx`)
+   103→   103→   - Now sends `uploadData.thumbnail` to the photos POST route via FormData
+   104→   104→
+   105→   105→7. **Photo Grid** (`src/components/photo-grid.tsx`)
+   106→   106→   - Updated thumbnail logic: uses `photo.thumbnail` field first, falls back to local `/uploads/thumb-` pattern
+   107→   107→   - Ensures backward compatibility with existing local photos
+   108→   108→
+   109→   109→8. **Store Type** (`src/lib/store.ts`)
+   110→   110→   - Added `thumbnail: string | null` to `Photo` interface
+   111→   111→
+   112→   112→9. **Next.js Config** (`next.config.ts`)
+   113→   113→   - Removed `output: "standalone"` (not needed on Vercel)
+   114→   114→   - Added `images.remotePatterns` for `**.blob.vercel-storage.com` and `**.public.blob.vercel-storage.com`
+   115→   115→   - Kept `typescript.ignoreBuildErrors: true` and `reactStrictMode: false`
+   116→   116→
+   117→   117→10. **Database Client** (`src/lib/db.ts`)
+   118→   118→    - Conditional query logging: only in development mode (`['query']`), empty array in production
+   119→   119→
+   120→   120→11. **Environment Example** (`.env.example`)
+   121→   121→    - Created with `DATABASE_URL` and `BLOB_READ_WRITE_TOKEN` placeholders
+   122→   122→
+   123→   123→#### Important Notes
+   124→   124→
+   125→   125→- Local dev still works with the existing SQLite database (old Prisma client is still cached)
+   126→   126→- The `thumbnail` field is added to the schema but won't exist in the local SQLite DB until deployed
+   127→   127→- `photo-grid.tsx` gracefully falls back: `photo.thumbnail || photo.filepath.replace('/uploads/', '/uploads/thumb-')`
+   128→   128→- Photo delete gracefully handles both blob and local file URLs
+   129→   129→- Do NOT run `bun run build` or `prisma db push` locally — they require a real Postgres connection
+   130→   130→- ESLint passes with no errors after all changes
+   131→   131→
+   132→   132→---
+   133→   133→
+   134→   134→## Task ID: i18n-foto-page
+   135→   135→
+   136→   136→### i18n Migration for `/src/app/foto/[id]/page.tsx`
+   137→   137→
+   138→   138→#### Completed Changes
+   139→   139→
+   140→   140→1. **Added i18n import and hook**
+   141→   141→   - Added `import { useI18n } from "@/lib/i18n";` at top of file
+   142→   142→   - Added `const { t } = useI18n();` inside `FotoDetailPage` component
+   143→   143→
+   144→   144→2. **Replaced all hardcoded Italian visible text with t() calls** (38 replacements total):
+   145→   145→
+   146→   146→   | Original Italian | Translation Key |
+   147→   147→   |---|---|
+   148→   148→   | `"Foto non trovata"` (error state) | `t("photo.notFound")` |
+   149→   149→   | `"Errore nel caricamento della foto"` | `t("common.error")` |
+   150→   150→   | `"Sei sicuro di voler eliminare questa foto?"` | `t("photo.deleteConfirm")` |
+   151→   151→   | `"Foto non trovata"` (fallback display) | `t("photo.notFound")` |
+   152→   152→   | `Torna a Esplora` | `{t("photo.backToExplore")}` |
+   153→   153→   | `placeholder="Aggiungi una descrizione..."` | `placeholder={t("photo.addDescription")}` |
+   154→   154→   | `Preferito` | `{t("photo.favorite")}` |
+   155→   155→   | `Galleria` | `{t("photo.gallery")}` |
+   156→   156→   | `Condividi` | `{t("photo.share")}` |
+   157→   157→   | `Scarica` | `{t("photo.download")}` |
+   158→   158→   | `Modifica` | `{t("photo.edit")}` |
+   159→   159→   | `Aggiungi ai gruppi` (dropdown) | `{t("photo.addToGroups")}` |
+   160→   160→   | `Elimina foto` | `{t("photo.deletePhoto")}` |
+   161→   161→   | `Segnala` | `{t("photo.report")}` |
+   162→   162→   | `Salva` | `{t("common.save")}` |
+   163→   163→   | `Annulla` | `{t("common.cancel")}` |
+   164→   164→   | `Tag` (label) | `{t("photo.tag")}` |
+   165→   165→   | `placeholder="Tag separati da virgola..."` | `placeholder={t("photo.tagPlaceholder")}` |
+   166→   166→   | `Livello di sicurezza:` | `{t("safety.level")}` |
+   167→   167→   | `Dati EXIF` | `{t("photo.exifData")}` |
+   168→   168→   | `Fotocamera` | `{t("photo.camera")}` |
+   169→   169→   | `Obiettivo` | `{t("photo.lens")}` |
+   170→   170→   | `Lunghezza focale` | `{t("photo.focalLength")}` |
+   171→   171→   | `Apertura` | `{t("photo.aperture")}` |
+   172→   172→   | `Tempo di esposizione` | `{t("photo.shutterSpeed")}` |
+   173→   173→   | `Dettagli` | `{t("photo.details")}` |
+   174→   174→   | `Dimensioni` | `{t("photo.dimensions")}` |
+   175→   175→   | `Caricata il` | `{t("photo.uploadedOn")}` |
+   176→   176→   | `Album` | `{t("photo.album")}` |
+   177→   177→   | `Dimensione file` | `{t("photo.fileSize")}` |
+   178→   178→   | `Aggiungi alla galleria` (dialog title) | `{t("photo.addToGallery")}` |
+   179→   179→   | `Non hai ancora creato gallerie.` | `{t("photo.noGalleries")}` |
+   180→   180→   | `Crea una galleria` | `{t("photo.createGallery")}` |
+   181→   181→   | `Aggiungi ai gruppi` (dialog title) | `{t("photo.addToGroup")}` |
+   182→   182→   | `Non sei membro di nessun gruppo.` | `{t("photo.noGroups")}` |
+   183→   183→   | `Esplora i gruppi` | `{t("photo.exploreGroups")}` |
+   184→   184→   | `membri` | `{t("common.members")}` |
+   185→   185→
+   186→   186→3. **Not translated** (correctly excluded):
+   187→   187→   - `console.error("Errore nel preferito:", ...)` — developer-facing, not visible
+   188→   188→   - `console.error("Errore nel salvataggio:", ...)` — developer-facing, not visible
+   189→   189→   - `console.error("Errore nell'eliminazione:", ...)` — developer-facing, not visible
+   190→   190→   - Brand names, CSS classes, API endpoints, variable names — all preserved
+   191→   191→
+   192→   192→4. **Verification**: Read through entire updated file — all JSX is valid, all Italian visible text replaced, no broken tags
+   193→   193→
+   194→   194→---
+   195→   195→
+   196→   196→## Task ID: 2
+   197→   197→
+   198→   198→### i18n Migration for `/src/app/impostazioni/page.tsx` (Settings Page)
+   199→   199→
+   200→   200→#### Completed Changes
+   201→   201→
+   202→   202→1. **Added i18n import and hook**
+   203→   203→   - Added `import { useI18n } from "@/lib/i18n";` at top of file
+   204→   204→   - Added `const { t } = useI18n();` inside `ImpostazioniPage` component
+   205→   205→
+   206→   206→2. **Moved `sidebarItems` inside component** so it can use `t()`:
+   207→   207→   - Was: top-level `const sidebarItems = [...]` with hardcoded Italian labels
+   208→   208→   - Now: inside component function, using `t("settings.profile")`, `t("settings.privacy")`, etc.
+   209→   209→
+   210→   210→3. **Fixed typo bug**:
+   211→   211→   - Line was: `}, andleSaveSettings]);` (missing `[` and `h`)
+   212→   212→   - Fixed to: `}, [handleSaveSettings]);`
+   213→   213→
+   214→   214→4. **Replaced all hardcoded Italian visible text with t() calls** (~70+ replacements):
+   215→   215→
+   216→   216→   **Page header & auth:**
+   217→   217→   | Original | Key |
+   218→   218→   |---|---|
+   219→   219→   | `"Impostazioni"` | `t("settings.title")` |
+   220→   220→   | `"Gestisci il tuo account e le tue preferenze"` | `t("settings.subtitle")` |
+   221→   221→   | `"Accedi per gestire le impostazioni"` | `t("settings.loginToManage")` |
+   222→   222→   | `"Effettua l'accesso per visualizzare e modificare le tue impostazioni"` | `t("settings.loginToManageDesc")` |
+   223→   223→
+   224→   224→   **Profile section:**
+   225→   225→   | Original | Key |
+   226→   226→   |---|---|
+   227→   227→   | `"Il tuo profilo"` | `t("settings.profileTitle")` |
+   228→   228→   | `"Gestisci le informazioni del tuo profilo pubblico"` | `t("settings.profileDesc")` |
+   229→   229→   | `"Cambia avatar"` | `t("settings.changeAvatar")` |
+   230→   230→   | `"Nome"` | `t("settings.name")` |
+   231→   231→   | `"Bio"` | `t("settings.bio")` |
+   232→   232→   | `"Racconta qualcosa di te..."` | `t("settings.bioPlaceholder")` |
+   233→   233→   | `"Posizione"` | `t("settings.location")` |
+   234→   234→   | `"es. Roma, Italia"` | `t("settings.locationPlaceholder")` |
+   235→   235→   | `"Sito web"` | `t("settings.website")` |
+   236→   236→   | `"Salva profilo"` / `"Salvataggio..."` | `t("settings.saveProfile")` / `t("common.saving")` |
+   237→   237→   | `"Profilo aggiornato"` | `t("settings.profileUpdated")` |
+   238→   238→   | `"Errore nell'aggiornamento del profilo"` | `t("settings.profileUpdateError")` |
+   239→   239→
+   240→   240→   **Privacy section:**
+   241→   241→   | Original | Key |
+   242→   242→   |---|---|
+   243→   243→   | `"Privacy e autorizzazioni"` | `t("settings.privacyTitle")` |
+   244→   244→   | `"Controlla chi può vedere e interagire con i tuoi contenuti"` | `t("settings.privacyDesc")` |
+   245→   245→   | `"Visibilità del profilo"` | `t("settings.profileVisibility")` |
+   246→   246→   | `"Pubblico"` / `"Solo contatti"` / `"Privato"` | `t("settings.public")` / `t("settings.contactsOnly")` / `t("settings.private")` |
+   247→   247→   | `"Chi può inviarti messaggi"` | `t("settings.whoCanMessage")` |
+   248→   248→   | `"Tutti"` / `"Nessuno"` | `t("settings.everyone")` / `t("settings.nobody")` |
+   249→   249→   | `"Permetti commenti"` + desc | `t("settings.allowComments")` + `t("settings.allowCommentsDesc")` |
+   250→   250→   | `"Permetti download"` + desc | `t("settings.allowDownloads")` + `t("settings.allowDownloadsDesc")` |
+   251→   251→   | `"Mostra rullino"` + desc | `t("settings.showCameraRoll")` + `t("settings.showCameraRollDesc")` |
+   252→   252→
+   253→   253→   **Content Filters section:**
+   254→   254→   | Original | Key |
+   255→   255→   |---|---|
+   256→   256→   | `"Filtri contenuti"` | `t("settings.contentFiltersTitle")` |
+   257→   257→   | `"Gestisci i filtri per i contenuti adulti"` | `t("settings.contentFiltersDesc")` |
+   258→   258→   | `"Ricerca sicura (SafeSearch)"` | `t("settings.safeSearch")` |
+   259→   259→   | `"Rigorosa"` + desc | `t("settings.strict")` + `t("settings.strictDesc")` |
+   260→   260→   | `"Moderata"` + desc | `t("settings.moderate")` + `t("settings.moderateDesc")` |
+   261→   261→   | `"Predefinito"` | `t("settings.default")` |
+   262→   262→   | `"Disattivata"` + desc | `t("settings.off")` + `t("settings.offDesc")` |
+   263→   263→   | Badge: `"Sicuro"` / `"Moderato"` / `"Restretto"` | `t("safety.safe")` / `t("safety.moderate")` / `t("safety.restricted")` |
+   264→   264→   | `"Mostra contenuti per adulti"` + desc | `t("settings.showAdultContent")` + `t("settings.showAdultContentDesc")` |
+   265→   265→   | `"Mostra contenuti limitati"` + desc | `t("settings.showRestrictedContent")` + `t("settings.showRestrictedContentDesc")` |
+   266→   266→   | `"Consenti caricamenti per adulti"` + desc | `t("settings.allowMatureUploads")` + `t("settings.allowMatureUploadsDesc")` |
+   267→   267→   | Warning paragraph | `t("settings.adultContentWarning")` |
+   268→   268→
+   269→   269→   **Notifications section:**
+   270→   270→   | Original | Key |
+   271→   271→   |---|---|
+   272→   272→   | `"Notifiche"` | `t("settings.notificationsTitle")` |
+   273→   273→   | `"Scegli quali notifiche ricevere"` | `t("settings.notificationsDesc")` |
+   274→   274→   | `"Notifiche email"` + desc | `t("settings.emailNotifications")` + `t("settings.emailNotificationsDesc")` |
+   275→   275→   | `"Preferiti"` + desc | `t("settings.notifyFavorites")` + `t("settings.notifyFavoritesDesc")` |
+   276→   276→   | `"Commenti"` + desc | `t("settings.notifyComments")` + `t("settings.notifyCommentsDesc")` |
+   277→   277→   | `"Nuovi follower"` + desc | `t("settings.notifyFollows")` + `t("settings.notifyFollowsDesc")` |
+   278→   278→   | `"Inviti ai gruppi"` + desc | `t("settings.notifyGroupInvites")` + `t("settings.notifyGroupInvitesDesc")` |
+   279→   279→   | `"Messaggi"` + desc | `t("settings.notifyMessages")` + `t("settings.notifyMessagesDesc")` |
+   280→   280→
+   281→   281→   **Appearance section:**
+   282→   282→   | Original | Key |
+   283→   283→   |---|---|
+   284→   284→   | `"Aspetto"` | `t("settings.appearanceTitle")` |
+   285→   285→   | `"Personalizza l'aspetto di Memoro"` | `t("settings.appearanceDesc")` |
+   286→   286→   | `"Tema"` | `t("settings.theme")` |
+   287→   287→   | `"Scuro"` / `"Chiaro"` / `"Sistema"` | `t("settings.dark")` / `t("settings.light")` / `t("settings.system")` |
+   288→   288→   | `"Vista predefinita"` | `t("settings.defaultView")` |
+   289→   289→   | `"Griglia"` / `"Lista"` / `"Giustificata"` | `t("settings.gridView")` / `t("settings.listView")` / `t("settings.justifiedView")` |
+   290→   290→   | `"Lingua"` | `t("common.language")` |
+   291→   291→
+   292→   292→   **EXIF section:**
+   293→   293→   | Original | Key |
+   294→   294→   |---|---|
+   295→   295→   | `"Dati EXIF"` | `t("settings.exifTitle")` |
+   296→   296→   | `"Gestisci la visibilità dei dati EXIF delle tue foto"` | `t("settings.exifDesc")` |
+   297→   297→   | `"Mostra dati EXIF"` + desc | `t("settings.showExif")` + `t("settings.showExifDesc")` |
+   298→   298→
+   299→   299→   **Account section:**
+   300→   300→   | Original | Key |
+   301→   301→   |---|---|
+   302→   302→   | `"Cambia password"` | `t("settings.changePassword")` |
+   303→   303→   | `"Aggiorna la tua password..."` | `t("settings.changePasswordDesc")` |
+   304→   304→   | `"Password attuale"` / `"Nuova password"` / `"Conferma nuova password"` | `t("settings.currentPassword")` / `t("settings.newPassword")` / `t("settings.confirmNewPassword")` |
+   305→   305→   | `"Aggiorna password"` | `t("settings.updatePassword")` |
+   306→   306→   | `"Le password non coincidono"` | `t("settings.passwordMismatch")` |
+   307→   307→   | `"Password aggiornata"` | `t("settings.passwordUpdated")` |
+   308→   308→   | `"Elimina account"` | `t("settings.deleteAccount")` |
+   309→   309→   | `"Questa azione è irreversibile..."` | `t("settings.deleteAccountDesc")` |
+   310→   310→   | `"Elimina il mio account"` | `t("settings.deleteMyAccount")` |
+   311→   311→   | `"Sei assolutamente sicuro?"` | `t("settings.areYouSure")` |
+   312→   312→   | `"Questa azione non può essere annullata..."` | `t("settings.deleteWarning")` |
+   313→   313→   | `"Sì, elimina il mio account"` | `t("settings.yesDeleteAccount")` |
+   314→   314→   | `"Annulla"` | `t("common.cancel")` |
+   315→   315→
+   316→   316→   **Toast messages:**
+   317→   317→   | Original | Key |
+   318→   318→   |---|---|
+   319→   319→   | `"Impostazioni salvate"` | `t("settings.settingsSaved")` |
+   320→   320→   | `"Errore nel salvataggio delle impostazioni"` | `t("settings.saveError")` |
+   321→   321→   | `"Errore nel salvataggio"` | `t("settings.saveError")` |
+   322→   322→
+   323→   323→   **Footer:**
+   324→   324→   | Original | Key |
+   325→   325→   |---|---|
+   326→   326→   | `"Condividi i Tuoi Ricordi"` | `t("home.footerShort")` |
+   327→   327→
+   328→   328→5. **Not translated** (correctly excluded):
+   329→   329→   - `ImpostazioniPage` — component name, not visible text
+   330→   330→   - `"Memoro"` — brand name
+   331→   331→   - `"https://..."` — URL placeholder
+   332→   332→   - Language names (`Italiano`, `English`, `Français`, `Deutsch`, `Español`) — native language names are intentional
+   333→   333→   - `console.error("Errore:", err)` — developer-facing, not visible
+   334→   334→   - CSS classes, API endpoints, variable names, HTML entities (`&apos;`, `&mdash;`)
+   335→   335→
+   336→   336→6. **Renamed variable**: In the appearance section theme options `.map()`, renamed the loop variable from `t` to `themeOpt` to avoid shadowing the i18n `t` function.
+   337→   337→
+   338→   338→7. **Added `t` to useCallback deps**: `handleSaveSettings` and `handleSaveProfile` now include `t` in their dependency arrays since they call `t()` inside.
+   339→   339→
+   340→   340→8. **Verification**: Checked for remaining hardcoded Italian strings (none found except component name), confirmed typo fix, confirmed sidebarItems moved inside component
+   341→   341→
+   342→   342→---
+   343→   343→
+   344→   344→## Task ID: 2 - i18n Component Migration
+   345→   345→
+   346→   346→### i18n Migration for Core Components (Replacing Hardcoded Italian with t() Calls)
+   347→   347→
+   348→   348→#### Completed Changes
+   349→   349→
+   350→   350→1. **`src/components/photo-card.tsx`** — Added `useI18n` import and hook
+   351→   351→   - `di {photo.user.name}` → `{t("common.by")} {photo.user.name}`
+   352→   352→
+   353→   353→2. **`src/components/photo-grid.tsx`** — Added `useI18n` import and hook
+   354→   354→   - `"Nessuna foto trovata"` → `{t("photoGrid.noPhotos")}`
+   355→   355→   - `"Prova a cercare qualcos'altro o carica una foto"` → `{t("photoGrid.trySearching")}`
+   356→   356→   - `di {photo.user.name}` → `{t("common.by")} {photo.user.name}`
+   357→   357→
+   358→   358→3. **`src/components/photo-detail.tsx`** — Added `useI18n` import and hook (22 replacements)
+   359→   359→   - `"Preferito"` → `{t("photo.favorite")}`
+   360→   360→   - `"Condividi"` → `{t("photo.share")}`
+   361→   361→   - `"Scarica"` → `{t("photo.download")}`
+   362→   362→   - `"Salva"` → `{t("common.save")}`
+   363→   363→   - `"Modifica"` → `{t("common.edit")}`
+   364→   364→   - `"Elimina"` → `{t("common.delete")}`
+   365→   365→   - `"Info"` → `{t("photo.info")}`
+   366→   366→   - `placeholder="Aggiungi una descrizione..."` → `placeholder={t("photo.addDescription")}`
+   367→   367→   - `placeholder="Tag separati da virgola..."` → `placeholder={t("photo.tagPlaceholder")}`
+   368→   368→   - `"Tag"` (label) → `{t("photo.tag")}`
+   369→   369→   - `"Dettagli foto"` → `{t("photo.photoDetails")}`
+   370→   370→   - `"Dimensioni"` → `{t("photo.dimensions")}`
+   371→   371→   - `"Dimensione file"` → `{t("photo.fileSize")}`
+   372→   372→   - `"Tipo"` → `{t("photo.type")}`
+   373→   373→   - `"Album"` → `{t("photo.album")}`
+   374→   374→   - `"Date"` → `{t("photo.dates")}`
+   375→   375→   - `"Scattata"` → `{t("photo.taken")}`
+   376→   376→   - `"Caricata"` → `{t("photo.uploadedOn")}`
+   377→   377→   - `"Commenti"` → `{t("comments.title")}`
+   378→   378→   - `placeholder="Aggiungi un commento..."` → `placeholder={t("comments.addComment")}`
+   379→   379→
+   380→   380→4. **`src/components/albums-view.tsx`** — Added `useI18n` import and hook (12 replacements)
+   381→   381→   - `"Tutti gli Album"` → `{t("albums.allAlbums")}`
+   382→   382→   - `"Album"` (fallback) → `{t("nav.album")}`
+   383→   383→   - `"foto"` (count) → `{t("common.photos")}` (3 occurrences)
+   384→   384→   - `"Nuovo Album"` → `{t("albums.newAlbum")}`
+   385→   385→   - `"Crea Nuovo Album"` → `{t("albums.createTitle")}`
+   386→   386→   - `placeholder="Nome dell'album"` → `placeholder={t("albums.albumName")}`
+   387→   387→   - `placeholder="Descrizione (opzionale)"` → `placeholder={t("albums.albumDesc")}`
+   388→   388→   - `"Creazione..."` / `"Crea Album"` → `t("common.creating")` / `t("albums.createButton")`
+   389→   389→   - `"Nessun album ancora"` → `{t("albums.noAlbums")}`
+   390→   390→   - `"Crea il tuo primo album per organizzare le foto"` → `{t("albums.noAlbumsDesc")}`
+   391→   391→
+   392→   392→5. **`src/components/galleries-view.tsx`** — Added `useI18n` import and hook (10 replacements)
+   393→   393→   - `"Tutte le Gallerie"` → `{t("galleries.allGalleries")}`
+   394→   394→   - `"Gallerie"` → `{t("nav.galleries")}`
+   395→   395→   - `"Nuova Galleria"` → `{t("galleries.createNew")}`
+   396→   396→   - `"Crea Nuova Galleria"` → `{t("galleries.createTitle")}`
+   397→   397→   - `placeholder="Nome della galleria"` → `placeholder={t("galleries.galleryName")}`
+   398→   398→   - `placeholder="Descrizione (opzionale)"` → `placeholder={t("galleries.galleryDesc")}`
+   399→   399→   - `"Creazione..."` / `"Crea Galleria"` → `t("common.creating")` / `t("galleries.createButton")`
+   400→   400→   - `"Le gallerie sono collezioni curate..."` → `{t("galleries.subtitleShort")}`
+   401→   401→   - `"Nessuna galleria"` → `{t("galleries.noGalleries")}`
+   402→   402→   - `"foto"` → `{t("common.photos")}`
+   403→   403→
+   404→   404→6. **`src/components/groups-view.tsx`** — Added `useI18n` import and hook (15 replacements)
+   405→   405→   - `"Tutti i Gruppi"` → `{t("groups.allGroupsNav")}`
+   406→   406→   - `"Gruppi"` → `{t("groups.title")}`
+   407→   407→   - `"Nuovo Gruppo"` → `{t("groups.createGroup")}`
+   408→   408→   - `"Crea Nuovo Gruppo"` → `{t("groups.createTitle")}`
+   409→   409→   - `placeholder="Nome del gruppo"` → `placeholder={t("groups.groupName")}`
+   410→   410→   - `placeholder="Descrizione (opzionale)"` → `placeholder={t("groups.groupDesc")}`
+   411→   411→   - `placeholder="Regole del gruppo (opzionale)"` → `placeholder={t("groups.groupRules")}`
+   412→   412→   - `"Creazione..."` / `"Crea Gruppo"` → `t("common.creating")` / `t("groups.createButton")`
+   413→   413→   - `"Regole del gruppo"` → `{t("groups.groupRulesTitle")}`
+   414→   414→   - `"membri"` → `{t("common.members")}`
+   415→   415→   - `"foto"` → `{t("common.photos")}`
+   416→   416→   - `"Pubblico"` → `{t("groups.public")}`
+   417→   417→   - `"Privato"` → `{t("groups.private")}`
+   418→   418→   - `"Nessun gruppo ancora"` → `{t("groups.noGroups")}`
+   419→   419→   - `"Crea un gruppo per condividere foto con la community"` → `{t("groups.noGroupsCreateAlt")}`
+   420→   420→
+   421→   421→7. **`src/components/messages-view.tsx`** — Added `useI18n` import and hook (13 replacements)
+   422→   422→   - `"Messaggi"` → `{t("messages.title")}`
+   423→   423→   - `"Nuovo Messaggio"` (button) → `{t("messages.newMessage")}`
+   424→   424→   - `"Nessun messaggio"` → `{t("messages.noMessages")}`
+   425→   425→   - `"Invia un messaggio per iniziare"` → `{t("messages.noMessagesDesc")}`
+   426→   426→   - `"Da:"` → `{t("messages.from")}`
+   427→   427→   - `"A:"` → `{t("messages.toLabel")}`
+   428→   428→   - `"Seleziona un messaggio per leggerlo"` → `{t("messages.selectMessage")}`
+   429→   429→   - `"Nuovo Messaggio"` (dialog) → `{t("messages.composeTitle")}`
+   430→   430→   - `placeholder="A (nome utente)"` → `placeholder={t("messages.to")}`
+   431→   431→   - `placeholder="Oggetto"` → `placeholder={t("messages.subject")}`
+   432→   432→   - `placeholder="Scrivi il tuo messaggio..."` → `placeholder={t("messages.body")}`
+   433→   433→   - `"Invio..."` → `{t("messages.sending")}`
+   434→   434→   - `"Invia Messaggio"` → `{t("messages.sendButton")}`
+   435→   435→
+   436→   436→8. **`src/components/notifications-view.tsx`** — Added `useI18n` import and hook (4 replacements)
+   437→   437→   - `"Notifiche"` → `{t("notifications.title")}`
+   438→   438→   - `"Segna tutto come letto"` → `{t("notifications.markAllRead")}`
+   439→   439→   - `"Nessuna notifica"` → `{t("notifications.noNotifications")}`
+   440→   440→   - `"Le tue notifiche appariranno qui"` → `{t("notifications.noNotificationsDesc")}`
+   441→   441→
+   442→   442→9. **`src/components/upload-modal.tsx`** — Added `useI18n` import and hook (12 replacements)
+   443→   443→   - `"Carica Foto"` → `{t("upload.title")}`
+   444→   444→   - `"Trascina le foto qui"` → `{t("upload.dragHere")}`
+   445→   445→   - `"oppure clicca per selezionare file"` → `{t("upload.orClick")}`
+   446→   446→   - `"Scegli File"` → `{t("upload.chooseFiles")}`
+   447→   447→   - `placeholder="Titolo"` → `placeholder={t("upload.photoTitle")}`
+   448→   448→   - `placeholder="Album"` → `placeholder={t("upload.album")}`
+   449→   449→   - `"Nessun album"` → `{t("upload.noAlbum")}`
+   450→   450→   - `placeholder="Tag (virgola)"` → `placeholder={t("upload.tags")}`
+   451→   451→   - `placeholder="Descrizione..."` → `placeholder={t("upload.description")}`
+   452→   452→   - `"Errore"` → `{t("common.error")}`
+   453→   453→   - `"Caricamento..."` → `{t("upload.uploading")}`
+   454→   454→   - `"Completato!"` → `{t("common.completed")}`
+   455→   455→   - `"Carica ... foto"` → `{t("common.create")} ... {t("common.photos")}`
+   456→   456→
+   457→   457→10. **`src/components/user-card.tsx`** — Already uses `useI18n`, no changes needed
+   458→   458→11. **`src/components/follow-button.tsx`** — Already uses `useI18n`, no changes needed
+   459→   459→
+   460→   460→12. **Created `src/components/html-lang.tsx`** — New client component that dynamically updates `<html lang>` based on i18n locale
+   461→   461→
+   462→   462→13. **Updated `src/app/layout.tsx`** — Added `HtmlLang` component import and placed it inside `<I18nProvider>`
+   463→   463→
+   464→   464→#### Not translated (correctly excluded):
+   465→   465→- `console.error(...)` — developer-facing, not visible
+   466→   466→- CSS classes, API endpoints, variable names
+   467→   467→- Brand names ("Memoro")
+   468→   468→- Date-fns locale import (used for date formatting, not UI text)
+   469→   469→
+   470→   470→#### Verification:
+   471→   471→- `npx next build` — passes with 0 TypeScript errors
+   472→   472→- `bun run lint` — 0 errors (1 pre-existing warning in carousel.tsx, unrelated)
+   473→   473→
+   474→   474→---
+   475→   475→
+   476→   476→## Task ID: 3b
+   477→   477→
+   478→   478→### Fix Asian & ptBR Translation Fallbacks in translations.ts
+   479→   479→
+   480→   480→#### Problem
+   481→   481→The translations file at `/src/lib/i18n/translations.ts` had 10 languages with 428 keys each, but 5 languages had many English fallback values instead of proper native translations:
+   482→   482→- **ptBR (Portuguese Brazil)** — ~109 keys had English values
+   483→   483→- **ja (Japanese)** — many keys had English values
+   484→   484→- **ko (Korean)** — many keys had English values
+   485→   485→- **zhCN (Chinese Simplified)** — many keys had English values
+   486→   486→- **zhTW (Chinese Traditional)** — many keys had English values
+   487→   487→
+   488→   488→#### Approach
+   489→   489→1. Read the current `translations.ts` file (4326 lines)
+   490→   490→2. Identified all keys from the `en` dictionary (428 keys total)
+   491→   491→3. For each of the 5 languages, created a COMPLETE dictionary with all 428 keys properly translated
+   492→   492→4. Wrote a Node.js script (`scripts/fix-asian-translations.js`) that:
+   493→   493→   - Reads the current file
+   494→   494→   - Uses regex to find and replace each language section
+   495→   495→   - Generates proper TypeScript dict syntax from JS objects
+   496→   496→   - Writes the complete file back
+   497→   497→   - Includes verification (key count + spot-checks)
+   498→   498→
+   499→   499→#### Script Details
+   500→   500→- **File**: `/home/z/my-project/scripts/fix-asian-translations.js`
+   501→   501→- Hardcodes complete translation dictionaries for all 5 languages
+   502→   502→- Uses `replaceLangSection()` helper to swap each `const LANG: TranslationDict = { ... };` block
+   503→   503→- Handles backslash escaping in values (e.g., `\\` in `settings.showRestrictedContentDesc`)
+   504→   504→
+   505→   505→#### Key Translations Fixed (examples)
+   506→   506→| Key | Before (English fallback) | After (Native) |
+   507→   507→|---|---|---|
+   508→   508→| `photo.addToGroups` | "Add to groups" | ptBR: "Adicionar aos grupos", ja: "グループに追加", ko: "그룹에 추가", zhCN: "添加到群组", zhTW: "新增到群組" |
+   509→   509→| `upload.photoTitle` | "Photo title" | ptBR: "Título da foto", ja: "写真のタイトル", ko: "사진 제목", zhCN: "照片标题", zhTW: "照片標題" |
+   510→   510→| `settings.allowComments` | "Allow comments" | ptBR: "Permitir comentários", ja: "コメントを許可", ko: "댓글 허용", zhCN: "允许评论", zhTW: "允許留言" |
+   511→   511→| `comments.at` | "at" | ptBR: "às", ja: "に", ko: "에", zhCN: "于", zhTW: "於" |
+   512→   512→| `photo.focalLength` | "Focal length" | ptBR: "Distância focal", ja: "焦点距離", ko: "초점 거리", zhCN: "焦距", zhTW: "焦距" |
+   513→   513→
+   514→   514→#### Verification Results
+   515→   515→- **All 10 languages still have 428 keys each** ✓
+   516→   516→- **No English fallbacks remain** in ja, ko, zhCN, zhTW (only "EXIF" flagged — correct, it's a universal technical term)
+   517→   517→- **ptBR**: All previously-English keys replaced with proper Portuguese; detection script flags legitimate Portuguese words (same Latin alphabet) as false positives
+   518→   518→- **Spot-checks passed** for `nav.explore`, `photo.addToGroups`, `settings.allowComments`, `upload.photoTitle`, `comments.at`
+   519→   519→
+   520→   520→#### Note on ptBR False Positives
+   521→   521→The verification script's ASCII detection flags legitimate Portuguese words (e.g., "Explorar", "Salvar", "Cancelar") because they use the Latin alphabet like English. Manual review confirms all 428 ptBR values are proper Brazilian Portuguese — none are English fallbacks.
+   522→   522→---
+   523→   523→Task ID: i18n-fix
+   524→   524→Agent: Main Agent
+   525→   525→Task: Fix language switching so the interface actually changes when selecting a different language
+   526→   526→
+   527→   527→Work Log:
+   528→   528→- Analyzed the i18n system: I18nProvider + useI18n hook + t() function
+   529→   529→- Found that most pages already used t() calls correctly
+   530→   530→- Identified the ROOT CAUSE: Many components had hardcoded Italian strings (photo-card, photo-grid, photo-detail, albums-view, galleries-view, groups-view, messages-view, notifications-view, upload-modal)
+   531→   531→- Also found that translations were incomplete for fr (187/428), de (85/428), es (74/428)
+   532→   532→- Found that ptBR, ja, ko, zhCN, zhTW had all 428 keys but ~109 had English fallback values
+   533→   533→- Found that <html lang="it"> was hardcoded in layout.tsx
+   534→   534→
+   535→   535→Fixes Applied:
+   536→   536→1. Updated 9 components to use t() instead of hardcoded Italian strings
+   537→   537→2. Created html-lang.tsx component to dynamically update <html lang> attribute
+   538→   538→3. Updated layout.tsx to include HtmlLang component
+   539→   539→4. Completed French translations (428 keys)
+   540→   540→5. Completed German translations (428 keys)
+   541→   541→6. Completed Spanish translations (428 keys)
+   542→   542→7. Fixed Portuguese Brazil translations (replaced English fallbacks with proper Portuguese)
+   543→   543→8. Fixed Japanese translations (replaced English fallbacks with proper Japanese)
+   544→   544→9. Fixed Korean translations (replaced English fallbacks with proper Korean)
+   545→   545→10. Fixed Chinese Simplified translations (replaced English fallbacks with proper Simplified Chinese)
+   546→   546→11. Fixed Chinese Traditional translations (replaced English fallbacks with proper Traditional Chinese)
+   547→   547→
+   548→   548→Build verified: npx next build passes with 0 errors
+   549→   549→
+   550→   550→Stage Summary:
+   551→   551→- All 10 languages now have 428 keys each with proper native translations
+   552→   552→- All components now use t() for text content
+   553→   553→- <html lang> attribute updates dynamically when language is changed
+   554→   554→- Language switching should now visually change the interface text
+   555→   555→

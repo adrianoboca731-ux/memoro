@@ -16,11 +16,14 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import { useI18n } from "@/lib/i18n";
 
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+
 export default function GalleriaDetailPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const dateLocale = dateLocales[locale] || it;
   const params = useParams();
   const router = useRouter();
   const galleryId = params.id as string;
@@ -39,7 +42,7 @@ export default function GalleriaDetailPage() {
         setItems(data.items || []);
       }
     } catch (err) {
-      console.error("Errore nel caricamento:", err);
+      console.error("Error loading:", err);
     } finally {
       setLoading(false);
     }
@@ -119,7 +122,7 @@ export default function GalleriaDetailPage() {
                 <ImageIcon className="h-4 w-4" /> {items.length} {t("common.photos")}
               </span>
               <span>&bull;</span>
-              <span>{t("galleries.createdOn")} {format(new Date(gallery.createdAt), "d MMMM yyyy", { locale: it })}</span>
+              <span>{t("galleries.createdOn")} {format(new Date(gallery.createdAt), "d MMMM yyyy", { locale: dateLocale })}</span>
             </div>
             <Button
               size="sm"

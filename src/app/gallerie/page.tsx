@@ -42,7 +42,7 @@ export default function GalleriePage() {
         setGalleries(Array.isArray(data) ? data : []);
       }
     } catch (err) {
-      console.error("Errore nel caricamento:", err);
+      console.error("Error loading:", err);
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export default function GalleriePage() {
         setCreateOpen(false);
       }
     } catch (err) {
-      console.error("Errore nella creazione:", err);
+      console.error("Error creating:", err);
     } finally {
       setIsCreating(false);
     }
@@ -81,7 +81,7 @@ export default function GalleriePage() {
       const res = await fetch(`/api/galleries/${id}`, { method: "DELETE" });
       if (res.ok) setGalleries((prev) => prev.filter((g) => g.id !== id));
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     }
   }, []);
 

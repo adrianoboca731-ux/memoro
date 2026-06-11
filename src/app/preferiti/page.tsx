@@ -25,7 +25,7 @@ export default function PreferitiPage() {
         setPhotos(data.photos || data);
       }
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }

@@ -36,12 +36,15 @@ import {
 } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
+
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+
 export default function GruppoDetailPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
@@ -57,6 +60,8 @@ export default function GruppoDetailPage() {
   const [newDiscussionTitle, setNewDiscussionTitle] = useState("");
   const [newDiscussionBody, setNewDiscussionBody] = useState("");
   const [discussionOpen, setDiscussionOpen] = useState(false);
+
+  const dateLocale = dateLocales[locale] || it;
   const [isCreatingDiscussion, setIsCreatingDiscussion] = useState(false);
 
   const fetchGroup = useCallback(async () => {
@@ -73,7 +78,7 @@ export default function GruppoDetailPage() {
         }
       }
     } catch (err) {
-      console.error("Errore nel caricamento:", err);
+      console.error("Error loading:", err);
     } finally {
       setLoading(false);
     }
@@ -119,7 +124,7 @@ export default function GruppoDetailPage() {
         }));
       }
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     } finally {
       setJoinLoading(false);
     }
@@ -142,7 +147,7 @@ export default function GruppoDetailPage() {
         setDiscussionOpen(false);
       }
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     } finally {
       setIsCreatingDiscussion(false);
     }
@@ -316,7 +321,7 @@ export default function GruppoDetailPage() {
                               <span className="flex items-center gap-1">
                                 <MessageSquare className="h-3 w-3" /> {discussion.replyCount || 0} {t("groups.replies")}
                               </span>
-                              <span>{format(new Date(discussion.createdAt), "d MMM yyyy", { locale: it })}</span>
+                              <span>{format(new Date(discussion.createdAt), "d MMM yyyy", { locale: dateLocale })}</span>
                             </div>
                           </CardContent>
                         </Card>

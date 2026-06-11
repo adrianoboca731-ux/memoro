@@ -60,16 +60,18 @@ import {
 } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
 
 export default function FotoDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
   const photoId = params.id as string;
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const [photo, setPhoto] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -85,6 +87,8 @@ export default function FotoDetailPage() {
   const [addToGroupOpen, setAddToGroupOpen] = useState(false);
   const [galleries, setGalleries] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
+
+  const dateLocale = dateLocales[locale] || it;
 
   const fetchPhoto = useCallback(async () => {
     setLoading(true);
@@ -122,7 +126,7 @@ export default function FotoDetailPage() {
         setFavoriteCount((prev) => isFavorited ? prev - 1 : prev + 1);
       }
     } catch (err) {
-      console.error("Errore nel preferito:", err);
+      console.error("Error with favorite:", err);
     }
   }, [photoId, isFavorited]);
 
@@ -140,7 +144,7 @@ export default function FotoDetailPage() {
         setIsEditing(false);
       }
     } catch (err) {
-      console.error("Errore nel salvataggio:", err);
+      console.error("Error saving:", err);
     }
   }, [photoId, photo, editTitle, editDescription, editTags]);
 
@@ -152,7 +156,7 @@ export default function FotoDetailPage() {
         router.push("/esplora");
       }
     } catch (err) {
-      console.error("Errore nell'eliminazione:", err);
+      console.error("Error deleting:", err);
     }
   }, [photoId, router]);
 
@@ -492,7 +496,7 @@ export default function FotoDetailPage() {
                   <Calendar className="h-3 w-3" /> {t("photo.uploadedOn")}
                 </span>
                 <span className="text-white/70">
-                  {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: it })}
+                  {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: dateLocale })}
                 </span>
               </div>
               {photo.album && (

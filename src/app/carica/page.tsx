@@ -114,7 +114,7 @@ export default function CaricaPage() {
           method: "POST",
           body: formData,
         });
-        if (!uploadRes.ok) throw new Error("Upload fallito");
+        if (!uploadRes.ok) throw new Error("Upload failed");
         const uploadData = await uploadRes.json();
 
         updateFile(index, { progress: 60 });
@@ -141,7 +141,7 @@ export default function CaricaPage() {
           body: photoFormData,
         });
 
-        if (!photoRes.ok) throw new Error("Creazione foto fallita");
+        if (!photoRes.ok) throw new Error("Photo creation failed");
         updateFile(index, { progress: 100, status: "done" });
       } catch (error) {
         console.error("Upload error:", error);

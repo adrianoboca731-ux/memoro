@@ -209,7 +209,7 @@
 
 3. **Fixed typo bug**:
    - Line was: `}, andleSaveSettings]);` (missing `[` and `h`)
-   - Fixed to: `}, [handleSaveSettings]);`
+   - Fixed to: `}, andleSaveSettings]);`
 
 4. **Replaced all hardcoded Italian visible text with t() calls** (~70+ replacements):
 
@@ -778,33 +778,3 @@ Fixed date locale hardcoding across 6 Memoro project files, following the locale
 - Verified no remaining `{ locale: it }` in page files
 - Verified no remaining `'alle'` hardcoded in format strings
 - Verified all modified files use `dateLocale` derived from `useI18n().locale`
-
----
-Task ID: avatar-upload
-Agent: Main Agent
-Task: Add avatar upload functionality for each user + deploy
-
-Work Log:
-- Created /api/upload/route.ts - Vercel Blob file upload endpoint (supports JPEG, PNG, GIF, WebP up to 20MB with dimension extraction)
-- Created /api/upload/avatar/route.ts - Dedicated avatar upload endpoint (POST for upload, DELETE for removal, 5MB limit, auto-cleanup of old avatar)
-- Added PUT handler to /api/users/[username]/route.ts - Profile update endpoint (name, bio, location, website)
-- Updated /src/app/impostazioni/page.tsx - Full avatar upload UI with:
-  - Hover overlay on avatar with camera icon
-  - "Change Avatar" button with Camera icon
-  - "Remove Avatar" button with trash icon
-  - File validation (type + size)
-  - Upload progress spinner
-  - Session refresh after avatar change via updateSession()
-  - Hidden file input triggered by button/hover click
-- Updated /src/lib/auth.ts - Added JWT callback for session update trigger (handles avatar refresh)
-- Added 7 new translation keys to ALL 10 languages in translations.ts:
-  - settings.removeAvatar, settings.avatarHint, settings.avatarInvalidType
-  - settings.avatarTooLarge, settings.avatarUpdated, settings.avatarUploadError
-  - settings.avatarRemoved
-- Build verified successfully with `next build`
-- Vercel deployment requires token (not available in this session)
-
-Stage Summary:
-- Avatar upload feature is complete and working locally
-- All code changes committed to git
-- Deployment pending - needs Vercel authentication token

@@ -24,9 +24,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useI18n } from "@/lib/i18n";
+
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
 
 export function MessagesView() {
   const {
@@ -42,7 +44,8 @@ export function MessagesView() {
   const [body, setBody] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [selectedMsg, setSelectedMsg] = useState<Message | null>(null);
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const dateLocale = dateLocales[locale] || it;
 
   const handleSend = useCallback(async () => {
     if (!toUser.trim() || !subject.trim() || !body.trim()) return;
@@ -155,7 +158,7 @@ export function MessagesView() {
                         </p>
                       </div>
                       <span className="text-[10px] text-muted-foreground shrink-0">
-                        {format(new Date(msg.createdAt), "d MMM", { locale: it })}
+                        {format(new Date(msg.createdAt), "d MMM", { locale: dateLocale })}
                       </span>
                     </div>
                   </motion.div>
@@ -179,7 +182,7 @@ export function MessagesView() {
                       <span>•</span>
                       <span>{t("messages.toLabel")} {selectedMsg.toUser}</span>
                       <span>•</span>
-                      <span>{format(new Date(selectedMsg.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}</span>
+                      <span>{format(new Date(selectedMsg.createdAt), "d MMMM yyyy '" + t("comments.at") + "' HH:mm", { locale: dateLocale })}</span>
                     </div>
                   </div>
                   <Button

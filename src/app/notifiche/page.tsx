@@ -18,9 +18,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
 
 const getNotifIcon = (type: string) => {
   switch (type) {
@@ -68,10 +70,12 @@ const getNotifLink = (notif: any) => {
 };
 
 export default function NotifichePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const dateLocale = dateLocales[locale] || it;
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
@@ -82,7 +86,7 @@ export default function NotifichePage() {
         setNotifications(data.notifications || data);
       }
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }
@@ -101,7 +105,7 @@ export default function NotifichePage() {
       });
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     }
   }, []);
 
@@ -117,7 +121,7 @@ export default function NotifichePage() {
         prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
       );
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     }
   }, []);
 
@@ -207,7 +211,7 @@ export default function NotifichePage() {
                                 </p>
                                 <p className="text-sm text-white/40 mt-0.5">{notif.message}</p>
                                 <p className="text-[10px] text-white/20 mt-1">
-                                  {format(new Date(notif.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}
+                                  {format(new Date(notif.createdAt), "d MMMM yyyy '" + t("comments.at") + "' HH:mm", { locale: dateLocale })}
                                 </p>
                               </div>
                               {!notif.isRead && (

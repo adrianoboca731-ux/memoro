@@ -33,7 +33,7 @@ export default function EsploraPage() {
         setPhotos(data.photos || data);
       }
     } catch (err) {
-      console.error("Errore nel caricamento delle foto:", err);
+      console.error("Error loading photos:", err);
     } finally {
       setLoading(false);
     }

@@ -29,9 +29,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useI18n } from "@/lib/i18n";
+
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
 
 export function PhotoDetail() {
   const {
@@ -51,7 +53,8 @@ export function PhotoDetail() {
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInfo, setShowInfo] = useState(true);
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const dateLocale = dateLocales[locale] || it;
 
   const currentIndex = photos.findIndex((p) => p.id === selectedPhotoId);
   const prevPhoto = currentIndex > 0 ? photos[currentIndex - 1] : null;
@@ -104,7 +107,7 @@ export function PhotoDetail() {
         setIsEditing(false);
       }
     } catch (err) {
-      console.error("Errore nel salvataggio:", err);
+      console.error("Error saving:", err);
     }
   }, [photo, editTitle, editDescription, editTags, updatePhoto]);
 
@@ -129,7 +132,7 @@ export function PhotoDetail() {
         method: "POST",
       });
     } catch (err) {
-      console.error("Errore nel preferito:", err);
+      console.error("Error with favorite:", err);
     }
   }, [photo, toggleFavorite]);
 
@@ -148,7 +151,7 @@ export function PhotoDetail() {
         setCommentText("");
       }
     } catch (err) {
-      console.error("Errore nell'aggiunta del commento:", err);
+      console.error("Error adding comment:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -428,7 +431,7 @@ export function PhotoDetail() {
                             <Camera className="h-3.5 w-3.5" /> {t("photo.taken")}
                           </span>
                           <span className="text-white/80">
-                            {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: it })}
+                            {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: dateLocale })}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -436,7 +439,7 @@ export function PhotoDetail() {
                             <Calendar className="h-3.5 w-3.5" /> {t("photo.uploadedOn")}
                           </span>
                           <span className="text-white/80">
-                            {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: it })}
+                            {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: dateLocale })}
                           </span>
                         </div>
                       </div>
@@ -462,7 +465,7 @@ export function PhotoDetail() {
                                 <p className="text-xs font-medium text-white/90">{comment.authorId.slice(0, 8)}...</p>
                                 <p className="text-sm text-white/70 mt-0.5">{comment.text}</p>
                                 <p className="text-[10px] text-white/40 mt-1">
-                                  {format(new Date(comment.createdAt), "d MMM yyyy 'alle' HH:mm", { locale: it })}
+                                  {format(new Date(comment.createdAt), "d MMM yyyy '" + t("comments.at") + "' HH:mm", { locale: dateLocale })}
                                 </p>
                               </div>
                             </div>

@@ -54,7 +54,7 @@ function CercaContent() {
         setGroupResults(data.groups || []);
       }
     } catch (err) {
-      console.error("Errore nella ricerca:", err);
+      console.error("Error searching:", err);
     } finally {
       setLoading(false);
     }

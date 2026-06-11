@@ -20,12 +20,15 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
+
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+
 export default function DiscussionePage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
@@ -37,6 +40,8 @@ export default function DiscussionePage() {
   const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const dateLocale = dateLocales[locale] || it;
 
   const fetchDiscussion = useCallback(async () => {
     setLoading(true);
@@ -50,7 +55,7 @@ export default function DiscussionePage() {
         if (disc) setDiscussion(disc);
       }
     } catch (err) {
-      console.error("Errore nel caricamento:", err);
+      console.error("Error loading:", err);
     } finally {
       setLoading(false);
     }
@@ -79,7 +84,7 @@ export default function DiscussionePage() {
         setReplyText("");
       }
     } catch (err) {
-      console.error("Errore nell'invio:", err);
+      console.error("Error sending:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -135,7 +140,7 @@ export default function DiscussionePage() {
                 <span>{discussion.author?.name || t("common.user")}</span>
               </div>
               <span>&bull;</span>
-              <span>{format(new Date(discussion.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}</span>
+              <span>{format(new Date(discussion.createdAt), "d MMMM yyyy '" + t("comments.at") + "' HH:mm", { locale: dateLocale })}</span>
               <span>&bull;</span>
               <span className="flex items-center gap-1"><Reply className="h-3 w-3" /> {discussion.replyCount || replies.length} {t("groups.replies")}</span>
             </div>
@@ -186,7 +191,7 @@ export default function DiscussionePage() {
                             {reply.author?.name || t("common.user")}
                           </span>
                           <span className="text-[10px] text-white/30">
-                            {format(new Date(reply.createdAt), "d MMM yyyy 'alle' HH:mm", { locale: it })}
+                            {format(new Date(reply.createdAt), "d MMM yyyy '" + t("comments.at") + "' HH:mm", { locale: dateLocale })}
                           </span>
                         </div>
                         <p className="text-sm text-white/60 mt-1 whitespace-pre-wrap">{reply.body}</p>

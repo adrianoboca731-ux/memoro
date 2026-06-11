@@ -169,7 +169,7 @@ export function Header() {
                     {session.user.name}
                   </p>
                   <p className="text-xs text-white/50">
-                    @{(session.user as any).username || "utente"}
+                    @{(session.user as any).username || t("common.user")}
                   </p>
                 </div>
                 <DropdownMenuSeparator className="bg-white/10" />

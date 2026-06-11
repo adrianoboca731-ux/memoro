@@ -22,12 +22,15 @@ import {
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+
 export default function AlbumPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const dateLocale = dateLocales[locale] || it;
   const [albums, setAlbums] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newAlbumName, setNewAlbumName] = useState("");
@@ -44,7 +47,7 @@ export default function AlbumPage() {
         setAlbums(Array.isArray(data) ? data : []);
       }
     } catch (err) {
-      console.error("Errore nel caricamento degli album:", err);
+      console.error("Error loading albums:", err);
     } finally {
       setLoading(false);
     }
@@ -71,7 +74,7 @@ export default function AlbumPage() {
         setCreateOpen(false);
       }
     } catch (err) {
-      console.error("Errore nella creazione:", err);
+      console.error("Error creating:", err);
     } finally {
       setIsCreating(false);
     }
@@ -83,7 +86,7 @@ export default function AlbumPage() {
       const res = await fetch(`/api/albums/${id}`, { method: "DELETE" });
       if (res.ok) setAlbums((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
-      console.error("Errore nell'eliminazione:", err);
+      console.error("Error deleting:", err);
     }
   }, []);
 

@@ -9,17 +9,21 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+
 export default function RullinoPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { data: session } = useSession();
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const dateLocale = dateLocales[locale] || it;
 
   const fetchPhotos = useCallback(async () => {
     setLoading(true);
@@ -30,7 +34,7 @@ export default function RullinoPage() {
         setPhotos(data.photos || data);
       }
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }
@@ -145,7 +149,7 @@ export default function RullinoPage() {
             <div className="space-y-6">
               {sortedDates.map((dateKey) => {
                 const datePhotos = groupedPhotos[dateKey];
-                const dateLabel = format(new Date(dateKey), "d MMMM yyyy", { locale: it });
+                const dateLabel = format(new Date(dateKey), "d MMMM yyyy", { locale: dateLocale });
                 return (
                   <div key={dateKey} className="space-y-2">
                     <h3 className="text-sm font-medium text-white/50 sticky top-14 bg-[#0d0d0d]/95 py-1 z-10">

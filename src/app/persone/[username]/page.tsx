@@ -28,12 +28,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+
 export default function ProfiloPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const dateLocale = dateLocales[locale] || it;
   const params = useParams();
   const { data: session } = useSession();
   const username = params.username as string;
@@ -56,7 +59,7 @@ export default function ProfiloPage() {
         setUser(data);
       }
     } catch (err) {
-      console.error("Errore nel caricamento del profilo:", err);
+      console.error("Error loading profile:", err);
     } finally {
       setLoading(false);
     }
@@ -178,7 +181,7 @@ export default function ProfiloPage() {
                     </a>
                   )}
                   <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" /> {t("profile.memberSince")} {format(new Date(user.createdAt), "MMMM yyyy", { locale: it })}
+                    <Calendar className="h-3 w-3" /> {t("profile.memberSince")} {format(new Date(user.createdAt), "MMMM yyyy", { locale: dateLocale })}
                   </span>
                 </div>
               </div>

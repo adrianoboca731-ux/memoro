@@ -27,11 +27,14 @@ import {
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import { useI18n } from "@/lib/i18n";
 
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+
 export default function MessaggiPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const dateLocale = dateLocales[locale] || it;
   const { data: session } = useSession();
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +54,7 @@ export default function MessaggiPage() {
         setMessages(Array.isArray(data) ? data : []);
       }
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }
@@ -79,7 +82,7 @@ export default function MessaggiPage() {
         setComposeOpen(false);
       }
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     } finally {
       setIsSending(false);
     }
@@ -94,7 +97,7 @@ export default function MessaggiPage() {
           prev.map((m) => (m.id === msg.id ? { ...m, isRead: true } : m))
         );
       } catch (err) {
-        console.error("Errore:", err);
+        console.error("Error:", err);
       }
     }
   }, []);
@@ -107,7 +110,7 @@ export default function MessaggiPage() {
         if (selectedMsg?.id === id) setSelectedMsg(null);
       }
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     }
   }, [selectedMsg]);
 
@@ -207,7 +210,7 @@ export default function MessaggiPage() {
                             </p>
                             <p className="text-xs text-white/30 mt-0.5 truncate">{msg.body}</p>
                             <p className="text-[10px] text-white/20 mt-1">
-                              {format(new Date(msg.createdAt), "d MMM yyyy", { locale: it })}
+                              {format(new Date(msg.createdAt), "d MMM yyyy", { locale: dateLocale })}
                             </p>
                           </div>
                         </div>
@@ -231,7 +234,7 @@ export default function MessaggiPage() {
                           <span>{t("messages.from")} {selectedMsg.sender?.name || t("common.user")}</span>
                           <span>&bull;</span>
                           <span>
-                            {format(new Date(selectedMsg.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}
+                            {format(new Date(selectedMsg.createdAt), "d MMMM yyyy '" + t("comments.at") + "' HH:mm", { locale: dateLocale })}
                           </span>
                         </div>
                       </div>

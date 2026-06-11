@@ -53,7 +53,7 @@ export default function GruppiPage() {
         setAllGroups(groupList);
       }
     } catch (err) {
-      console.error("Errore nel caricamento:", err);
+      console.error("Error loading:", err);
     } finally {
       setLoading(false);
     }
@@ -85,7 +85,7 @@ export default function GruppiPage() {
         setCreateOpen(false);
       }
     } catch (err) {
-      console.error("Errore nella creazione:", err);
+      console.error("Error creating:", err);
     } finally {
       setIsCreating(false);
     }
