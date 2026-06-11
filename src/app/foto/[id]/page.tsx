@@ -437,34 +437,112 @@ export default function FotoDetailPage() {
             )}
           </div>
 
-          {/* Thumbnail strip at bottom */}
-          {navData && navData.thumbnails.length > 1 && (
-            <div className="h-[72px] bg-[#111] border-t border-white/10 flex items-center px-2 gap-1 overflow-x-auto scrollbar-thin shrink-0">
-              <div
-                ref={thumbnailStripRef}
-                className="flex items-center gap-1.5 mx-auto"
+          {/* Thumbnail strip + Action bar at bottom */}
+          <div className="shrink-0 bg-[#111] border-t border-white/10">
+            {/* Action icons row - Flickr style */}
+            <div className="flex items-center justify-center gap-1 px-4 py-2 border-b border-white/5">
+              {/* Favorite / Star */}
+              <button
+                onClick={handleToggleFavorite}
+                className={`p-2 rounded-full transition-colors ${
+                  isFavorited
+                    ? "text-[#ff0084] hover:bg-[#ff0084]/10"
+                    : "text-white/50 hover:text-white hover:bg-white/5"
+                }`}
+                title={t("photo.favorite")}
               >
-                {navData.thumbnails.map((thumb) => (
-                  <Link
-                    key={thumb.id}
-                    href={`/foto/${thumb.id}`}
-                    data-current={thumb.isCurrent}
-                    className={`shrink-0 rounded overflow-hidden transition-all duration-200 ${
-                      thumb.isCurrent
-                        ? "ring-2 ring-[#0063dc] opacity-100 scale-105"
-                        : "opacity-50 hover:opacity-80"
-                    }`}
-                  >
-                    <img
-                      src={thumb.thumbnail}
-                      alt={thumb.title || ""}
-                      className="h-[56px] w-[56px] object-cover"
-                    />
-                  </Link>
-                ))}
-              </div>
+                <Heart className={`h-5 w-5 ${isFavorited ? "fill-[#ff0084]" : ""}`} />
+              </button>
+
+              {/* Add to album / Plus */}
+              <button
+                onClick={() => { setAddToOpen(true); setAddToTab("albums"); }}
+                className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+                title={t("photo.addTo")}
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+
+              {/* Share */}
+              <button
+                onClick={() => {
+                  const shareUrl = `https://my-project-ten-psi-39.vercel.app/foto/${photoId}`;
+                  if (navigator.share) {
+                    navigator.share({ title: photo.title, url: shareUrl });
+                  } else {
+                    navigator.clipboard.writeText(shareUrl);
+                  }
+                }}
+                className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+                title={t("photo.share")}
+              >
+                <Share2 className="h-5 w-5" />
+              </button>
+
+              {/* Download */}
+              <a
+                href={photo.filepath}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+                title={t("photo.download")}
+              >
+                <Download className="h-5 w-5" />
+              </a>
+
+              {/* More actions (owner) */}
+              {isOwner && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors" title={t("photo.edit")}>
+                      <MoreHorizontal className="h-5 w-5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-[#2a2a2d] border-white/10">
+                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setIsEditing(true)}>
+                      <Edit3 className="h-4 w-4 mr-2" /> {t("photo.edit")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => { setAddToOpen(true); setAddToTab("groups"); }}>
+                      <Users className="h-4 w-4 mr-2" /> {t("photo.addToGroups")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-400 focus:text-red-300 focus:bg-white/5 cursor-pointer" onClick={handleDelete}>
+                      <Trash2 className="h-4 w-4 mr-2" /> {t("photo.deletePhoto")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
-          )}
+
+            {/* Thumbnail strip */}
+            {navData && navData.thumbnails.length > 1 && (
+              <div className="flex items-center px-2 gap-1 overflow-x-auto py-1.5 scrollbar-thin">
+                <div
+                  ref={thumbnailStripRef}
+                  className="flex items-center gap-1.5 mx-auto"
+                >
+                  {navData.thumbnails.map((thumb) => (
+                    <Link
+                      key={thumb.id}
+                      href={`/foto/${thumb.id}`}
+                      data-current={thumb.isCurrent}
+                      className={`shrink-0 rounded overflow-hidden transition-all duration-200 ${
+                        thumb.isCurrent
+                          ? "ring-2 ring-[#0063dc] opacity-100 scale-105"
+                          : "opacity-50 hover:opacity-80"
+                      }`}
+                    >
+                      <img
+                        src={thumb.thumbnail}
+                        alt={thumb.title || ""}
+                        className="h-[48px] w-[48px] object-cover"
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right sidebar (30%) */}
@@ -535,36 +613,38 @@ export default function FotoDetailPage() {
               </span>
             </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 flex-wrap">
+            {/* Action buttons in sidebar - compact icon+text style */}
+            <div className="flex items-center gap-1.5 flex-wrap">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handleToggleFavorite}
-                className={`gap-1.5 border-white/10 ${
+                className={`gap-1.5 ${
                   isFavorited
-                    ? "bg-[#ff0084]/10 border-[#ff0084]/30 text-[#ff0084]"
-                    : "text-white/70 hover:text-white hover:bg-white/5"
+                    ? "text-[#ff0084] hover:bg-[#ff0084]/10"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
                 }`}
               >
                 <Heart className={`h-4 w-4 ${isFavorited ? "fill-[#ff0084]" : ""}`} />
-                {t("photo.favorite")}
+                {favoriteCount}
               </Button>
 
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={() => { setAddToOpen(true); setAddToTab("albums"); }}
-                className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+                className="gap-1.5 text-white/60 hover:text-white hover:bg-white/5"
+                asChild
               >
-                <BookmarkPlus className="h-4 w-4" />
-                {t("photo.addTo")}
+                <a href={photo.filepath} download target="_blank" rel="noopener noreferrer">
+                  <Download className="h-4 w-4" />
+                  {t("photo.download")}
+                </a>
               </Button>
 
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+                className="gap-1.5 text-white/60 hover:text-white hover:bg-white/5"
                 onClick={() => {
                   const shareUrl = `https://my-project-ten-psi-39.vercel.app/foto/${photoId}`;
                   if (navigator.share) {
@@ -578,60 +658,27 @@ export default function FotoDetailPage() {
                 {t("photo.share")}
               </Button>
 
-              {/* Share on Flickr */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 border-white/10 text-[#ff0084]/70 hover:text-[#ff0084] hover:bg-[#ff0084]/5"
-                onClick={() => {
-                  const url = encodeURIComponent(`https://my-project-ten-psi-39.vercel.app/foto/${photoId}`);
-                  const title = encodeURIComponent(photo.title || 'Check out this photo on Memoro!');
-                  window.open(`https://www.flickr.com/share?url=${url}&title=${title}`, '_blank', 'width=600,height=400');
-                }}
-              >
-                <ExternalLink className="h-4 w-4" />
-                Flickr
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
-              >
-                <a href={photo.filepath} download target="_blank" rel="noopener noreferrer">
-                  <Download className="h-4 w-4" />
-                  {t("photo.download")}
-                </a>
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="border-white/10 text-white/70 hover:text-white hover:bg-white/5">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-[#2a2a2d] border-white/10">
-                  {isOwner && (
-                    <>
-                      <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setIsEditing(true)}>
-                        <Edit3 className="h-4 w-4 mr-2" /> {t("photo.edit")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => { setAddToOpen(true); setAddToTab("groups"); }}>
-                        <Users className="h-4 w-4 mr-2" /> {t("photo.addToGroups")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-400 focus:text-red-300 focus:bg-white/5 cursor-pointer" onClick={handleDelete}>
-                        <Trash2 className="h-4 w-4 mr-2" /> {t("photo.deletePhoto")}
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  {!isOwner && (
-                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer">
-                      {t("photo.report")}
+              {/* Owner actions */}
+              {isOwner && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="text-white/60 hover:text-white hover:bg-white/5">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-[#2a2a2d] border-white/10">
+                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setIsEditing(true)}>
+                      <Edit3 className="h-4 w-4 mr-2" /> {t("photo.edit")}
                     </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => { setAddToOpen(true); setAddToTab("groups"); }}>
+                      <Users className="h-4 w-4 mr-2" /> {t("photo.addToGroups")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-400 focus:text-red-300 focus:bg-white/5 cursor-pointer" onClick={handleDelete}>
+                      <Trash2 className="h-4 w-4 mr-2" /> {t("photo.deletePhoto")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
 
             {/* Editing save/cancel */}
