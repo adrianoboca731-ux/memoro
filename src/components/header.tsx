@@ -83,19 +83,19 @@ export function Header() {
           </span>
         </Link>
 
-        {/* Left nav - Only when logged in */}
-        {session?.user && (
-          <nav className="hidden md:flex items-center gap-0.5 ml-2">
-            <Link href="/esplora">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 text-sm text-white/60 hover:text-white hover:bg-white/5"
-              >
-                <Compass className="h-4 w-4 mr-1" />
-                {t("nav.explore")}
-              </Button>
-            </Link>
+        {/* Left nav - visible to all */}
+        <nav className="hidden md:flex items-center gap-0.5 ml-2">
+          <Link href="/esplora">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-sm text-white/60 hover:text-white hover:bg-white/5"
+            >
+              <Compass className="h-4 w-4 mr-1" />
+              {t("nav.explore")}
+            </Button>
+          </Link>
+          {session?.user && (
             <Link href="/carica">
               <Button
                 variant="ghost"
@@ -106,8 +106,28 @@ export function Header() {
                 <span className="hidden lg:inline">{t("nav.upload")}</span>
               </Button>
             </Link>
-          </nav>
-        )}
+          )}
+          <Link href="/album">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-sm text-white/60 hover:text-white hover:bg-white/5"
+            >
+              <ImageIcon className="h-4 w-4 mr-1" />
+              {t("nav.album")}
+            </Button>
+          </Link>
+          <Link href="/gruppi">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-sm text-white/60 hover:text-white hover:bg-white/5"
+            >
+              <Users className="h-4 w-4 mr-1" />
+              {t("nav.groups")}
+            </Button>
+          </Link>
+        </nav>
 
         {/* Search */}
         <form
