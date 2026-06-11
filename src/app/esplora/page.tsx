@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/header";
 import { PhotoCard } from "@/components/photo-card";
 import { EmptyState } from "@/components/empty-state";
-import { Compass, Eye, Clock, Camera } from "lucide-react";
+import { Compass, Eye, Clock, Camera, TrendingUp, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -14,11 +15,18 @@ import { useI18n } from "@/lib/i18n";
 
 type FilterType = "interesting" | "recent" | "popular";
 
+type TrendingTag = {
+  tag: string;
+  count: number;
+};
+
 export default function EsploraPage() {
   const { t } = useI18n();
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("interesting");
+  const [trendingTags, setTrendingTags] = useState<TrendingTag[]>([]);
+
   const fetchPhotos = useCallback(async () => {
     setLoading(true);
     try {
@@ -37,9 +45,25 @@ export default function EsploraPage() {
     }
   }, [filter]);
 
+  const fetchTrendingTags = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tags/trending");
+      if (res.ok) {
+        const data = await res.json();
+        setTrendingTags(data);
+      }
+    } catch (err) {
+      console.error("Error loading trending tags:", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchPhotos();
   }, [fetchPhotos]);
+
+  useEffect(() => {
+    fetchTrendingTags();
+  }, [fetchTrendingTags]);
 
   const filters: { key: FilterType; label: string; icon: typeof Compass }[] = [
     { key: "interesting", label: t("explore.interesting"), icon: Compass },
@@ -124,31 +148,59 @@ export default function EsploraPage() {
 
             {/* Sidebar */}
             <aside className="hidden lg:block w-72 shrink-0 space-y-6">
+              {/* Trending - only show when users have created tags */}
+              {trendingTags.length > 0 && (
+                <div className="bg-white/5 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2 mb-3">
+                    <TrendingUp className="h-4 w-4 text-[#ff0084]" />
+                    {t("explore.trending")}
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {trendingTags.map(({ tag, count }) => (
+                      <Link key={tag} href={`/cerca?q=${encodeURIComponent(tag)}`}>
+                        <Badge
+                          variant="secondary"
+                          className="text-xs bg-white/10 text-white/60 hover:bg-white/15 border-0 cursor-pointer"
+                        >
+                          <Hash className="h-3 w-3 mr-0.5" />
+                          {tag}
+                          <span className="ml-1 text-white/30">{count}</span>
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Most viewed today */}
               <div className="bg-white/5 rounded-lg p-4">
                 <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2 mb-3">
                   <Eye className="h-4 w-4 text-[#0063dc]" />
                   {t("explore.mostViewedToday")}
                 </h3>
-                <div className="space-y-2">
-                  {photos.slice(0, 5).map((photo) => (
-                    <Link
-                      key={photo.id}
-                      href={`/foto/${photo.id}`}
-                      className="flex items-center gap-2 text-sm text-white/60 hover:text-white/80 transition-colors"
-                    >
-                      <img
-                        src={photo.thumbnail || photo.filepath}
-                        alt={photo.title}
-                        className="w-10 h-10 rounded object-cover shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate text-xs">{photo.title}</p>
-                        <p className="text-[10px] text-white/30">{photo.views} {t("explore.views")}</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                {photos.length > 0 ? (
+                  <div className="space-y-2">
+                    {photos.slice(0, 5).map((photo) => (
+                      <Link
+                        key={photo.id}
+                        href={`/foto/${photo.id}`}
+                        className="flex items-center gap-2 text-sm text-white/60 hover:text-white/80 transition-colors"
+                      >
+                        <img
+                          src={photo.thumbnail || photo.filepath}
+                          alt={photo.title}
+                          className="w-10 h-10 rounded object-cover shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-xs">{photo.title}</p>
+                          <p className="text-[10px] text-white/30">{photo.views} {t("explore.views")}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-white/30">{t("common.noResults")}</p>
+                )}
               </div>
             </aside>
           </div>
