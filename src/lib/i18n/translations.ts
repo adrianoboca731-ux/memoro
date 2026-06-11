@@ -521,7 +521,28 @@ const it: TranslationDict = {
   "profile.galleryCount": "Gallerie",
   "profile.groupCount": "Gruppi",
   "profile.followerCount": "Follower",
-  "messages.toLabel": "A:"
+  "messages.toLabel": "A:",
+  "profile.coverTitle": "Immagine di Copertina",
+  "profile.coverDesc": "Personalizza la copertina del tuo profilo con un'immagine unica",
+  "profile.coverHint": "Consigliato: 2000x800px. Formati: JPEG, PNG, GIF, WebP. Max 10MB.",
+  "profile.changeCover": "Cambia copertina",
+  "profile.removeCover": "Rimuovi copertina",
+  "profile.coverUpdated": "Copertina aggiornata",
+  "profile.coverRemoved": "Copertina rimossa",
+  "profile.coverUploadError": "Errore nel caricamento della copertina",
+  "profile.coverInvalidType": "Formato non valido. Usa JPEG, PNG, GIF o WebP.",
+  "profile.coverTooLarge": "Immagine troppo grande. Massimo 10MB.",
+  "profile.logoTitle": "Logo Personalizzato",
+  "profile.logoDesc": "Aggiungi un logo o badge che appare accanto al tuo avatar",
+  "profile.logoHint": "Consigliato: 500x500px quadrato. Formati: JPEG, PNG, GIF, WebP. Max 5MB.",
+  "profile.changeLogo": "Cambia logo",
+  "profile.removeLogo": "Rimuovi logo",
+  "profile.addLogo": "Aggiungi logo",
+  "profile.logoUpdated": "Logo aggiornato",
+  "profile.logoRemoved": "Logo rimosso",
+  "profile.logoUploadError": "Errore nel caricamento del logo",
+  "profile.logoInvalidType": "Formato non valido. Usa JPEG, PNG, GIF o WebP.",
+  "profile.logoTooLarge": "Immagine troppo grande. Massimo 5MB."
 };
 
 const en: TranslationDict = {
@@ -1032,7 +1053,28 @@ const en: TranslationDict = {
   "profile.galleryCount": "Galleries",
   "profile.groupCount": "Groups",
   "profile.followerCount": "Followers",
-  "messages.toLabel": "To:"
+  "messages.toLabel": "To:",
+  "profile.coverTitle": "Cover Image",
+  "profile.coverDesc": "Customize your profile cover with a unique image",
+  "profile.coverHint": "Recommended: 2000x800px. Formats: JPEG, PNG, GIF, WebP. Max 10MB.",
+  "profile.changeCover": "Change cover",
+  "profile.removeCover": "Remove cover",
+  "profile.coverUpdated": "Cover updated",
+  "profile.coverRemoved": "Cover removed",
+  "profile.coverUploadError": "Error uploading cover image",
+  "profile.coverInvalidType": "Invalid format. Use JPEG, PNG, GIF or WebP.",
+  "profile.coverTooLarge": "Image too large. Maximum 10MB.",
+  "profile.logoTitle": "Custom Logo",
+  "profile.logoDesc": "Add a logo or badge that appears next to your avatar",
+  "profile.logoHint": "Recommended: 500x500px square. Formats: JPEG, PNG, GIF, WebP. Max 5MB.",
+  "profile.changeLogo": "Change logo",
+  "profile.removeLogo": "Remove logo",
+  "profile.addLogo": "Add logo",
+  "profile.logoUpdated": "Logo updated",
+  "profile.logoRemoved": "Logo removed",
+  "profile.logoUploadError": "Error uploading logo",
+  "profile.logoInvalidType": "Invalid format. Use JPEG, PNG, GIF or WebP.",
+  "profile.logoTooLarge": "Image too large. Maximum 5MB."
 };
 
 const fr: TranslationDict = {
@@ -1543,7 +1585,28 @@ const fr: TranslationDict = {
   "profile.galleryCount": "Galeries",
   "profile.groupCount": "Groupes",
   "profile.followerCount": "Abonnés",
-  "messages.toLabel": "À :"
+  "messages.toLabel": "À :",
+  "profile.coverTitle": "Image de Couverture",
+  "profile.coverDesc": "Personnalisez la couverture de votre profil avec une image unique",
+  "profile.coverHint": "Recommandé : 2000x800px. Formats : JPEG, PNG, GIF, WebP. Max 10 Mo.",
+  "profile.changeCover": "Changer la couverture",
+  "profile.removeCover": "Supprimer la couverture",
+  "profile.coverUpdated": "Couverture mise à jour",
+  "profile.coverRemoved": "Couverture supprimée",
+  "profile.coverUploadError": "Erreur lors du téléchargement de la couverture",
+  "profile.coverInvalidType": "Format invalide. Utilisez JPEG, PNG, GIF ou WebP.",
+  "profile.coverTooLarge": "Image trop grande. Maximum 10 Mo.",
+  "profile.logoTitle": "Logo Personnalisé",
+  "profile.logoDesc": "Ajoutez un logo ou badge qui apparaît à côté de votre avatar",
+  "profile.logoHint": "Recommandé : 500x500px carré. Formats : JPEG, PNG, GIF, WebP. Max 5 Mo.",
+  "profile.changeLogo": "Changer le logo",
+  "profile.removeLogo": "Supprimer le logo",
+  "profile.addLogo": "Ajouter un logo",
+  "profile.logoUpdated": "Logo mis à jour",
+  "profile.logoRemoved": "Logo supprimé",
+  "profile.logoUploadError": "Erreur lors du téléchargement du logo",
+  "profile.logoInvalidType": "Format invalide. Utilisez JPEG, PNG, GIF ou WebP.",
+  "profile.logoTooLarge": "Image trop grande. Maximum 5 Mo."
 };
 
 const de: TranslationDict = {
@@ -2054,7 +2117,28 @@ const de: TranslationDict = {
   "profile.galleryCount": "Galerien",
   "profile.groupCount": "Gruppen",
   "profile.followerCount": "Follower",
-  "messages.toLabel": "An:"
+  "messages.toLabel": "An:",
+  "profile.coverTitle": "Titelbild",
+  "profile.coverDesc": "Passen Sie Ihr Profil-Titelbild mit einem einzigartigen Bild an",
+  "profile.coverHint": "Empfohlen: 2000x800px. Formate: JPEG, PNG, GIF, WebP. Max 10 MB.",
+  "profile.changeCover": "Titelbild ändern",
+  "profile.removeCover": "Titelbild entfernen",
+  "profile.coverUpdated": "Titelbild aktualisiert",
+  "profile.coverRemoved": "Titelbild entfernt",
+  "profile.coverUploadError": "Fehler beim Hochladen des Titelbilds",
+  "profile.coverInvalidType": "Ungültiges Format. Verwenden Sie JPEG, PNG, GIF oder WebP.",
+  "profile.coverTooLarge": "Bild zu groß. Maximal 10 MB.",
+  "profile.logoTitle": "Benutzerdefiniertes Logo",
+  "profile.logoDesc": "Fügen Sie ein Logo oder Badge hinzu, das neben Ihrem Avatar erscheint",
+  "profile.logoHint": "Empfohlen: 500x500px quadratisch. Formate: JPEG, PNG, GIF, WebP. Max 5 MB.",
+  "profile.changeLogo": "Logo ändern",
+  "profile.removeLogo": "Logo entfernen",
+  "profile.addLogo": "Logo hinzufügen",
+  "profile.logoUpdated": "Logo aktualisiert",
+  "profile.logoRemoved": "Logo entfernt",
+  "profile.logoUploadError": "Fehler beim Hochladen des Logos",
+  "profile.logoInvalidType": "Ungültiges Format. Verwenden Sie JPEG, PNG, GIF oder WebP.",
+  "profile.logoTooLarge": "Bild zu groß. Maximal 5 MB."
 };
 
 const es: TranslationDict = {
@@ -2565,7 +2649,28 @@ const es: TranslationDict = {
   "profile.galleryCount": "Galerías",
   "profile.groupCount": "Grupos",
   "profile.followerCount": "Seguidores",
-  "messages.toLabel": "A:"
+  "messages.toLabel": "A:",
+  "profile.coverTitle": "Imagen de Portada",
+  "profile.coverDesc": "Personaliza la portada de tu perfil con una imagen única",
+  "profile.coverHint": "Recomendado: 2000x800px. Formatos: JPEG, PNG, GIF, WebP. Máx 10MB.",
+  "profile.changeCover": "Cambiar portada",
+  "profile.removeCover": "Eliminar portada",
+  "profile.coverUpdated": "Portada actualizada",
+  "profile.coverRemoved": "Portada eliminada",
+  "profile.coverUploadError": "Error al subir la portada",
+  "profile.coverInvalidType": "Formato inválido. Usa JPEG, PNG, GIF o WebP.",
+  "profile.coverTooLarge": "Imagen demasiado grande. Máximo 10MB.",
+  "profile.logoTitle": "Logo Personalizado",
+  "profile.logoDesc": "Añade un logo o insignia que aparece junto a tu avatar",
+  "profile.logoHint": "Recomendado: 500x500px cuadrado. Formatos: JPEG, PNG, GIF, WebP. Máx 5MB.",
+  "profile.changeLogo": "Cambiar logo",
+  "profile.removeLogo": "Eliminar logo",
+  "profile.addLogo": "Añadir logo",
+  "profile.logoUpdated": "Logo actualizado",
+  "profile.logoRemoved": "Logo eliminado",
+  "profile.logoUploadError": "Error al subir el logo",
+  "profile.logoInvalidType": "Formato inválido. Usa JPEG, PNG, GIF o WebP.",
+  "profile.logoTooLarge": "Imagen demasiado grande. Máximo 5MB."
 };
 
 const ptBR: TranslationDict = {
@@ -3076,7 +3181,28 @@ const ptBR: TranslationDict = {
   "profile.galleryCount": "Galerias",
   "profile.groupCount": "Grupos",
   "profile.followerCount": "Seguidores",
-  "messages.toLabel": "Para:"
+  "messages.toLabel": "Para:",
+  "profile.coverTitle": "Imagem de Capa",
+  "profile.coverDesc": "Personalize a capa do seu perfil com uma imagem única",
+  "profile.coverHint": "Recomendado: 2000x800px. Formatos: JPEG, PNG, GIF, WebP. Máx 10MB.",
+  "profile.changeCover": "Alterar capa",
+  "profile.removeCover": "Remover capa",
+  "profile.coverUpdated": "Capa atualizada",
+  "profile.coverRemoved": "Capa removida",
+  "profile.coverUploadError": "Erro ao enviar a capa",
+  "profile.coverInvalidType": "Formato inválido. Use JPEG, PNG, GIF ou WebP.",
+  "profile.coverTooLarge": "Imagem muito grande. Máximo 10MB.",
+  "profile.logoTitle": "Logo Personalizado",
+  "profile.logoDesc": "Adicione um logo ou badge que aparece ao lado do seu avatar",
+  "profile.logoHint": "Recomendado: 500x500px quadrado. Formatos: JPEG, PNG, GIF, WebP. Máx 5MB.",
+  "profile.changeLogo": "Alterar logo",
+  "profile.removeLogo": "Remover logo",
+  "profile.addLogo": "Adicionar logo",
+  "profile.logoUpdated": "Logo atualizado",
+  "profile.logoRemoved": "Logo removido",
+  "profile.logoUploadError": "Erro ao enviar o logo",
+  "profile.logoInvalidType": "Formato inválido. Use JPEG, PNG, GIF ou WebP.",
+  "profile.logoTooLarge": "Imagem muito grande. Máximo 5MB."
 };
 
 const ja: TranslationDict = {
@@ -3587,7 +3713,28 @@ const ja: TranslationDict = {
   "profile.galleryCount": "ギャラリー",
   "profile.groupCount": "グループ",
   "profile.followerCount": "フォロワー",
-  "messages.toLabel": "宛先:"
+  "messages.toLabel": "宛先:",
+  "profile.coverTitle": "カバー画像",
+  "profile.coverDesc": "ユニークな画像でプロフィールのカバーをカスタマイズ",
+  "profile.coverHint": "推奨: 2000x800px。形式: JPEG, PNG, GIF, WebP。最大10MB。",
+  "profile.changeCover": "カバーを変更",
+  "profile.removeCover": "カバーを削除",
+  "profile.coverUpdated": "カバーを更新しました",
+  "profile.coverRemoved": "カバーを削除しました",
+  "profile.coverUploadError": "カバーのアップロードに失敗しました",
+  "profile.coverInvalidType": "無効な形式です。JPEG, PNG, GIF, WebPを使用してください。",
+  "profile.coverTooLarge": "画像が大きすぎます。最大10MB。",
+  "profile.logoTitle": "カスタムロゴ",
+  "profile.logoDesc": "アバターの横に表示されるロゴやバッジを追加",
+  "profile.logoHint": "推奨: 500x500px正方形。形式: JPEG, PNG, GIF, WebP。最大5MB。",
+  "profile.changeLogo": "ロゴを変更",
+  "profile.removeLogo": "ロゴを削除",
+  "profile.addLogo": "ロゴを追加",
+  "profile.logoUpdated": "ロゴを更新しました",
+  "profile.logoRemoved": "ロゴを削除しました",
+  "profile.logoUploadError": "ロゴのアップロードに失敗しました",
+  "profile.logoInvalidType": "無効な形式です。JPEG, PNG, GIF, WebPを使用してください。",
+  "profile.logoTooLarge": "画像が大きすぎます。最大5MB。"
 };
 
 const ko: TranslationDict = {
@@ -4098,7 +4245,28 @@ const ko: TranslationDict = {
   "profile.galleryCount": "갤러리",
   "profile.groupCount": "그룹",
   "profile.followerCount": "팔로워",
-  "messages.toLabel": "받는 사람:"
+  "messages.toLabel": "받는 사람:",
+  "profile.coverTitle": "커버 이미지",
+  "profile.coverDesc": "고유한 이미지로 프로필 커버를 맞춤 설정하세요",
+  "profile.coverHint": "권장: 2000x800px. 형식: JPEG, PNG, GIF, WebP. 최대 10MB.",
+  "profile.changeCover": "커버 변경",
+  "profile.removeCover": "커버 제거",
+  "profile.coverUpdated": "커버가 업데이트되었습니다",
+  "profile.coverRemoved": "커버가 제거되었습니다",
+  "profile.coverUploadError": "커버 업로드 오류",
+  "profile.coverInvalidType": "잘못된 형식입니다. JPEG, PNG, GIF, WebP를 사용하세요.",
+  "profile.coverTooLarge": "이미지가 너무 큽니다. 최대 10MB.",
+  "profile.logoTitle": "맞춤 로고",
+  "profile.logoDesc": "아바타 옆에 표시되는 로고나 배지를 추가하세요",
+  "profile.logoHint": "권장: 500x500px 정사각형. 형식: JPEG, PNG, GIF, WebP. 최대 5MB.",
+  "profile.changeLogo": "로고 변경",
+  "profile.removeLogo": "로고 제거",
+  "profile.addLogo": "로고 추가",
+  "profile.logoUpdated": "로고가 업데이트되었습니다",
+  "profile.logoRemoved": "로고가 제거되었습니다",
+  "profile.logoUploadError": "로고 업로드 오류",
+  "profile.logoInvalidType": "잘못된 형식입니다. JPEG, PNG, GIF, WebP를 사용하세요.",
+  "profile.logoTooLarge": "이미지가 너무 큽니다. 최대 5MB."
 };
 
 const zhCN: TranslationDict = {
@@ -4609,7 +4777,28 @@ const zhCN: TranslationDict = {
   "profile.galleryCount": "画廊",
   "profile.groupCount": "群组",
   "profile.followerCount": "关注者",
-  "messages.toLabel": "收件人:"
+  "messages.toLabel": "收件人:",
+  "profile.coverTitle": "封面图片",
+  "profile.coverDesc": "用独特的图片自定义您的个人资料封面",
+  "profile.coverHint": "建议：2000x800px。格式：JPEG、PNG、GIF、WebP。最大10MB。",
+  "profile.changeCover": "更换封面",
+  "profile.removeCover": "移除封面",
+  "profile.coverUpdated": "封面已更新",
+  "profile.coverRemoved": "封面已移除",
+  "profile.coverUploadError": "封面上传失败",
+  "profile.coverInvalidType": "格式无效。请使用JPEG、PNG、GIF或WebP。",
+  "profile.coverTooLarge": "图片太大。最大10MB。",
+  "profile.logoTitle": "自定义标志",
+  "profile.logoDesc": "添加一个显示在头像旁边的标志或徽章",
+  "profile.logoHint": "建议：500x500px正方形。格式：JPEG、PNG、GIF、WebP。最大5MB。",
+  "profile.changeLogo": "更换标志",
+  "profile.removeLogo": "移除标志",
+  "profile.addLogo": "添加标志",
+  "profile.logoUpdated": "标志已更新",
+  "profile.logoRemoved": "标志已移除",
+  "profile.logoUploadError": "标志上传失败",
+  "profile.logoInvalidType": "格式无效。请使用JPEG、PNG、GIF或WebP。",
+  "profile.logoTooLarge": "图片太大。最大5MB。"
 };
 
 const zhTW: TranslationDict = {
@@ -5120,7 +5309,28 @@ const zhTW: TranslationDict = {
   "profile.galleryCount": "藝廊",
   "profile.groupCount": "群組",
   "profile.followerCount": "追蹤者",
-  "messages.toLabel": "收件人:"
+  "messages.toLabel": "收件人:",
+  "profile.coverTitle": "封面圖片",
+  "profile.coverDesc": "用獨特的圖片自訂您的個人資料封面",
+  "profile.coverHint": "建議：2000x800px。格式：JPEG、PNG、GIF、WebP。最大10MB。",
+  "profile.changeCover": "更換封面",
+  "profile.removeCover": "移除封面",
+  "profile.coverUpdated": "封面已更新",
+  "profile.coverRemoved": "封面已移除",
+  "profile.coverUploadError": "封面上傳失敗",
+  "profile.coverInvalidType": "格式無效。請使用JPEG、PNG、GIF或WebP。",
+  "profile.coverTooLarge": "圖片太大。最大10MB。",
+  "profile.logoTitle": "自訂標誌",
+  "profile.logoDesc": "新增一個顯示在頭像旁邊的標誌或徽章",
+  "profile.logoHint": "建議：500x500px正方形。格式：JPEG、PNG、GIF、WebP。最大5MB。",
+  "profile.changeLogo": "更換標誌",
+  "profile.removeLogo": "移除標誌",
+  "profile.addLogo": "新增標誌",
+  "profile.logoUpdated": "標誌已更新",
+  "profile.logoRemoved": "標誌已移除",
+  "profile.logoUploadError": "標誌上傳失敗",
+  "profile.logoInvalidType": "格式無效。請使用JPEG、PNG、GIF或WebP。",
+  "profile.logoTooLarge": "圖片太大。最大5MB。"
 };
 
 export const translations: Record<string, TranslationDict> = { it, en, fr, de, es, "pt-BR": ptBR, ja, ko, "zh-CN": zhCN, "zh-TW": zhTW };

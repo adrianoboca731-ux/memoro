@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const safetyLevel = searchParams.get("safetyLevel") || "";
     const search = searchParams.get("search") || "";
     const tag = searchParams.get("tag") || "";
+    const favoritesUserId = searchParams.get("favorites") || "";
 
     const session = await getServerSession(authOptions);
     let userSafeSearch = "moderate";
@@ -55,6 +56,13 @@ export async function GET(request: NextRequest) {
 
     if (tag) {
       where.tags = { contains: tag, mode: "insensitive" };
+    }
+
+    // Favorites filter: find photos favorited by a specific user
+    if (favoritesUserId) {
+      where.favorites = {
+        some: { userId: favoritesUserId },
+      };
     }
 
     const skip = (page - 1) * limit;

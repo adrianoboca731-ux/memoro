@@ -17,6 +17,8 @@ export async function GET(
         username: true,
         email: true,
         avatar: true,
+        coverImage: true,
+        logoImage: true,
         bio: true,
         location: true,
         website: true,
@@ -82,7 +84,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const allowedFields = ["name", "bio", "location", "website"];
+    const allowedFields = ["name", "bio", "location", "website", "coverImage", "logoImage"];
     const updateData: Record<string, string | null> = {};
 
     for (const field of allowedFields) {
@@ -100,6 +102,8 @@ export async function PUT(
         username: true,
         email: true,
         avatar: true,
+        coverImage: true,
+        logoImage: true,
         bio: true,
         location: true,
         website: true,

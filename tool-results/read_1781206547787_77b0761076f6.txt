@@ -1,0 +1,590 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect, useCallback } from "react";
+     4→import { useParams } from "next/navigation";
+     5→import { useSession } from "next-auth/react";
+     6→import { Header } from "@/components/header";
+     7→import { PhotoCard } from "@/components/photo-card";
+     8→import { FollowButton } from "@/components/follow-button";
+     9→import { EmptyState } from "@/components/empty-state";
+    10→import {
+    11→  Camera,
+    12→  Image as ImageIcon,
+    13→  Heart,
+    14→  Users,
+    15→  LayoutGrid,
+    16→  FolderOpen,
+    17→  MapPin,
+    18→  Globe,
+    19→  Mail,
+    20→  Calendar,
+    21→  BarChart3,
+    22→  Film,
+    23→  Info,
+    24→  Eye,
+    25→  MessageSquare,
+    26→  TrendingUp,
+    27→  ChevronDown,
+    28→  Search,
+    29→  ArrowUpDown,
+    30→  Grid3X3,
+    31→  List,
+    32→} from "lucide-react";
+    33→import { Button } from "@/components/ui/button";
+    34→import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+    35→import { Card, CardContent } from "@/components/ui/card";
+    36→import { Separator } from "@/components/ui/separator";
+    37→import { Skeleton } from "@/components/ui/skeleton";
+    38→import { Badge } from "@/components/ui/badge";
+    39→import {
+    40→  DropdownMenu,
+    41→  DropdownMenuContent,
+    42→  DropdownMenuItem,
+    43→  DropdownMenuTrigger,
+    44→} from "@/components/ui/dropdown-menu";
+    45→import { motion } from "framer-motion";
+    46→import { format } from "date-fns";
+    47→import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
+    48→import Link from "next/link";
+    49→import { useI18n } from "@/lib/i18n";
+    50→
+    51→const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+    52→
+    53→// Flickr-style tabs: Info, Fotostream, Album, Preferite, Gallerie, Gruppi
+    54→const profileTabs = [
+    55→  { key: "info", labelKey: "profile.tabInfo" },
+    56→  { key: "photostream", labelKey: "profile.tabPhotostream" },
+    57→  { key: "albums", labelKey: "profile.tabAlbums" },
+    58→  { key: "favorites", labelKey: "profile.tabFavorites" },
+    59→  { key: "galleries", labelKey: "profile.tabGalleries" },
+    60→  { key: "groups", labelKey: "profile.tabGroups" },
+    61→] as const;
+    62→
+    63→type TabKey = typeof profileTabs[number]['key'];
+    64→
+    65→export default function ProfiloPage() {
+    66→  const { t, locale } = useI18n();
+    67→  const dateLocale = dateLocales[locale] || it;
+    68→  const params = useParams();
+    69→  const { data: session } = useSession();
+    70→  const username = params.username as string;
+    71→
+    72→  const [user, setUser] = useState<any>(null);
+    73→  const [photos, setPhotos] = useState<any[]>([]);
+    74→  const [albums, setAlbums] = useState<any[]>([]);
+    75→  const [favorites, setFavorites] = useState<any[]>([]);
+    76→  const [galleries, setGalleries] = useState<any[]>([]);
+    77→  const [groups, setGroups] = useState<any[]>([]);
+    78→  const [loading, setLoading] = useState(true);
+    79→  const [isFollowing, setIsFollowing] = useState(false);
+    80→  const [activeTab, setActiveTab] = useState<TabKey>("photostream");
+    81→  const [sortOrder, setSortOrder] = useState<"date" | "views" | "favorites">("date");
+    82→
+    83→  const fetchUser = useCallback(async () => {
+    84→    setLoading(true);
+    85→    try {
+    86→      const res = await fetch(`/api/users/${username}`);
+    87→      if (res.ok) {
+    88→        const data = await res.json();
+    89→        setUser(data);
+    90→      }
+    91→    } catch (err) {
+    92→      console.error("Error loading profile:", err);
+    93→    } finally {
+    94→      setLoading(false);
+    95→    }
+    96→  }, [username]);
+    97→
+    98→  const fetchPhotos = useCallback(async () => {
+    99→    if (!user) return;
+   100→    try {
+   101→      const res = await fetch(`/api/photos?userId=${user.id}&limit=100`);
+   102→      if (res.ok) {
+   103→        const data = await res.json();
+   104→        setPhotos(data.photos || data);
+   105→      }
+   106→    } catch {}
+   107→  }, [user]);
+   108→
+   109→  const fetchAlbums = useCallback(async () => {
+   110→    if (!user) return;
+   111→    try {
+   112→      const res = await fetch(`/api/albums?userId=${user.id}`);
+   113→      if (res.ok) {
+   114→        const data = await res.json();
+   115→        setAlbums(Array.isArray(data) ? data : []);
+   116→      }
+   117→    } catch {}
+   118→  }, [user]);
+   119→
+   120→  const fetchFavorites = useCallback(async () => {
+   121→    if (!user) return;
+   122→    try {
+   123→      const res = await fetch(`/api/photos?favorites=${user.id}&limit=100`);
+   124→      if (res.ok) {
+   125→        const data = await res.json();
+   126→        setFavorites(data.photos || data);
+   127→      }
+   128→    } catch {}
+   129→  }, [user]);
+   130→
+   131→  const fetchGalleries = useCallback(async () => {
+   132→    if (!user) return;
+   133→    try {
+   134→      const res = await fetch(`/api/galleries?userId=${user.id}`);
+   135→      if (res.ok) {
+   136→        const data = await res.json();
+   137→        setGalleries(Array.isArray(data) ? data : []);
+   138→      }
+   139→    } catch {}
+   140→  }, [user]);
+   141→
+   142→  const fetchGroups = useCallback(async () => {
+   143→    if (!user) return;
+   144→    try {
+   145→      const res = await fetch(`/api/groups?userId=${user.id}`);
+   146→      if (res.ok) {
+   147→        const data = await res.json();
+   148→        setGroups(Array.isArray(data) ? data : []);
+   149→      }
+   150→    } catch {}
+   151→  }, [user]);
+   152→
+   153→  useEffect(() => {
+   154→    fetchUser();
+   155→  }, [fetchUser]);
+   156→
+   157→  useEffect(() => {
+   158→    if (user) {
+   159→      fetchPhotos();
+   160→      fetchAlbums();
+   161→      fetchFavorites();
+   162→      fetchGalleries();
+   163→      fetchGroups();
+   164→    }
+   165→  }, [user, fetchPhotos, fetchAlbums, fetchFavorites, fetchGalleries, fetchGroups]);
+   166→
+   167→  const isOwnProfile = session?.user && user && (session.user as any).id === user.id;
+   168→
+   169→  // Sort photos based on selected order
+   170→  const sortedPhotos = useCallback((photoList: any[]) => {
+   171→    const list = [...photoList];
+   172→    switch (sortOrder) {
+   173→      case "views": return list.sort((a, b) => (b.views || 0) - (a.views || 0));
+   174→      case "favorites": return list.sort((a, b) => (b.favoriteCount || 0) - (a.favoriteCount || 0));
+   175→      default: return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+   176→    }
+   177→  }, [sortOrder]);
+   178→
+   179→  if (loading) {
+   180→    return (
+   181→      <div className="min-h-screen bg-[#0d0d0d]">
+   182→        <Header />
+   183→        <div className="max-w-6xl mx-auto px-4 py-6 space-y-4">
+   184→          <div className="flex items-center gap-4">
+   185→            <Skeleton className="w-24 h-24 rounded-full bg-white/5" />
+   186→            <div className="space-y-2">
+   187→              <Skeleton className="h-6 w-48 bg-white/5" />
+   188→              <Skeleton className="h-4 w-32 bg-white/5" />
+   189→            </div>
+   190→          </div>
+   191→        </div>
+   192→      </div>
+   193→    );
+   194→  }
+   195→
+   196→  if (!user) {
+   197→    return (
+   198→      <div className="min-h-screen bg-[#0d0d0d]">
+   199→        <Header />
+   200→        <EmptyState icon={Users} title={t("profile.userNotFound")} description={t("profile.userNotFoundDesc")} />
+   201→      </div>
+   202→    );
+   203→  }
+   204→
+   205→  return (
+   206→    <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
+   207→      <Header />
+   208→      <main className="flex-1">
+   209→        {/* Cover banner - blurred like Flickr */}
+   210→        <div className="h-40 md:h-56 relative overflow-hidden">
+   211→          {user.avatar ? (
+   212→            <>
+   213→              <img
+   214→                src={user.avatar}
+   215→                alt=""
+   216→                className="w-full h-full object-cover blur-2xl scale-110 opacity-60"
+   217→              />
+   218→              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0d0d0d]/30 to-[#0d0d0d]" />
+   219→            </>
+   220→          ) : (
+   221→            <div className="w-full h-full bg-gradient-to-br from-[#0063dc]/30 to-[#ff0084]/30" />
+   222→          )}
+   223→        </div>
+   224→
+   225→        <div className="max-w-6xl mx-auto px-4 -mt-20 relative z-10">
+   226→          {/* Profile header - Flickr style */}
+   227→          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+   228→            <div className="flex items-end gap-5">
+   229→              {/* Avatar */}
+   230→              <Avatar className="h-28 w-28 md:h-36 md:w-36 border-4 border-[#0d0d0d] shrink-0 shadow-xl">
+   231→                <AvatarImage src={user.avatar || undefined} alt={user.name} />
+   232→                <AvatarFallback className="bg-[#0063dc] text-white text-4xl">
+   233→                  {user.name.charAt(0).toUpperCase()}
+   234→                </AvatarFallback>
+   235→              </Avatar>
+   236→
+   237→              {/* Name + actions */}
+   238→              <div className="flex-1 min-w-0 pb-2">
+   239→                <div className="flex items-center gap-3 flex-wrap">
+   240→                  <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name}</h1>
+   241→                  <div className="flex items-center gap-2">
+   242→                    {!isOwnProfile && (
+   243→                      <>
+   244→                        <FollowButton userId={user.id} username={user.username} initialFollowing={isFollowing} />
+   245→                        <Link href="/messaggi">
+   246→                          <Button variant="outline" size="sm" className="gap-1.5 border-white/10 text-white/70 hover:bg-white/5 h-8">
+   247→                            <Mail className="h-3.5 w-3.5" /> {t("profile.sendMessage")}
+   248→                          </Button>
+   249→                        </Link>
+   250→                      </>
+   251→                    )}
+   252→                    {isOwnProfile && (
+   253→                      <Link href="/impostazioni">
+   254→                        <Button variant="outline" size="sm" className="gap-1.5 border-white/10 text-white/70 hover:bg-white/5 h-8">
+   255→                          {t("profile.editProfile")}
+   256→                        </Button>
+   257→                      </Link>
+   258→                    )}
+   259→                  </div>
+   260→                </div>
+   261→              </div>
+   262→            </div>
+   263→
+   264→            {/* Profile info row - Flickr style */}
+   265→            <div className="flex items-center gap-5 mt-3 text-sm text-white/40 flex-wrap">
+   266→              <span className="flex items-center gap-1.5">
+   267→                <ImageIcon className="h-4 w-4" />
+   268→                <span className="text-white/80 font-medium">{user.photoCount || photos.length}</span> {t("common.photos")}
+   269→              </span>
+   270→              {user.location && (
+   271→                <span className="flex items-center gap-1.5">
+   272→                  <MapPin className="h-4 w-4" />
+   273→                  {user.location}
+   274→                </span>
+   275→              )}
+   276→              <span className="flex items-center gap-1.5">
+   277→                <Calendar className="h-4 w-4" />
+   278→                {t("profile.memberSince")} {format(new Date(user.createdAt), "yyyy", { locale: dateLocale })}
+   279→              </span>
+   280→              <span className="flex items-center gap-1.5">
+   281→                <Users className="h-4 w-4" />
+   282→                <span className="text-white/80 font-medium">{user.followerCount || 0}</span> {t("common.followers")}
+   283→              </span>
+   284→              <span className="flex items-center gap-1.5">
+   285→                <Users className="h-4 w-4" />
+   286→                <span className="text-white/80 font-medium">{user.followingCount || 0}</span> {t("common.following")}
+   287→              </span>
+   288→              {user.website && (
+   289→                <a href={user.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[#0063dc] transition-colors">
+   290→                  <Globe className="h-4 w-4" />
+   291→                  {user.website.replace(/^https?:\/\//, "")}
+   292→                </a>
+   293→              )}
+   294→            </div>
+   295→          </motion.div>
+   296→
+   297→          {/* Flickr-style tab navigation */}
+   298→          <div className="mt-5 border-b border-white/10">
+   299→            <nav className="flex items-center gap-0 -mb-px overflow-x-auto scrollbar-hide">
+   300→              {profileTabs.map((tab) => {
+   301→                const isActive = activeTab === tab.key;
+   302→                return (
+   303→                  <button
+   304→                    key={tab.key}
+   305→                    onClick={() => setActiveTab(tab.key)}
+   306→                    className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+   307→                      isActive
+   308→                        ? "border-[#0063dc] text-white"
+   309→                        : "border-transparent text-white/40 hover:text-white/60 hover:border-white/20"
+   310→                    }`}
+   311→                  >
+   312→                    {t(tab.labelKey)}
+   313→                  </button>
+   314→                );
+   315→              })}
+   316→            </nav>
+   317→          </div>
+   318→
+   319→          {/* Sort bar for photo tabs */}
+   320→          {(activeTab === "photostream" || activeTab === "favorites") && (
+   321→            <div className="flex items-center justify-between mt-4 mb-2">
+   322→              <div className="flex items-center gap-2">
+   323→                <DropdownMenu>
+   324→                  <DropdownMenuTrigger asChild>
+   325→                    <Button variant="ghost" size="sm" className="text-white/40 hover:text-white/60 hover:bg-white/5 gap-1 h-8 text-xs">
+   326→                      <ArrowUpDown className="h-3.5 w-3.5" />
+   327→                      {sortOrder === "date" ? t("profile.sortByDate") : sortOrder === "views" ? t("profile.sortByViews") : t("profile.sortByFavorites")}
+   328→                      <ChevronDown className="h-3 w-3" />
+   329→                    </Button>
+   330→                  </DropdownMenuTrigger>
+   331→                  <DropdownMenuContent className="bg-[#2a2a2d] border-white/10">
+   332→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer text-xs" onClick={() => setSortOrder("date")}>
+   333→                      {t("profile.sortByDate")}
+   334→                    </DropdownMenuItem>
+   335→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer text-xs" onClick={() => setSortOrder("views")}>
+   336→                      {t("profile.sortByViews")}
+   337→                    </DropdownMenuItem>
+   338→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer text-xs" onClick={() => setSortOrder("favorites")}>
+   339→                      {t("profile.sortByFavorites")}
+   340→                    </DropdownMenuItem>
+   341→                  </DropdownMenuContent>
+   342→                </DropdownMenu>
+   343→              </div>
+   344→            </div>
+   345→          )}
+   346→
+   347→          {/* Tab content */}
+   348→          <div className="mt-2 pb-12">
+   349→            {/* Info tab */}
+   350→            {activeTab === "info" && (
+   351→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+   352→                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+   353→                  <Card className="bg-white/5 border-white/10">
+   354→                    <CardContent className="p-6 space-y-4">
+   355→                      <h3 className="text-lg font-semibold text-white">{t("profile.aboutUser")}</h3>
+   356→                      {user.bio ? (
+   357→                        <p className="text-white/60 text-sm leading-relaxed">{user.bio}</p>
+   358→                      ) : (
+   359→                        <p className="text-white/30 text-sm italic">
+   360→                          {isOwnProfile ? t("profile.addYourBio") : t("profile.noBio")}
+   361→                        </p>
+   362→                      )}
+   363→                      <div className="space-y-3 text-sm">
+   364→                        {user.location && (
+   365→                          <div className="flex items-center gap-2 text-white/40">
+   366→                            <MapPin className="h-4 w-4 shrink-0" />
+   367→                            <span>{user.location}</span>
+   368→                          </div>
+   369→                        )}
+   370→                        {user.website && (
+   371→                          <div className="flex items-center gap-2 text-white/40">
+   372→                            <Globe className="h-4 w-4 shrink-0" />
+   373→                            <a href={user.website} target="_blank" rel="noopener noreferrer" className="hover:text-[#0063dc] transition-colors">
+   374→                              {user.website.replace(/^https?:\/\//, "")}
+   375→                            </a>
+   376→                          </div>
+   377→                        )}
+   378→                        <div className="flex items-center gap-2 text-white/40">
+   379→                          <Calendar className="h-4 w-4 shrink-0" />
+   380→                          <span>{t("profile.memberSince")} {format(new Date(user.createdAt), "MMMM yyyy", { locale: dateLocale })}</span>
+   381→                        </div>
+   382→                      </div>
+   383→                    </CardContent>
+   384→                  </Card>
+   385→                  <Card className="bg-white/5 border-white/10">
+   386→                    <CardContent className="p-6 space-y-4">
+   387→                      <h3 className="text-lg font-semibold text-white">{t("profile.quickStats")}</h3>
+   388→                      <div className="grid grid-cols-2 gap-3">
+   389→                        <div className="bg-white/5 rounded-lg p-3 text-center">
+   390→                          <p className="text-xl font-bold text-white">{user.photoCount || photos.length}</p>
+   391→                          <p className="text-xs text-white/40 mt-0.5">{t("common.photos")}</p>
+   392→                        </div>
+   393→                        <div className="bg-white/5 rounded-lg p-3 text-center">
+   394→                          <p className="text-xl font-bold text-white">{albums.length}</p>
+   395→                          <p className="text-xs text-white/40 mt-0.5">{t("profile.tabAlbums")}</p>
+   396→                        </div>
+   397→                        <div className="bg-white/5 rounded-lg p-3 text-center">
+   398→                          <p className="text-xl font-bold text-white">{user.followerCount || 0}</p>
+   399→                          <p className="text-xs text-white/40 mt-0.5">{t("common.followers")}</p>
+   400→                        </div>
+   401→                        <div className="bg-white/5 rounded-lg p-3 text-center">
+   402→                          <p className="text-xl font-bold text-white">{user.followingCount || 0}</p>
+   403→                          <p className="text-xs text-white/40 mt-0.5">{t("common.following")}</p>
+   404→                        </div>
+   405→                      </div>
+   406→                    </CardContent>
+   407→                  </Card>
+   408→                </div>
+   409→              </motion.div>
+   410→            )}
+   411→
+   412→            {/* Photostream tab */}
+   413→            {activeTab === "photostream" && (
+   414→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   415→                {photos.length === 0 ? (
+   416→                  <EmptyState icon={Camera} title={t("profile.noPhotos")} description={isOwnProfile ? t("profile.noPhotosOwn") : t("profile.noPhotosOther")} />
+   417→                ) : (
+   418→                  <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
+   419→                    {sortedPhotos(photos).map((photo: any, index: number) => (
+   420→                      <motion.div
+   421→                        key={photo.id}
+   422→                        className="break-inside-avoid"
+   423→                        initial={{ opacity: 0, y: 20 }}
+   424→                        animate={{ opacity: 1, y: 0 }}
+   425→                        transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
+   426→                      >
+   427→                        <PhotoCard photo={photo} showSafety={false} />
+   428→                      </motion.div>
+   429→                    ))}
+   430→                  </div>
+   431→                )}
+   432→              </motion.div>
+   433→            )}
+   434→
+   435→            {/* Albums tab */}
+   436→            {activeTab === "albums" && (
+   437→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   438→                {isOwnProfile && (
+   439→                  <div className="mb-4">
+   440→                    <Link href="/album">
+   441→                      <Button size="sm" className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white gap-1.5">
+   442→                        <FolderOpen className="h-4 w-4" /> {t("albums.createNew")}
+   443→                      </Button>
+   444→                    </Link>
+   445→                  </div>
+   446→                )}
+   447→                {albums.length === 0 ? (
+   448→                  <EmptyState icon={FolderOpen} title={t("profile.noAlbums")} description={isOwnProfile ? t("profile.noAlbumsOwn") : t("profile.noAlbumsOther")} />
+   449→                ) : (
+   450→                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+   451→                    {albums.map((album: any) => (
+   452→                      <Link key={album.id} href={`/album/${album.id}`}>
+   453→                        <Card className="group cursor-pointer overflow-hidden hover:shadow-lg transition-shadow bg-white/5 border-white/10">
+   454→                          <CardContent className="p-0">
+   455→                            <div className="aspect-square relative bg-white/5 overflow-hidden">
+   456→                              {album.cover ? (
+   457→                                <img src={album.cover} alt={album.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+   458→                              ) : (
+   459→                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0063dc]/10 to-[#ff0084]/10">
+   460→                                  <FolderOpen className="h-10 w-10 text-white/10" />
+   461→                                </div>
+   462→                              )}
+   463→                            </div>
+   464→                            <div className="p-3">
+   465→                              <h3 className="font-medium text-sm truncate text-white/80">{album.name}</h3>
+   466→                              <p className="text-xs text-white/30 mt-0.5">{album.photoCount || album.photos?.length || 0} {t("common.photos")}</p>
+   467→                            </div>
+   468→                          </CardContent>
+   469→                        </Card>
+   470→                      </Link>
+   471→                    ))}
+   472→                  </div>
+   473→                )}
+   474→              </motion.div>
+   475→            )}
+   476→
+   477→            {/* Favorites tab */}
+   478→            {activeTab === "favorites" && (
+   479→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   480→                {favorites.length === 0 ? (
+   481→                  <EmptyState icon={Heart} title={t("profile.noFavorites")} description={isOwnProfile ? t("profile.noFavoritesOwn") : t("profile.noFavoritesOther")} />
+   482→                ) : (
+   483→                  <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
+   484→                    {sortedPhotos(favorites).map((photo: any, index: number) => (
+   485→                      <motion.div
+   486→                        key={photo.id}
+   487→                        className="break-inside-avoid"
+   488→                        initial={{ opacity: 0, y: 20 }}
+   489→                        animate={{ opacity: 1, y: 0 }}
+   490→                        transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
+   491→                      >
+   492→                        <PhotoCard photo={photo} />
+   493→                      </motion.div>
+   494→                    ))}
+   495→                  </div>
+   496→                )}
+   497→              </motion.div>
+   498→            )}
+   499→
+   500→            {/* Galleries tab */}
+   501→            {activeTab === "galleries" && (
+   502→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   503→                {isOwnProfile && (
+   504→                  <div className="mb-4">
+   505→                    <Link href="/gallerie">
+   506→                      <Button size="sm" className="bg-gradient-to-r from-[#ff0084] to-[#0063dc] hover:opacity-90 text-white gap-1.5">
+   507→                        <LayoutGrid className="h-4 w-4" /> {t("galleries.createNew")}
+   508→                      </Button>
+   509→                    </Link>
+   510→                  </div>
+   511→                )}
+   512→                {galleries.length === 0 ? (
+   513→                  <EmptyState icon={LayoutGrid} title={t("profile.noGalleries")} description={isOwnProfile ? t("profile.noGalleriesOwn") : t("profile.noGalleriesOther")} />
+   514→                ) : (
+   515→                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+   516→                    {galleries.map((gallery: any) => (
+   517→                      <Link key={gallery.id} href={`/gallerie/${gallery.id}`}>
+   518→                        <Card className="group cursor-pointer overflow-hidden hover:shadow-lg transition-shadow bg-white/5 border-white/10">
+   519→                          <CardContent className="p-0">
+   520→                            <div className="aspect-square relative bg-white/5 overflow-hidden">
+   521→                              {gallery.cover ? (
+   522→                                <img src={gallery.cover} alt={gallery.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+   523→                              ) : (
+   524→                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#ff0084]/10 to-[#0063dc]/10">
+   525→                                  <LayoutGrid className="h-10 w-10 text-white/10" />
+   526→                                </div>
+   527→                              )}
+   528→                            </div>
+   529→                            <div className="p-3">
+   530→                              <h3 className="font-medium text-sm truncate text-white/80">{gallery.name}</h3>
+   531→                              <p className="text-xs text-white/30 mt-0.5">{gallery.itemCount ?? 0} {t("common.photos")}</p>
+   532→                            </div>
+   533→                          </CardContent>
+   534→                        </Card>
+   535→                      </Link>
+   536→                    ))}
+   537→                  </div>
+   538→                )}
+   539→              </motion.div>
+   540→            )}
+   541→
+   542→            {/* Groups tab */}
+   543→            {activeTab === "groups" && (
+   544→              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+   545→                {isOwnProfile && (
+   546→                  <div className="mb-4">
+   547→                    <Link href="/gruppi">
+   548→                      <Button size="sm" className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white gap-1.5">
+   549→                        <Users className="h-4 w-4" /> {t("groups.createGroup")}
+   550→                      </Button>
+   551→                    </Link>
+   552→                  </div>
+   553→                )}
+   554→                {groups.length === 0 ? (
+   555→                  <EmptyState icon={Users} title={t("profile.noGroups")} description={isOwnProfile ? t("profile.noGroupsOwn") : t("profile.noGroupsOther")} />
+   556→                ) : (
+   557→                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   558→                    {groups.map((group: any) => (
+   559→                      <Link key={group.id} href={`/gruppi/${group.id}`}>
+   560→                        <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/[0.07] transition-colors">
+   561→                          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-[#0063dc]/20 to-[#ff0084]/20 flex items-center justify-center shrink-0 overflow-hidden">
+   562→                            {group.cover ? (
+   563→                              <img src={group.cover} alt={group.name} className="w-14 h-14 rounded-lg object-cover" />
+   564→                            ) : (
+   565→                              <Users className="h-6 w-6 text-white/20" />
+   566→                            )}
+   567→                          </div>
+   568→                          <div className="flex-1 min-w-0">
+   569→                            <p className="text-sm font-medium text-white/80 truncate">{group.name}</p>
+   570→                            <p className="text-xs text-white/30">{group.memberCount || 0} {t("common.members")} · {group.photoCount || 0} {t("common.photos")}</p>
+   571→                          </div>
+   572→                        </div>
+   573→                      </Link>
+   574→                    ))}
+   575→                  </div>
+   576→                )}
+   577→              </motion.div>
+   578→            )}
+   579→          </div>
+   580→        </div>
+   581→      </main>
+   582→
+   583→      <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
+   584→        <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
+   585→        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
+   586→      </footer>
+   587→    </div>
+   588→  );
+   589→}
+   590→

@@ -20,10 +20,12 @@ export async function uploadToCloudinary(
   folder: string,
   filename: string,
   mimetype: string,
-  options?: { isAvatar?: boolean }
+  options?: { isAvatar?: boolean; isCover?: boolean; isLogo?: boolean }
 ): Promise<{ url: string; publicId: string }> {
   const resourceType = mimetype.startsWith("image/") ? "image" : "raw";
   const isAvatar = options?.isAvatar ?? false;
+  const isCover = options?.isCover ?? false;
+  const isLogo = options?.isLogo ?? false;
 
   const result = await new Promise<{ url: string; public_id: string }>(
     (resolve, reject) => {
@@ -41,6 +43,18 @@ export async function uploadToCloudinary(
           // Avatar: small size, high quality
           uploadOptions.transformation = [
             { width: 400, height: 400, crop: "limit" },
+            { quality: "auto:good", fetch_format: "auto" },
+          ];
+        } else if (isCover) {
+          // Cover: wide format, max 2000px width
+          uploadOptions.transformation = [
+            { width: 2000, height: 800, crop: "limit" },
+            { quality: "auto:good", fetch_format: "auto" },
+          ];
+        } else if (isLogo) {
+          // Logo: medium size, square-friendly, transparent-friendly
+          uploadOptions.transformation = [
+            { width: 500, height: 500, crop: "limit" },
             { quality: "auto:good", fetch_format: "auto" },
           ];
         } else {

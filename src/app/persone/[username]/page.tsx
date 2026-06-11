@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Header } from "@/components/header";
@@ -29,6 +29,10 @@ import {
   ArrowUpDown,
   Grid3X3,
   List,
+  Pencil,
+  Upload,
+  X,
+  ImageIconLucide,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,11 +46,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import { toast } from "sonner";
 
 const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
 
@@ -66,7 +71,7 @@ export default function ProfiloPage() {
   const { t, locale } = useI18n();
   const dateLocale = dateLocales[locale] || it;
   const params = useParams();
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const username = params.username as string;
 
   const [user, setUser] = useState<any>(null);
@@ -79,6 +84,14 @@ export default function ProfiloPage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>("photostream");
   const [sortOrder, setSortOrder] = useState<"date" | "views" | "favorites">("date");
+
+  // Cover & Logo upload states
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [coverHover, setCoverHover] = useState(false);
+  const [logoHover, setLogoHover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const fetchUser = useCallback(async () => {
     setLoading(true);
@@ -101,9 +114,12 @@ export default function ProfiloPage() {
       const res = await fetch(`/api/photos?userId=${user.id}&limit=100`);
       if (res.ok) {
         const data = await res.json();
-        setPhotos(data.photos || data);
+        setPhotos(data.photos || data || []);
       }
-    } catch {}
+    } catch (err) {
+      console.error("Error fetching photos:", err);
+      setPhotos([]);
+    }
   }, [user]);
 
   const fetchAlbums = useCallback(async () => {
@@ -123,7 +139,7 @@ export default function ProfiloPage() {
       const res = await fetch(`/api/photos?favorites=${user.id}&limit=100`);
       if (res.ok) {
         const data = await res.json();
-        setFavorites(data.photos || data);
+        setFavorites(data.photos || data || []);
       }
     } catch {}
   }, [user]);
@@ -166,6 +182,108 @@ export default function ProfiloPage() {
 
   const isOwnProfile = session?.user && user && (session.user as any).id === user.id;
 
+  // Cover upload handler
+  const handleCoverChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t("profile.coverInvalidType"));
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(t("profile.coverTooLarge"));
+      return;
+    }
+
+    setCoverUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("cover", file);
+      const res = await fetch("/api/upload/cover", { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        setUser((prev: any) => ({ ...prev, coverImage: data.coverImage }));
+        toast.success(t("profile.coverUpdated"));
+      } else {
+        const errData = await res.json();
+        toast.error(errData.error || t("profile.coverUploadError"));
+      }
+    } catch {
+      toast.error(t("profile.coverUploadError"));
+    } finally {
+      setCoverUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  }, [t]);
+
+  const handleCoverRemove = useCallback(async () => {
+    setCoverUploading(true);
+    try {
+      const res = await fetch("/api/upload/cover", { method: "DELETE" });
+      if (res.ok) {
+        setUser((prev: any) => ({ ...prev, coverImage: null }));
+        toast.success(t("profile.coverRemoved"));
+      }
+    } catch {
+      toast.error(t("profile.coverUploadError"));
+    } finally {
+      setCoverUploading(false);
+    }
+  }, [t]);
+
+  // Logo upload handler
+  const handleLogoChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t("profile.logoInvalidType"));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t("profile.logoTooLarge"));
+      return;
+    }
+
+    setLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+      const res = await fetch("/api/upload/logo", { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        setUser((prev: any) => ({ ...prev, logoImage: data.logoImage }));
+        toast.success(t("profile.logoUpdated"));
+      } else {
+        const errData = await res.json();
+        toast.error(errData.error || t("profile.logoUploadError"));
+      }
+    } catch {
+      toast.error(t("profile.logoUploadError"));
+    } finally {
+      setLogoUploading(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  }, [t]);
+
+  const handleLogoRemove = useCallback(async () => {
+    setLogoUploading(true);
+    try {
+      const res = await fetch("/api/upload/logo", { method: "DELETE" });
+      if (res.ok) {
+        setUser((prev: any) => ({ ...prev, logoImage: null }));
+        toast.success(t("profile.logoRemoved"));
+      }
+    } catch {
+      toast.error(t("profile.logoUploadError"));
+    } finally {
+      setLogoUploading(false);
+    }
+  }, [t]);
+
   // Sort photos based on selected order
   const sortedPhotos = useCallback((photoList: any[]) => {
     const list = [...photoList];
@@ -181,8 +299,9 @@ export default function ProfiloPage() {
       <div className="min-h-screen bg-[#0d0d0d]">
         <Header />
         <div className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-          <div className="flex items-center gap-4">
-            <Skeleton className="w-24 h-24 rounded-full bg-white/5" />
+          <Skeleton className="w-full h-56 rounded-xl bg-white/5" />
+          <div className="flex items-center gap-4 -mt-16">
+            <Skeleton className="w-28 h-28 rounded-full bg-white/5 border-4 border-[#0d0d0d]" />
             <div className="space-y-2">
               <Skeleton className="h-6 w-48 bg-white/5" />
               <Skeleton className="h-4 w-32 bg-white/5" />
@@ -206,9 +325,22 @@ export default function ProfiloPage() {
     <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
       <Header />
       <main className="flex-1">
-        {/* Cover banner - blurred like Flickr */}
-        <div className="h-40 md:h-56 relative overflow-hidden">
-          {user.avatar ? (
+        {/* Cover banner - custom image or blurred avatar or gradient */}
+        <div
+          className="h-44 md:h-64 relative overflow-hidden group"
+          onMouseEnter={() => setCoverHover(true)}
+          onMouseLeave={() => setCoverHover(false)}
+        >
+          {user.coverImage ? (
+            <>
+              <img
+                src={user.coverImage}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0d0d0d]" />
+            </>
+          ) : user.avatar ? (
             <>
               <img
                 src={user.avatar}
@@ -220,24 +352,128 @@ export default function ProfiloPage() {
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-[#0063dc]/30 to-[#ff0084]/30" />
           )}
+
+          {/* Cover upload overlay - only for own profile */}
+          {isOwnProfile && (
+            <AnimatePresence>
+              {(coverHover || coverUploading) && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/40 flex items-center justify-center gap-3 z-10"
+                >
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    className="hidden"
+                    onChange={handleCoverChange}
+                  />
+                  <Button
+                    size="sm"
+                    className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white gap-1.5 border border-white/20"
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={coverUploading}
+                  >
+                    {coverUploading ? (
+                      <span className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    {t("profile.changeCover")}
+                  </Button>
+                  {user.coverImage && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="bg-red-500/30 backdrop-blur-sm hover:bg-red-500/50 text-white gap-1.5 border border-red-400/20"
+                      onClick={handleCoverRemove}
+                      disabled={coverUploading}
+                    >
+                      <X className="h-4 w-4" />
+                      {t("profile.removeCover")}
+                    </Button>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
         </div>
 
         <div className="max-w-6xl mx-auto px-4 -mt-20 relative z-10">
           {/* Profile header - Flickr style */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="flex items-end gap-5">
-              {/* Avatar */}
-              <Avatar className="h-28 w-28 md:h-36 md:w-36 border-4 border-[#0d0d0d] shrink-0 shadow-xl">
-                <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                <AvatarFallback className="bg-[#0063dc] text-white text-4xl">
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              {/* Avatar + Logo container */}
+              <div className="relative shrink-0">
+                <Avatar className="h-28 w-28 md:h-36 md:w-36 border-4 border-[#0d0d0d] shadow-xl">
+                  <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                  <AvatarFallback className="bg-[#0063dc] text-white text-4xl">
+                    {user.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+
+                {/* Logo badge - bottom right of avatar */}
+                {user.logoImage && (
+                  <div
+                    className="absolute -bottom-1 -right-1 w-12 h-12 md:w-14 md:h-14 rounded-full border-3 border-[#0d0d0d] overflow-hidden shadow-lg bg-white/10"
+                    onMouseEnter={() => setLogoHover(true)}
+                    onMouseLeave={() => setLogoHover(false)}
+                  >
+                    <img
+                      src={user.logoImage}
+                      alt="Logo"
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Logo remove overlay - only for own profile */}
+                    {isOwnProfile && logoHover && (
+                      <button
+                        onClick={handleLogoRemove}
+                        className="absolute inset-0 bg-black/60 flex items-center justify-center"
+                      >
+                        <X className="h-4 w-4 text-white" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Logo upload button - only for own profile, shown when no logo */}
+                {isOwnProfile && !user.logoImage && (
+                  <button
+                    onClick={() => logoInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full border-3 border-[#0d0d0d] bg-[#2a2a2d] hover:bg-[#3a3a3d] flex items-center justify-center shadow-lg transition-colors"
+                    title={t("profile.addLogo")}
+                  >
+                    <Upload className="h-4 w-4 text-white/60" />
+                  </button>
+                )}
+
+                {/* Hidden logo upload input */}
+                {isOwnProfile && (
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    className="hidden"
+                    onChange={handleLogoChange}
+                  />
+                )}
+              </div>
 
               {/* Name + actions */}
               <div className="flex-1 min-w-0 pb-2">
                 <div className="flex items-center gap-3 flex-wrap">
                   <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name}</h1>
+                  {user.logoImage && isOwnProfile && (
+                    <button
+                      onClick={() => logoInputRef.current?.click()}
+                      className="text-white/30 hover:text-white/60 transition-colors"
+                      title={t("profile.changeLogo")}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                   <div className="flex items-center gap-2">
                     {!isOwnProfile && (
                       <>

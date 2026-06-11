@@ -16,6 +16,8 @@ model User {
   password      String
   username      String    @unique
   avatar        String?
+  coverImage    String?   @map("cover_image")
+  logoImage     String?   @map("logo_image")
   bio           String?
   location      String?
   website       String?

@@ -25,6 +25,8 @@ import {
   Heart,
   Users,
   Mail,
+  Upload,
+  Image as ImageIconLucide,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,7 +84,13 @@ export default function ImpostazioniPage() {
   });
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const sidebarItems: { key: SettingsSection; label: string; icon: typeof Settings }[] = [
     { key: "profile", label: t("settings.profile"), icon: User },
@@ -113,6 +121,8 @@ export default function ImpostazioniPage() {
             location: profile.location || "",
             website: profile.website || "",
           });
+          setCoverUrl(profile.coverImage || null);
+          setLogoUrl(profile.logoImage || null);
         }
       }
     } catch (err) {
@@ -235,6 +245,106 @@ export default function ImpostazioniPage() {
       toast.error(t("settings.avatarUploadError"));
     } finally {
       setAvatarUploading(false);
+    }
+  }, [t]);
+
+  const handleCoverChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t("profile.coverInvalidType"));
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(t("profile.coverTooLarge"));
+      return;
+    }
+
+    setCoverUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("cover", file);
+      const res = await fetch("/api/upload/cover", { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        setCoverUrl(data.coverImage);
+        toast.success(t("profile.coverUpdated"));
+      } else {
+        const errData = await res.json();
+        toast.error(errData.error || t("profile.coverUploadError"));
+      }
+    } catch {
+      toast.error(t("profile.coverUploadError"));
+    } finally {
+      setCoverUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  }, [t]);
+
+  const handleCoverRemove = useCallback(async () => {
+    setCoverUploading(true);
+    try {
+      const res = await fetch("/api/upload/cover", { method: "DELETE" });
+      if (res.ok) {
+        setCoverUrl(null);
+        toast.success(t("profile.coverRemoved"));
+      }
+    } catch {
+      toast.error(t("profile.coverUploadError"));
+    } finally {
+      setCoverUploading(false);
+    }
+  }, [t]);
+
+  const handleLogoChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t("profile.logoInvalidType"));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t("profile.logoTooLarge"));
+      return;
+    }
+
+    setLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+      const res = await fetch("/api/upload/logo", { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        setLogoUrl(data.logoImage);
+        toast.success(t("profile.logoUpdated"));
+      } else {
+        const errData = await res.json();
+        toast.error(errData.error || t("profile.logoUploadError"));
+      }
+    } catch {
+      toast.error(t("profile.logoUploadError"));
+    } finally {
+      setLogoUploading(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  }, [t]);
+
+  const handleLogoRemove = useCallback(async () => {
+    setLogoUploading(true);
+    try {
+      const res = await fetch("/api/upload/logo", { method: "DELETE" });
+      if (res.ok) {
+        setLogoUrl(null);
+        toast.success(t("profile.logoRemoved"));
+      }
+    } catch {
+      toast.error(t("profile.logoUploadError"));
+    } finally {
+      setLogoUploading(false);
     }
   }, [t]);
 
@@ -416,6 +526,130 @@ export default function ImpostazioniPage() {
                       <Button onClick={handleSaveProfile} disabled={saving} className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1.5">
                         <Save className="h-4 w-4" /> {saving ? t("common.saving") : t("settings.saveProfile")}
                       </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Cover Image Card */}
+                  <Card className="bg-white/5 border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-white text-lg">{t("profile.coverTitle")}</CardTitle>
+                      <CardDescription className="text-white/40">{t("profile.coverDesc")}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="relative group">
+                        <div className="h-36 rounded-xl overflow-hidden bg-gradient-to-br from-[#0063dc]/20 to-[#ff0084]/20">
+                          {coverUrl ? (
+                            <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ImageIconLucide className="h-10 w-10 text-white/10" />
+                            </div>
+                          )}
+                          {coverUploading && (
+                            <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                              <div className="h-8 w-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            </div>
+                          )}
+                        </div>
+                        {!coverUploading && (
+                          <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-white/20 text-white hover:bg-white/10 gap-1.5"
+                              onClick={() => coverInputRef.current?.click()}
+                            >
+                              <Upload className="h-4 w-4" />
+                              {t("profile.changeCover")}
+                            </Button>
+                            {coverUrl && (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="gap-1.5"
+                                onClick={handleCoverRemove}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                {t("profile.removeCover")}
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        ref={coverInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        className="hidden"
+                        onChange={handleCoverChange}
+                      />
+                      <p className="text-[11px] text-white/25">{t("profile.coverHint")}</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Logo Image Card */}
+                  <Card className="bg-white/5 border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-white text-lg">{t("profile.logoTitle")}</CardTitle>
+                      <CardDescription className="text-white/40">{t("profile.logoDesc")}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="relative group">
+                          <div className="h-20 w-20 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center">
+                            {logoUrl ? (
+                              <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                            ) : (
+                              <ImageIconLucide className="h-8 w-8 text-white/10" />
+                            )}
+                            {logoUploading && (
+                              <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                                <div className="h-6 w-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              </div>
+                            )}
+                            {!logoUploading && (
+                              <div
+                                className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                onClick={() => logoInputRef.current?.click()}
+                              >
+                                <Camera className="h-6 w-6 text-white" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-white/10 text-white/70 hover:bg-white/5"
+                            onClick={() => logoInputRef.current?.click()}
+                            disabled={logoUploading}
+                          >
+                            <Upload className="h-4 w-4 mr-1.5" />
+                            {t("profile.changeLogo")}
+                          </Button>
+                          {logoUrl && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-400/70 hover:text-red-400 hover:bg-red-400/5 text-xs h-7"
+                              onClick={handleLogoRemove}
+                              disabled={logoUploading}
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              {t("profile.removeLogo")}
+                            </Button>
+                          )}
+                          <p className="text-[11px] text-white/25">{t("profile.logoHint")}</p>
+                        </div>
+                        <input
+                          ref={logoInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/gif,image/webp"
+                          className="hidden"
+                          onChange={handleLogoChange}
+                        />
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
