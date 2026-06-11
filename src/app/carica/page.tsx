@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/header";
 import {
   Upload,
@@ -10,6 +11,13 @@ import {
   Loader2,
   Check,
   Camera,
+  ExternalLink,
+  ChevronRight,
+  ChevronLeft,
+  CheckSquare,
+  Square,
+  Download,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +34,410 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
+import Link from "next/link";
+
+interface FlickrPhoto {
+  id: string;
+  title: string;
+  description: string;
+  tags: string;
+  dateUpload: string;
+  originalFormat: string;
+  thumbnail: string;
+  medium: string;
+  large: string;
+  original: string;
+  selected?: boolean;
+  importing?: boolean;
+  imported?: boolean;
+  error?: boolean;
+}
+
+interface UploadFile {
+  file: File;
+  preview: string;
+  title: string;
+  description: string;
+  tags: string;
+  albumId: string;
+  safetyLevel: string;
+  contentType: string;
+  status: "pending" | "uploading" | "done" | "error";
+  progress: number;
+}
+
+function FlickrImportPanel({ t }: { t: (key: string, params?: Record<string, string>) => string }) {
+  const searchParams = useSearchParams();
+  const flickrConnected = searchParams.get("flickr") === "connected";
+  const [accessToken, setAccessToken] = useState(searchParams.get("flickr_token") || "");
+  const [accessTokenSecret, setAccessTokenSecret] = useState(searchParams.get("flickr_token_secret") || "");
+  const [userNsid, setUserNsid] = useState(searchParams.get("flickr_nsid") || "");
+  const [flickrUsername, setFlickrUsername] = useState(searchParams.get("flickr_username") || "");
+  const [flickrFullname, setFlickrFullname] = useState(searchParams.get("flickr_fullname") || "");
+
+  const [photos, setPhotos] = useState<FlickrPhoto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
+  const [importedCount, setImportedCount] = useState(0);
+  const [errorCount, setErrorCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalPhotos, setTotalPhotos] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(flickrConnected);
+
+  // Load photos from Flickr
+  const loadPhotos = useCallback(async (p: number) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        token: accessToken,
+        token_secret: accessTokenSecret,
+        nsid: userNsid,
+        page: String(p),
+        per_page: "50",
+      });
+      const res = await fetch(`/api/flickr/photos?${params}`);
+      if (!res.ok) throw new Error("Failed to fetch photos");
+      const data = await res.json();
+      setPhotos(
+        (data.photos || []).map((p: FlickrPhoto) => ({
+          ...p,
+          selected: false,
+        }))
+      );
+      setTotalPages(data.pages || 1);
+      setTotalPhotos(data.total || 0);
+      setPage(p);
+    } catch (err) {
+      console.error("Error loading Flickr photos:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken, accessTokenSecret, userNsid]);
+
+  useEffect(() => {
+    if (flickrConnected && accessToken) {
+      loadPhotos(1);
+    }
+  }, [flickrConnected, accessToken, loadPhotos]);
+
+  // Connect to Flickr
+  const connectFlickr = async () => {
+    try {
+      const res = await fetch("/api/flickr/auth");
+      const data = await res.json();
+      if (data.authUrl) {
+        // Store token secret temporarily in session storage
+        if (data.oauthTokenSecret) {
+          sessionStorage.setItem("flickr_ts", data.oauthTokenSecret);
+        }
+        window.location.href = data.authUrl;
+      }
+    } catch (err) {
+      console.error("Flickr auth error:", err);
+    }
+  };
+
+  // Toggle select all
+  const toggleSelectAll = () => {
+    const allSelected = photos.every((p) => p.selected);
+    setPhotos(photos.map((p) => ({ ...p, selected: !allSelected })));
+  };
+
+  // Toggle select one
+  const toggleSelect = (id: string) => {
+    setPhotos(photos.map((p) => (p.id === id ? { ...p, selected: !p.selected } : p)));
+  };
+
+  // Import selected photos
+  const importSelected = async () => {
+    const selected = photos.filter((p) => p.selected && !p.imported);
+    if (selected.length === 0) return;
+
+    setImporting(true);
+    setImportProgress(0);
+    setImportedCount(0);
+    setErrorCount(0);
+
+    let imported = 0;
+    let errors = 0;
+
+    for (let i = 0; i < selected.length; i++) {
+      const photo = selected[i];
+      const imageUrl = photo.original || photo.large || photo.medium;
+
+      if (!imageUrl) {
+        errors++;
+        setPhotos((prev) =>
+          prev.map((p) => (p.id === photo.id ? { ...p, error: true, selected: false } : p))
+        );
+        continue;
+      }
+
+      try {
+        setPhotos((prev) =>
+          prev.map((p) => (p.id === photo.id ? { ...p, importing: true } : p))
+        );
+
+        const res = await fetch("/api/flickr/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            photos: [
+              {
+                imageUrl,
+                title: photo.title,
+                description: photo.description,
+                tags: photo.tags,
+              },
+            ],
+          }),
+        });
+
+        if (!res.ok) throw new Error("Import failed");
+
+        imported++;
+        setPhotos((prev) =>
+          prev.map((p) =>
+            p.id === photo.id ? { ...p, importing: false, imported: true, selected: false } : p
+          )
+        );
+      } catch {
+        errors++;
+        setPhotos((prev) =>
+          prev.map((p) =>
+            p.id === photo.id ? { ...p, importing: false, error: true, selected: false } : p
+          )
+        );
+      }
+
+      setImportProgress(Math.round(((i + 1) / selected.length) * 100));
+      setImportedCount(imported);
+      setErrorCount(errors);
+    }
+
+    setImporting(false);
+  };
+
+  const selectedCount = photos.filter((p) => p.selected).length;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mt-8"
+    >
+      {/* Flickr Import Header */}
+      <div
+        className="rounded-xl border border-white/10 bg-gradient-to-br from-[#0063dc]/10 to-[#ff0084]/10 p-5 cursor-pointer hover:border-white/20 transition-all"
+        onClick={() => !flickrConnected && setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0063dc] to-[#ff0084] flex items-center justify-center">
+              <ExternalLink className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-white font-bold text-lg">{t("flickr.importTitle")}</h2>
+              <p className="text-white/40 text-sm">{t("flickr.importSubtitle")}</p>
+            </div>
+          </div>
+          {!flickrConnected ? (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                connectFlickr();
+              }}
+              className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] text-white hover:opacity-90 gap-2"
+            >
+              <ExternalLink className="h-4 w-4" />
+              {t("flickr.connect")}
+            </Button>
+          ) : (
+            <Badge className="bg-green-500/20 text-green-400 border-0">
+              <Check className="h-3 w-3 mr-1" />
+              {t("flickr.connected")}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Flickr Connected - Show Photos */}
+      {flickrConnected && isExpanded && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mt-4"
+        >
+          {/* User info */}
+          <div className="flex items-center gap-3 mb-4 bg-white/5 rounded-lg p-3">
+            <div className="w-8 h-8 rounded-full bg-[#0063dc] flex items-center justify-center text-white text-sm font-bold">
+              {(flickrFullname || flickrUsername).charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="text-white text-sm font-medium">{flickrFullname || flickrUsername}</p>
+              <p className="text-white/30 text-xs">
+                {totalPhotos} {t("flickr.photosAvailable")}
+              </p>
+            </div>
+          </div>
+
+          {/* Select controls */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleSelectAll}
+                className="text-white/60 hover:text-white hover:bg-white/5 gap-1.5"
+              >
+                {photos.every((p) => p.selected) ? (
+                  <CheckSquare className="h-4 w-4 text-[#ff0084]" />
+                ) : (
+                  <Square className="h-4 w-4" />
+                )}
+                {t("flickr.selectAll")}
+              </Button>
+              {selectedCount > 0 && (
+                <Badge className="bg-[#ff0084]/20 text-[#ff0084] border-0">
+                  {selectedCount} {t("flickr.selected")}
+                </Badge>
+              )}
+            </div>
+            {selectedCount > 0 && (
+              <Button
+                onClick={importSelected}
+                disabled={importing}
+                className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] text-white hover:opacity-90 gap-2"
+              >
+                {importing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("flickr.importing")}
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    {t("flickr.importCount", { count: String(selectedCount) })}
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+
+          {/* Import progress */}
+          {importing && (
+            <div className="mb-4">
+              <Progress value={importProgress} className="h-2" />
+              <p className="text-xs text-white/40 mt-1 text-center">
+                {importProgress}% — {t("flickr.importedCount", { count: String(importedCount) })}
+                {errorCount > 0 && ` / ${errorCount} ${t("flickr.errors")}`}
+              </p>
+            </div>
+          )}
+
+          {/* Photo grid */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 text-[#0063dc] animate-spin" />
+              <span className="ml-3 text-white/50">{t("flickr.loadingPhotos")}</span>
+            </div>
+          ) : photos.length === 0 ? (
+            <div className="text-center py-12 text-white/30">
+              <Camera className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p>{t("flickr.noPhotos")}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+              {photos.map((photo) => (
+                <div
+                  key={photo.id}
+                  className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer group transition-all ${
+                    photo.imported
+                      ? "opacity-50 ring-2 ring-green-500/50"
+                      : photo.error
+                      ? "opacity-50 ring-2 ring-red-500/50"
+                      : photo.selected
+                      ? "ring-2 ring-[#ff0084]"
+                      : "hover:ring-1 hover:ring-white/30"
+                  }`}
+                  onClick={() => !photo.imported && !importing && toggleSelect(photo.id)}
+                >
+                  <img
+                    src={photo.thumbnail || photo.medium}
+                    alt={photo.title}
+                    className="w-full h-full object-cover"
+                  />
+
+                  {/* Selection overlay */}
+                  {photo.selected && !photo.imported && (
+                    <div className="absolute inset-0 bg-[#ff0084]/30 flex items-center justify-center">
+                      <CheckSquare className="h-6 w-6 text-white" />
+                    </div>
+                  )}
+
+                  {/* Imported overlay */}
+                  {photo.imported && (
+                    <div className="absolute inset-0 bg-green-500/30 flex items-center justify-center">
+                      <Check className="h-6 w-6 text-green-400" />
+                    </div>
+                  )}
+
+                  {/* Error overlay */}
+                  {photo.error && (
+                    <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center">
+                      <AlertCircle className="h-6 w-6 text-red-400" />
+                    </div>
+                  )}
+
+                  {/* Importing overlay */}
+                  {photo.importing && (
+                    <div className="absolute inset-0 bg-[#0063dc]/30 flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 text-white animate-spin" />
+                    </div>
+                  )}
+
+                  {/* Title on hover */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-white text-[10px] truncate">{photo.title}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && !loading && (
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => loadPhotos(page - 1)}
+                className="text-white/50 hover:text-white"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-white/40 text-sm">
+                {page} / {totalPages}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => loadPhotos(page + 1)}
+                className="text-white/50 hover:text-white"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
 
 interface UploadFile {
   file: File;
@@ -47,10 +459,9 @@ export default function CaricaPage() {
   const [albums, setAlbums] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load albums for selection
   useState(() => {
     fetch("/api/albums")
-      .then((res) => res.ok ? res.json() : [])
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => setAlbums(Array.isArray(data) ? data : []))
       .catch(() => {});
   });
@@ -105,7 +516,6 @@ export default function CaricaPage() {
       try {
         updateFile(index, { status: "uploading", progress: 10 });
 
-        // Step 1: Upload file to blob storage
         const formData = new FormData();
         formData.append("file", uploadFile.file);
         updateFile(index, { progress: 30 });
@@ -119,7 +529,6 @@ export default function CaricaPage() {
 
         updateFile(index, { progress: 60 });
 
-        // Step 2: Create photo record
         const photoFormData = new FormData();
         photoFormData.append("title", uploadFile.title);
         photoFormData.append("description", uploadFile.description);
@@ -212,10 +621,13 @@ export default function CaricaPage() {
             className="hidden"
             onChange={(e) => e.target.files && handleFiles(e.target.files)}
           />
-          <p className="text-xs text-white/20 mt-3">
-            {t("upload.fileTypes")}
-          </p>
+          <p className="text-xs text-white/20 mt-3">{t("upload.fileTypes")}</p>
         </motion.div>
+
+        {/* Flickr Import Section */}
+        <Suspense fallback={<div className="mt-8 h-40 bg-white/5 rounded-xl animate-pulse" />}>
+          <FlickrImportPanel t={t} />
+        </Suspense>
 
         {/* File list */}
         <AnimatePresence>
@@ -230,14 +642,12 @@ export default function CaricaPage() {
               <Card className="bg-white/5 border-white/10 overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex gap-4">
-                    {/* Preview */}
                     <div className="relative shrink-0">
                       <img
                         src={uploadFile.preview}
                         alt={uploadFile.title}
                         className="w-24 h-24 object-cover rounded-lg"
                       />
-                      {/* Status overlay */}
                       {uploadFile.status === "done" && (
                         <div className="absolute inset-0 bg-green-500/30 rounded-lg flex items-center justify-center">
                           <Check className="h-8 w-8 text-green-400" />
@@ -249,8 +659,6 @@ export default function CaricaPage() {
                         </div>
                       )}
                     </div>
-
-                    {/* Fields */}
                     <div className="flex-1 space-y-3 min-w-0">
                       <div className="flex items-center justify-between">
                         <Input
@@ -270,7 +678,6 @@ export default function CaricaPage() {
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
-
                       <Textarea
                         value={uploadFile.description}
                         onChange={(e) => updateFile(index, { description: e.target.value })}
@@ -278,7 +685,6 @@ export default function CaricaPage() {
                         className="h-16 text-xs bg-white/5 border-white/10 text-white resize-none"
                         disabled={uploadFile.status !== "pending"}
                       />
-
                       <div className="flex gap-2 flex-wrap">
                         <Input
                           value={uploadFile.tags}
@@ -333,30 +739,12 @@ export default function CaricaPage() {
                             </SelectItem>
                           </SelectContent>
                         </Select>
-                        <Select
-                          value={uploadFile.contentType}
-                          onValueChange={(v) => updateFile(index, { contentType: v })}
-                          disabled={uploadFile.status !== "pending"}
-                        >
-                          <SelectTrigger className="h-7 text-xs w-28 bg-white/5 border-white/10 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-[#2a2a2d] border-white/10">
-                            <SelectItem value="photo">{t("upload.contentPhoto")}</SelectItem>
-                            <SelectItem value="art">{t("upload.contentArt")}</SelectItem>
-                            <SelectItem value="screenshot">{t("upload.contentScreenshot")}</SelectItem>
-                            <SelectItem value="illustration">{t("upload.contentIllustration")}</SelectItem>
-                          </SelectContent>
-                        </Select>
                       </div>
                     </div>
                   </div>
-
-                  {/* Progress bar */}
                   {uploadFile.status === "uploading" && (
                     <Progress value={uploadFile.progress} className="h-1.5 mt-3" />
                   )}
-
                   {uploadFile.status === "error" && (
                     <p className="text-xs text-red-400 mt-2">{t("upload.uploadError")}</p>
                   )}
@@ -375,7 +763,7 @@ export default function CaricaPage() {
           >
             <p className="text-sm text-white/40">
               {doneCount}/{totalCount} {t("upload.completed")}
-              {pendingCount > 0 && ` &bull; ${pendingCount} {t("upload.pending")}`}
+              {pendingCount > 0 && ` \u2022 ${pendingCount} ${t("upload.pending")}`}
             </p>
             <Button
               size="lg"
@@ -405,7 +793,9 @@ export default function CaricaPage() {
       </main>
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
-        <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
+        <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">
+          Memoro
+        </span>
         <span className="ml-1">&mdash; {t("home.footerTagline")}</span>
       </footer>
     </div>
