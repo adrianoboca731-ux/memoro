@@ -31,6 +31,7 @@ import {
   Trash2,
   BookmarkPlus,
   Users,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,7 @@ import { format } from "date-fns";
 import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import { AdPlaceholder } from "@/components/ad-banner";
 
 const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
 
@@ -241,6 +243,9 @@ export default function FotoDetailPage() {
 
             <Separator className="bg-white/10" />
 
+            {/* Ad Banner — In-content */}
+            <AdPlaceholder size="banner" />
+
             {/* User info */}
             {photo.user && (
               <div className="flex items-center gap-3">
@@ -308,9 +313,32 @@ export default function FotoDetailPage() {
                 variant="outline"
                 size="sm"
                 className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+                onClick={() => {
+                  const shareUrl = `https://my-project-ten-psi-39.vercel.app/foto/${photoId}`;
+                  if (navigator.share) {
+                    navigator.share({ title: photo.title, url: shareUrl });
+                  } else {
+                    navigator.clipboard.writeText(shareUrl);
+                  }
+                }}
               >
                 <Share2 className="h-4 w-4" />
                 {t("photo.share")}
+              </Button>
+
+              {/* Share on Flickr */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 border-white/10 text-[#ff0084]/70 hover:text-[#ff0084] hover:bg-[#ff0084]/5"
+                onClick={() => {
+                  const url = encodeURIComponent(`https://my-project-ten-psi-39.vercel.app/foto/${photoId}`);
+                  const title = encodeURIComponent(photo.title || 'Check out this photo on Memoro!');
+                  window.open(`https://www.flickr.com/share?url=${url}&title=${title}`, '_blank', 'width=600,height=400');
+                }}
+              >
+                <ExternalLink className="h-4 w-4" />
+                Flickr
               </Button>
 
               <Button

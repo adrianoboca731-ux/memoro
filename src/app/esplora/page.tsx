@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
+import { AdPlaceholder } from "@/components/ad-banner";
 
 type FilterType = "interesting" | "recent" | "popular";
 
@@ -131,6 +132,9 @@ export default function EsploraPage() {
 
             {/* Sidebar */}
             <aside className="hidden lg:block w-72 shrink-0 space-y-6">
+              {/* Ad Banner — Sidebar */}
+              <AdPlaceholder size="rectangle" />
+
               {/* Trending */}
               <div className="bg-white/5 rounded-lg p-4">
                 <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2 mb-3">
@@ -181,6 +185,9 @@ export default function EsploraPage() {
           </div>
         </div>
       </main>
+
+      {/* Ad Banner — Footer Leaderboard */}
+      <AdPlaceholder size="leaderboard" />
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
