@@ -21,12 +21,19 @@ import {
   Camera,
   Maximize2,
   User,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
@@ -225,17 +232,39 @@ export function PhotoDetail() {
                 <Share2 className="h-4 w-4" />
                 <span className="hidden sm:inline text-xs">{t("photo.share")}</span>
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 h-8"
-                asChild
-              >
-                <a href={photo.filepath} download target="_blank" rel="noopener noreferrer">
-                  <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline text-xs">{t("photo.download")}</span>
-                </a>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white/70 hover:text-white hover:bg-white/10 gap-1 h-8"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline text-xs">{t("photo.download")}</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-[#2a2a2d] border-white/10" align="start">
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                    onClick={() => { window.open(`/api/download?photoId=${photo.id}&size=thumbnail`, "_blank"); }}
+                  >
+                    {t("photo.downloadThumbnail")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                    onClick={() => { window.open(`/api/download?photoId=${photo.id}&size=medium`, "_blank"); }}
+                  >
+                    {t("photo.downloadMedium")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                    onClick={() => { window.open(`/api/download?photoId=${photo.id}&size=full`, "_blank"); }}
+                  >
+                    {t("photo.downloadFull")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Separator orientation="vertical" className="h-5 mx-1 bg-white/10" />
               {isEditing ? (
                 <Button

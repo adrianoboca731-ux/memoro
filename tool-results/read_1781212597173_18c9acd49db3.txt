@@ -1,0 +1,1082 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect, useCallback, useRef } from "react";
+     4→import { useParams, useRouter } from "next/navigation";
+     5→import { useSession } from "next-auth/react";
+     6→import { Header } from "@/components/header";
+     7→import { CommentSection } from "@/components/comment-section";
+     8→import { SafetyBadge } from "@/components/safety-badge";
+     9→import { FollowButton } from "@/components/follow-button";
+    10→import {
+    11→  Heart,
+    12→  Eye,
+    13→  MessageCircle,
+    14→  Calendar,
+    15→  Tag,
+    16→  Folder,
+    17→  Camera,
+    18→  Download,
+    19→  Share2,
+    20→  MoreHorizontal,
+    21→  ChevronDown,
+    22→  ChevronUp,
+    23→  ChevronLeft,
+    24→  ChevronRight,
+    25→  User,
+    26→  Aperture,
+    27→  Gauge,
+    28→  CircleDot,
+    29→  Image as ImageIcon,
+    30→  X,
+    31→  Edit3,
+    32→  Save,
+    33→  Trash2,
+    34→  BookmarkPlus,
+    35→  Users,
+    36→  ExternalLink,
+    37→  AlertTriangle,
+    38→  ShieldAlert,
+    39→  Maximize2,
+    40→  Search,
+    41→  Plus,
+    42→  Check,
+    43→  FolderPlus,
+    44→} from "lucide-react";
+    45→import { Button } from "@/components/ui/button";
+    46→import { Input } from "@/components/ui/input";
+    47→import { Textarea } from "@/components/ui/textarea";
+    48→import { Badge } from "@/components/ui/badge";
+    49→import { Separator } from "@/components/ui/separator";
+    50→import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+    51→import { Skeleton } from "@/components/ui/skeleton";
+    52→import {
+    53→  Dialog,
+    54→  DialogContent,
+    55→  DialogHeader,
+    56→  DialogTitle,
+    57→} from "@/components/ui/dialog";
+    58→import {
+    59→  DropdownMenu,
+    60→  DropdownMenuContent,
+    61→  DropdownMenuItem,
+    62→  DropdownMenuTrigger,
+    63→} from "@/components/ui/dropdown-menu";
+    64→import {
+    65→  Select,
+    66→  SelectContent,
+    67→  SelectItem,
+    68→  SelectTrigger,
+    69→  SelectValue,
+    70→} from "@/components/ui/select";
+    71→import { motion, AnimatePresence } from "framer-motion";
+    72→import { format } from "date-fns";
+    73→import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
+    74→import Link from "next/link";
+    75→import { useI18n } from "@/lib/i18n";
+    76→
+    77→const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
+    78→
+    79→export default function FotoDetailPage() {
+    80→  const params = useParams();
+    81→  const router = useRouter();
+    82→  const { data: session } = useSession();
+    83→  const photoId = params.id as string;
+    84→  const { t, locale } = useI18n();
+    85→
+    86→  const [photo, setPhoto] = useState<any>(null);
+    87→  const [loading, setLoading] = useState(true);
+    88→  const [error, setError] = useState<string | null>(null);
+    89→  const [isFavorited, setIsFavorited] = useState(false);
+    90→  const [favoriteCount, setFavoriteCount] = useState(0);
+    91→  const [isEditing, setIsEditing] = useState(false);
+    92→  const [editTitle, setEditTitle] = useState("");
+    93→  const [editDescription, setEditDescription] = useState("");
+    94→  const [editTags, setEditTags] = useState("");
+    95→  const [showExif, setShowExif] = useState(false);
+    96→  const [revealed, setRevealed] = useState(false);
+    97→  const [addToGalleryOpen, setAddToGalleryOpen] = useState(false);
+    98→  const [addToGroupOpen, setAddToGroupOpen] = useState(false);
+    99→  const [galleries, setGalleries] = useState<any[]>([]);
+   100→  const [groups, setGroups] = useState<any[]>([]);
+   101→
+   102→  // Add-to modal state (Flickr-style)
+   103→  const [addToOpen, setAddToOpen] = useState(false);
+   104→  const [addToTab, setAddToTab] = useState<"albums" | "groups">("albums");
+   105→  const [albums, setAlbums] = useState<any[]>([]);
+   106→  const [selectedAlbums, setSelectedAlbums] = useState<Set<string>>(new Set());
+   107→  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
+   108→  const [addToSearch, setAddToSearch] = useState("");
+   109→  const [newAlbumName, setNewAlbumName] = useState("");
+   110→  const [showNewAlbumInput, setShowNewAlbumInput] = useState(false);
+   111→
+   112→  // Navigation state
+   113→  const [navData, setNavData] = useState<{ prev: { id: string; title: string; thumbnail: string } | null; next: { id: string; title: string; thumbnail: string } | null; thumbnails: { id: string; title: string; thumbnail: string; isCurrent: boolean }[] } | null>(null);
+   114→  const [isFullscreen, setIsFullscreen] = useState(false);
+   115→  const thumbnailStripRef = useRef<HTMLDivElement | null>(null);
+   116→
+   117→  const dateLocale = dateLocales[locale] || it;
+   118→
+   119→  const fetchPhoto = useCallback(async () => {
+   120→    setLoading(true);
+   121→    setError(null);
+   122→    try {
+   123→      const res = await fetch(`/api/photos/${photoId}`);
+   124→      if (res.ok) {
+   125→        const data = await res.json();
+   126→        setPhoto(data);
+   127→        setIsFavorited(data.isFavorited || false);
+   128→        setFavoriteCount(data.favoriteCount || 0);
+   129→        setEditTitle(data.title);
+   130→        setEditDescription(data.description || "");
+   131→        setEditTags(data.tags || "");
+   132→      } else {
+   133→        const data = await res.json();
+   134→        setError(data.error || t("photo.notFound"));
+   135→      }
+   136→    } catch (err) {
+   137→      setError(t("common.error"));
+   138→    } finally {
+   139→      setLoading(false);
+   140→    }
+   141→  }, [photoId]);
+   142→
+   143→  useEffect(() => {
+   144→    fetchPhoto();
+   145→  }, [fetchPhoto]);
+   146→
+   147→  // Fetch navigation data
+   148→  useEffect(() => {
+   149→    if (!photoId) return;
+   150→    const fetchNav = async () => {
+   151→      try {
+   152→        const res = await fetch(`/api/photos/${photoId}/navigate`);
+   153→        if (res.ok) {
+   154→          const data = await res.json();
+   155→          setNavData(data);
+   156→        }
+   157→      } catch (err) {
+   158→        console.error("Error fetching navigation:", err);
+   159→      }
+   160→    };
+   161→    fetchNav();
+   162→  }, [photoId]);
+   163→
+   164→  // Keyboard navigation
+   165→  useEffect(() => {
+   166→    const handleKeyDown = (e: KeyboardEvent) => {
+   167→      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+   168→      if (e.key === "ArrowLeft" && navData?.prev) {
+   169→        e.preventDefault();
+   170→        router.push(`/foto/${navData.prev.id}`);
+   171→      } else if (e.key === "ArrowRight" && navData?.next) {
+   172→        e.preventDefault();
+   173→        router.push(`/foto/${navData.next.id}`);
+   174→      } else if (e.key === "Escape" && isFullscreen) {
+   175→        setIsFullscreen(false);
+   176→      } else if (e.key === "f" || e.key === "F") {
+   177→        if (e.target instanceof HTMLElement && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+   178→          setIsFullscreen((prev) => !prev);
+   179→        }
+   180→      }
+   181→    };
+   182→    window.addEventListener("keydown", handleKeyDown);
+   183→    return () => window.removeEventListener("keydown", handleKeyDown);
+   184→  }, [navData, router, isFullscreen]);
+   185→
+   186→  // Scroll thumbnail strip to current photo
+   187→  useEffect(() => {
+   188→    if (thumbnailStripRef.current) {
+   189→      const currentThumb = thumbnailStripRef.current.querySelector("[data-current=\"true\"]");
+   190→      if (currentThumb) {
+   191→        currentThumb.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+   192→      }
+   193→    }
+   194→  }, [navData]);
+   195→
+   196→  // Fetch albums and groups when "Add to" modal opens
+   197→  useEffect(() => {
+   198→    if (!addToOpen || !session?.user?.id) return;
+   199→    const fetchData = async () => {
+   200→      try {
+   201→        const [albumsRes, groupsRes] = await Promise.all([
+   202→          fetch(`/api/albums?userId=${(session.user as any).id}`),
+   203→          fetch(`/api/groups?userId=${(session.user as any).id}`),
+   204→        ]);
+   205→        if (albumsRes.ok) {
+   206→          const albumsData = await albumsRes.json();
+   207→          setAlbums(Array.isArray(albumsData) ? albumsData : []);
+   208→        }
+   209→        if (groupsRes.ok) {
+   210→          const groupsData = await groupsRes.json();
+   211→          setGroups(Array.isArray(groupsData) ? groupsData : (groupsData.groups || []));
+   212→        }
+   213→      } catch (err) {
+   214→        console.error("Error fetching albums/groups:", err);
+   215→      }
+   216→    };
+   217→    fetchData();
+   218→    // Reset state when modal opens
+   219→    setSelectedAlbums(new Set());
+   220→    setSelectedGroups(new Set());
+   221→    setAddToSearch("");
+   222→    setNewAlbumName("");
+   223→    setShowNewAlbumInput(false);
+   224→  }, [addToOpen, session]);
+   225→
+   226→  // Handle saving selections from Add-to modal
+   227→  const handleAddToSave = useCallback(async () => {
+   228→    try {
+   229→      // Add to selected albums
+   230→      for (const albumId of selectedAlbums) {
+   231→        await fetch(`/api/photos/${photoId}`, {
+   232→          method: "PUT",
+   233→          headers: { "Content-Type": "application/json" },
+   234→          body: JSON.stringify({ albumId }),
+   235→        });
+   236→      }
+   237→      // Add to selected groups
+   238→      for (const groupId of selectedGroups) {
+   239→        await fetch(`/api/groups/${groupId}/photos`, {
+   240→          method: "POST",
+   241→          headers: { "Content-Type": "application/json" },
+   242→          body: JSON.stringify({ photoId }),
+   243→        });
+   244→      }
+   245→      setAddToOpen(false);
+   246→    } catch (err) {
+   247→      console.error("Error adding to albums/groups:", err);
+   248→    }
+   249→  }, [photoId, selectedAlbums, selectedGroups]);
+   250→
+   251→  // Handle creating a new album and adding the photo to it
+   252→  const handleCreateAndAddAlbum = useCallback(async () => {
+   253→    if (!newAlbumName.trim()) return;
+   254→    try {
+   255→      const res = await fetch("/api/albums", {
+   256→        method: "POST",
+   257→        headers: { "Content-Type": "application/json" },
+   258→        body: JSON.stringify({ name: newAlbumName.trim() }),
+   259→      });
+   260→      if (res.ok) {
+   261→        const album = await res.json();
+   262→        // Add photo to the new album
+   263→        await fetch(`/api/photos/${photoId}`, {
+   264→          method: "PUT",
+   265→          headers: { "Content-Type": "application/json" },
+   266→          body: JSON.stringify({ albumId: album.id }),
+   267→        });
+   268→        setAlbums((prev) => [album, ...prev]);
+   269→        setSelectedAlbums((prev) => new Set(prev).add(album.id));
+   270→        setNewAlbumName("");
+   271→        setShowNewAlbumInput(false);
+   272→      }
+   273→    } catch (err) {
+   274→      console.error("Error creating album:", err);
+   275→    }
+   276→  }, [photoId, newAlbumName]);
+   277→
+   278→  const handleToggleFavorite = useCallback(async () => {
+   279→    try {
+   280→      const res = await fetch(`/api/photos/${photoId}/favorite`, { method: "POST" });
+   281→      if (res.ok) {
+   282→        setIsFavorited((prev) => !prev);
+   283→        setFavoriteCount((prev) => isFavorited ? prev - 1 : prev + 1);
+   284→      }
+   285→    } catch (err) {
+   286→      console.error("Error with favorite:", err);
+   287→    }
+   288→  }, [photoId, isFavorited]);
+   289→
+   290→  const handleSave = useCallback(async () => {
+   291→    if (!photo) return;
+   292→    try {
+   293→      const res = await fetch(`/api/photos/${photoId}`, {
+   294→        method: "PUT",
+   295→        headers: { "Content-Type": "application/json" },
+   296→        body: JSON.stringify({ title: editTitle, description: editDescription, tags: editTags }),
+   297→      });
+   298→      if (res.ok) {
+   299→        const updated = await res.json();
+   300→        setPhoto(updated);
+   301→        setIsEditing(false);
+   302→      }
+   303→    } catch (err) {
+   304→      console.error("Error saving:", err);
+   305→    }
+   306→  }, [photoId, photo, editTitle, editDescription, editTags]);
+   307→
+   308→  const handleDelete = useCallback(async () => {
+   309→    if (!confirm(t("photo.deleteConfirm"))) return;
+   310→    try {
+   311→      const res = await fetch(`/api/photos/${photoId}`, { method: "DELETE" });
+   312→      if (res.ok) {
+   313→        router.push("/esplora");
+   314→      }
+   315→    } catch (err) {
+   316→      console.error("Error deleting:", err);
+   317→    }
+   318→  }, [photoId, router]);
+   319→
+   320→  const isOwner = session?.user && photo && (session.user as any).id === photo.userId;
+   321→
+   322→  if (loading) {
+   323→    return (
+   324→      <div className="min-h-screen bg-[#0d0d0d]">
+   325→        <Header />
+   326→        <div className="flex items-center justify-center h-[calc(100vh-56px)]">
+   327→          <div className="space-y-4">
+   328→            <Skeleton className="w-[600px] h-[400px] rounded-lg bg-white/5" />
+   329→            <Skeleton className="w-48 h-6 rounded bg-white/5" />
+   330→          </div>
+   331→        </div>
+   332→      </div>
+   333→    );
+   334→  }
+   335→
+   336→  if (error || !photo) {
+   337→    return (
+   338→      <div className="min-h-screen bg-[#0d0d0d]">
+   339→        <Header />
+   340→        <div className="flex flex-col items-center justify-center h-[calc(100vh-56px)] text-white/50">
+   341→          <Camera className="h-16 w-16 mb-4 opacity-30" />
+   342→          <p className="text-lg font-medium">{error || t("photo.notFound")}</p>
+   343→          <Link href="/esplora">
+   344→            <Button variant="outline" className="mt-4 border-white/20 text-white hover:bg-white/5">
+   345→              {t("photo.backToExplore")}
+   346→            </Button>
+   347→          </Link>
+   348→        </div>
+   349→      </div>
+   350→    );
+   351→  }
+   352→
+   353→  return (
+   354→    <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
+   355→      <Header />
+   356→      <main className="flex-1 flex flex-col lg:flex-row">
+   357→        {/* Left side - Photo area (70%) */}
+   358→        <div className="flex-1 lg:w-[70%] bg-[#000] flex flex-col min-h-[50vh] lg:min-h-[calc(100vh-56px)] relative">
+   359→          {/* Photo title bar */}
+   360→          <div className="flex items-center justify-between px-4 py-2 bg-black/60 text-white/70 text-sm absolute top-0 left-0 right-0 z-20">
+   361→            <span className="truncate max-w-[60%]">{photo.user?.username ? `${t("photo.photosOf")} ` : ""}{photo.user?.name || ""}</span>
+   362→            <button
+   363→              onClick={() => setIsFullscreen(!isFullscreen)}
+   364→              className="p-1.5 rounded hover:bg-white/10 transition-colors"
+   365→              title={isFullscreen ? t("photo.exitFullscreen") : t("photo.enterFullscreen")}
+   366→            >
+   367→              <Maximize2 className="h-4 w-4" />
+   368→            </button>
+   369→          </div>
+   370→
+   371→          {/* Main image container */}
+   372→          <div className="flex-1 flex items-center justify-center relative group">
+   373→            <motion.img
+   374→              key={photoId}
+   375→              initial={{ opacity: 0 }}
+   376→              animate={{ opacity: 1 }}
+   377→              transition={{ duration: 0.4 }}
+   378→              src={photo.filepath}
+   379→              alt={photo.title}
+   380→              className={`max-w-full max-h-[calc(100vh-56px-80px)] object-contain ${
+   381→                photo.shouldBlur && !revealed ? "blur-xl" : ""
+   382→              }`}
+   383→            />
+   384→
+   385→            {/* Left navigation arrow */}
+   386→            {navData?.prev && (
+   387→              <Link
+   388→                href={`/foto/${navData.prev.id}`}
+   389→                className="absolute left-3 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+   390→              >
+   391→                <div className="bg-black/60 hover:bg-black/80 rounded-full p-3 cursor-pointer transition-colors backdrop-blur-sm">
+   392→                  <ChevronLeft className="h-8 w-8 text-white/90" />
+   393→                </div>
+   394→              </Link>
+   395→            )}
+   396→
+   397→            {/* Right navigation arrow */}
+   398→            {navData?.next && (
+   399→              <Link
+   400→                href={`/foto/${navData.next.id}`}
+   401→                className="absolute right-3 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+   402→              >
+   403→                <div className="bg-black/60 hover:bg-black/80 rounded-full p-3 cursor-pointer transition-colors backdrop-blur-sm">
+   404→                  <ChevronRight className="h-8 w-8 text-white/90" />
+   405→                </div>
+   406→              </Link>
+   407→            )}
+   408→
+   409→            {/* Mature/restricted content overlay */}
+   410→            {photo.shouldBlur && !revealed && (
+   411→              <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-10 p-6">
+   412→                {photo.safetyLevel === "restricted" ? (
+   413→                  <ShieldAlert className="h-12 w-12 text-red-400/80" />
+   414→                ) : (
+   415→                  <AlertTriangle className="h-12 w-12 text-amber-400/80" />
+   416→                )}
+   417→                <p className="text-white font-semibold text-lg text-center">
+   418→                  {photo.safetyLevel === "restricted" ? t("photo.restrictedContent") : t("photo.matureContent")}
+   419→                </p>
+   420→                <p className="text-white/50 text-sm text-center max-w-md">
+   421→                  {photo.safetyLevel === "restricted" ? t("photo.restrictedContentDesc") : t("photo.matureContentDesc")}
+   422→                </p>
+   423→                <Button
+   424→                  size="default"
+   425→                  variant="outline"
+   426→                  className="mt-2 border-white/20 text-white hover:bg-white/10 gap-2"
+   427→                  onClick={() => {
+   428→                    if (confirm(t("photo.confirmShowMature"))) {
+   429→                      setRevealed(true);
+   430→                    }
+   431→                  }}
+   432→                >
+   433→                  <Eye className="h-4 w-4" />
+   434→                  {t("photo.showContent")}
+   435→                </Button>
+   436→              </div>
+   437→            )}
+   438→          </div>
+   439→
+   440→          {/* Thumbnail strip + Action bar at bottom */}
+   441→          <div className="shrink-0 bg-[#111] border-t border-white/10">
+   442→            {/* Action icons row - Flickr style */}
+   443→            <div className="flex items-center justify-center gap-1 px-4 py-2 border-b border-white/5">
+   444→              {/* Favorite / Star */}
+   445→              <button
+   446→                onClick={handleToggleFavorite}
+   447→                className={`p-2 rounded-full transition-colors ${
+   448→                  isFavorited
+   449→                    ? "text-[#ff0084] hover:bg-[#ff0084]/10"
+   450→                    : "text-white/50 hover:text-white hover:bg-white/5"
+   451→                }`}
+   452→                title={t("photo.favorite")}
+   453→              >
+   454→                <Heart className={`h-5 w-5 ${isFavorited ? "fill-[#ff0084]" : ""}`} />
+   455→              </button>
+   456→
+   457→              {/* Add to album / Plus */}
+   458→              <button
+   459→                onClick={() => { setAddToOpen(true); setAddToTab("albums"); }}
+   460→                className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+   461→                title={t("photo.addTo")}
+   462→              >
+   463→                <Plus className="h-5 w-5" />
+   464→              </button>
+   465→
+   466→              {/* Share */}
+   467→              <button
+   468→                onClick={() => {
+   469→                  const shareUrl = `https://my-project-ten-psi-39.vercel.app/foto/${photoId}`;
+   470→                  if (navigator.share) {
+   471→                    navigator.share({ title: photo.title, url: shareUrl });
+   472→                  } else {
+   473→                    navigator.clipboard.writeText(shareUrl);
+   474→                  }
+   475→                }}
+   476→                className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+   477→                title={t("photo.share")}
+   478→              >
+   479→                <Share2 className="h-5 w-5" />
+   480→              </button>
+   481→
+   482→              {/* Download */}
+   483→              <a
+   484→                href={photo.filepath}
+   485→                download
+   486→                target="_blank"
+   487→                rel="noopener noreferrer"
+   488→                className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors"
+   489→                title={t("photo.download")}
+   490→              >
+   491→                <Download className="h-5 w-5" />
+   492→              </a>
+   493→
+   494→              {/* More actions (owner) */}
+   495→              {isOwner && (
+   496→                <DropdownMenu>
+   497→                  <DropdownMenuTrigger asChild>
+   498→                    <button className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors" title={t("photo.edit")}>
+   499→                      <MoreHorizontal className="h-5 w-5" />
+   500→                    </button>
+   501→                  </DropdownMenuTrigger>
+   502→                  <DropdownMenuContent className="bg-[#2a2a2d] border-white/10">
+   503→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setIsEditing(true)}>
+   504→                      <Edit3 className="h-4 w-4 mr-2" /> {t("photo.edit")}
+   505→                    </DropdownMenuItem>
+   506→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => { setAddToOpen(true); setAddToTab("groups"); }}>
+   507→                      <Users className="h-4 w-4 mr-2" /> {t("photo.addToGroups")}
+   508→                    </DropdownMenuItem>
+   509→                    <DropdownMenuItem className="text-red-400 focus:text-red-300 focus:bg-white/5 cursor-pointer" onClick={handleDelete}>
+   510→                      <Trash2 className="h-4 w-4 mr-2" /> {t("photo.deletePhoto")}
+   511→                    </DropdownMenuItem>
+   512→                  </DropdownMenuContent>
+   513→                </DropdownMenu>
+   514→              )}
+   515→            </div>
+   516→
+   517→            {/* Thumbnail strip */}
+   518→            {navData && navData.thumbnails.length > 1 && (
+   519→              <div className="flex items-center px-2 gap-1 overflow-x-auto py-1.5 scrollbar-thin">
+   520→                <div
+   521→                  ref={thumbnailStripRef}
+   522→                  className="flex items-center gap-1.5 mx-auto"
+   523→                >
+   524→                  {navData.thumbnails.map((thumb) => (
+   525→                    <Link
+   526→                      key={thumb.id}
+   527→                      href={`/foto/${thumb.id}`}
+   528→                      data-current={thumb.isCurrent}
+   529→                      className={`shrink-0 rounded overflow-hidden transition-all duration-200 ${
+   530→                        thumb.isCurrent
+   531→                          ? "ring-2 ring-[#0063dc] opacity-100 scale-105"
+   532→                          : "opacity-50 hover:opacity-80"
+   533→                      }`}
+   534→                    >
+   535→                      <img
+   536→                        src={thumb.thumbnail}
+   537→                        alt={thumb.title || ""}
+   538→                        className="h-[48px] w-[48px] object-cover"
+   539→                      />
+   540→                    </Link>
+   541→                  ))}
+   542→                </div>
+   543→              </div>
+   544→            )}
+   545→          </div>
+   546→        </div>
+   547→
+   548→        {/* Right sidebar (30%) */}
+   549→        <div className="lg:w-[30%] bg-[#1c1c1c] border-l border-white/5 overflow-y-auto lg:max-h-[calc(100vh-56px)]">
+   550→          <div className="p-5 space-y-5 text-white">
+   551→            {/* Title & Description */}
+   552→            <div>
+   553→              {isEditing ? (
+   554→                <Input
+   555→                  value={editTitle}
+   556→                  onChange={(e) => setEditTitle(e.target.value)}
+   557→                  className="text-xl font-bold bg-white/10 border-white/20 text-white mb-2"
+   558→                />
+   559→              ) : (
+   560→                <h1 className="text-xl font-bold">{photo.title}</h1>
+   561→              )}
+   562→              {isEditing ? (
+   563→                <Textarea
+   564→                  value={editDescription}
+   565→                  onChange={(e) => setEditDescription(e.target.value)}
+   566→                  placeholder={t("photo.addDescription")}
+   567→                  rows={3}
+   568→                  className="bg-white/10 border-white/20 text-white text-sm resize-none"
+   569→                />
+   570→              ) : (
+   571→                photo.description && (
+   572→                  <p className="text-sm text-white/60 mt-2 leading-relaxed">{photo.description}</p>
+   573→                )
+   574→              )}
+   575→            </div>
+   576→
+   577→            <Separator className="bg-white/10" />
+   578→
+   579→            {/* User info */}
+   580→            {photo.user && (
+   581→              <div className="flex items-center gap-3">
+   582→                <Link href={`/persone/${photo.user.username}`}>
+   583→                  <Avatar className="h-10 w-10">
+   584→                    <AvatarImage src={photo.user.avatar || undefined} />
+   585→                    <AvatarFallback className="bg-[#0063dc] text-white">
+   586→                      {photo.user.name.charAt(0).toUpperCase()}
+   587→                    </AvatarFallback>
+   588→                  </Avatar>
+   589→                </Link>
+   590→                <div className="flex-1 min-w-0">
+   591→                  <Link href={`/persone/${photo.user.username}`} className="font-medium text-sm hover:underline">
+   592→                    {photo.user.name}
+   593→                  </Link>
+   594→                  <p className="text-xs text-white/40">@{photo.user.username}</p>
+   595→                </div>
+   596→                <FollowButton userId={photo.user.id} username={photo.user.username} />
+   597→              </div>
+   598→            )}
+   599→
+   600→            <Separator className="bg-white/10" />
+   601→
+   602→            {/* Stats */}
+   603→            <div className="flex items-center gap-5 text-sm">
+   604→              <span className="flex items-center gap-1.5 text-white/60">
+   605→                <Eye className="h-4 w-4" /> {photo.views}
+   606→              </span>
+   607→              <span className="flex items-center gap-1.5 text-white/60">
+   608→                <Heart className={`h-4 w-4 ${isFavorited ? "fill-[#ff0084] text-[#ff0084]" : ""}`} />
+   609→                {favoriteCount}
+   610→              </span>
+   611→              <span className="flex items-center gap-1.5 text-white/60">
+   612→                <MessageCircle className="h-4 w-4" /> {photo.commentCount || 0}
+   613→              </span>
+   614→            </div>
+   615→
+   616→            {/* Action buttons in sidebar - compact icon+text style */}
+   617→            <div className="flex items-center gap-1.5 flex-wrap">
+   618→              <Button
+   619→                variant="ghost"
+   620→                size="sm"
+   621→                onClick={handleToggleFavorite}
+   622→                className={`gap-1.5 ${
+   623→                  isFavorited
+   624→                    ? "text-[#ff0084] hover:bg-[#ff0084]/10"
+   625→                    : "text-white/60 hover:text-white hover:bg-white/5"
+   626→                }`}
+   627→              >
+   628→                <Heart className={`h-4 w-4 ${isFavorited ? "fill-[#ff0084]" : ""}`} />
+   629→                {favoriteCount}
+   630→              </Button>
+   631→
+   632→              <Button
+   633→                variant="ghost"
+   634→                size="sm"
+   635→                onClick={() => { setAddToOpen(true); setAddToTab("albums"); }}
+   636→                className="gap-1.5 text-white/60 hover:text-white hover:bg-white/5"
+   637→              >
+   638→                <Plus className="h-4 w-4" />
+   639→                {t("photo.addToAlbum")}
+   640→              </Button>
+   641→
+   642→              <Button
+   643→                variant="ghost"
+   644→                size="sm"
+   645→                className="gap-1.5 text-white/60 hover:text-white hover:bg-white/5"
+   646→                asChild
+   647→              >
+   648→                <a href={photo.filepath} download target="_blank" rel="noopener noreferrer">
+   649→                  <Download className="h-4 w-4" />
+   650→                  {t("photo.download")}
+   651→                </a>
+   652→              </Button>
+   653→
+   654→              <Button
+   655→                variant="ghost"
+   656→                size="sm"
+   657→                className="gap-1.5 text-white/60 hover:text-white hover:bg-white/5"
+   658→                onClick={() => {
+   659→                  const shareUrl = `https://my-project-ten-psi-39.vercel.app/foto/${photoId}`;
+   660→                  if (navigator.share) {
+   661→                    navigator.share({ title: photo.title, url: shareUrl });
+   662→                  } else {
+   663→                    navigator.clipboard.writeText(shareUrl);
+   664→                  }
+   665→                }}
+   666→              >
+   667→                <Share2 className="h-4 w-4" />
+   668→                {t("photo.share")}
+   669→              </Button>
+   670→
+   671→              {/* Owner actions */}
+   672→              {isOwner && (
+   673→                <DropdownMenu>
+   674→                  <DropdownMenuTrigger asChild>
+   675→                    <Button variant="ghost" size="sm" className="text-white/60 hover:text-white hover:bg-white/5">
+   676→                      <MoreHorizontal className="h-4 w-4" />
+   677→                    </Button>
+   678→                  </DropdownMenuTrigger>
+   679→                  <DropdownMenuContent className="bg-[#2a2a2d] border-white/10">
+   680→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setIsEditing(true)}>
+   681→                      <Edit3 className="h-4 w-4 mr-2" /> {t("photo.edit")}
+   682→                    </DropdownMenuItem>
+   683→                    <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => { setAddToOpen(true); setAddToTab("groups"); }}>
+   684→                      <Users className="h-4 w-4 mr-2" /> {t("photo.addToGroups")}
+   685→                    </DropdownMenuItem>
+   686→                    <DropdownMenuItem className="text-red-400 focus:text-red-300 focus:bg-white/5 cursor-pointer" onClick={handleDelete}>
+   687→                      <Trash2 className="h-4 w-4 mr-2" /> {t("photo.deletePhoto")}
+   688→                    </DropdownMenuItem>
+   689→                  </DropdownMenuContent>
+   690→                </DropdownMenu>
+   691→              )}
+   692→            </div>
+   693→
+   694→            {/* Editing save/cancel */}
+   695→            {isEditing && (
+   696→              <div className="flex gap-2">
+   697→                <Button size="sm" onClick={handleSave} className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1.5">
+   698→                  <Save className="h-4 w-4" /> {t("common.save")}
+   699→                </Button>
+   700→                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} className="border-white/20 text-white/70">
+   701→                  {t("common.cancel")}
+   702→                </Button>
+   703→              </div>
+   704→            )}
+   705→
+   706→            <Separator className="bg-white/10" />
+   707→
+   708→            {/* Tags */}
+   709→            {(photo.tags || isEditing) && (
+   710→              <div className="space-y-2">
+   711→                <p className="text-xs font-medium text-white/40 uppercase tracking-wider">{t("photo.tag")}</p>
+   712→                {isEditing ? (
+   713→                  <Input
+   714→                    value={editTags}
+   715→                    onChange={(e) => setEditTags(e.target.value)}
+   716→                    placeholder={t("photo.tagPlaceholder")}
+   717→                    className="bg-white/5 border-white/10 text-white text-sm"
+   718→                  />
+   719→                ) : (
+   720→                  photo.tags && (
+   721→                    <div className="flex flex-wrap gap-1.5">
+   722→                      {photo.tags.split(",").map((tag: string) => (
+   723→                        <Link key={tag.trim()} href={`/cerca?q=${tag.trim()}`}>
+   724→                          <Badge variant="secondary" className="text-xs bg-white/10 text-white/60 hover:bg-white/15 border-0 cursor-pointer">
+   725→                            <Tag className="h-2.5 w-2.5 mr-1" />
+   726→                            {tag.trim()}
+   727→                          </Badge>
+   728→                        </Link>
+   729→                      ))}
+   730→                    </div>
+   731→                  )
+   732→                )}
+   733→              </div>
+   734→            )}
+   735→
+   736→            {/* Safety level */}
+   737→            {photo.safetyLevel && photo.safetyLevel !== "safe" && (
+   738→              <div className="flex items-center gap-2">
+   739→                <span className="text-xs text-white/40">{t("safety.level")}</span>
+   740→                <SafetyBadge level={photo.safetyLevel} />
+   741→              </div>
+   742→            )}
+   743→
+   744→            <Separator className="bg-white/10" />
+   745→
+   746→            {/* EXIF data - collapsible */}
+   747→            {photo.exif && (
+   748→              <div>
+   749→                <button
+   750→                  className="flex items-center justify-between w-full text-left"
+   751→                  onClick={() => setShowExif(!showExif)}
+   752→                >
+   753→                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider flex items-center gap-1.5">
+   754→                    <Camera className="h-3.5 w-3.5" /> {t("photo.exifData")}
+   755→                  </p>
+   756→                  {showExif ? (
+   757→                    <ChevronUp className="h-4 w-4 text-white/30" />
+   758→                  ) : (
+   759→                    <ChevronDown className="h-4 w-4 text-white/30" />
+   760→                  )}
+   761→                </button>
+   762→                <AnimatePresence>
+   763→                  {showExif && (
+   764→                    <motion.div
+   765→                      initial={{ height: 0, opacity: 0 }}
+   766→                      animate={{ height: "auto", opacity: 1 }}
+   767→                      exit={{ height: 0, opacity: 0 }}
+   768→                      className="overflow-hidden"
+   769→                    >
+   770→                      <div className="space-y-2.5 mt-3 text-sm">
+   771→                        {photo.exif.camera && (
+   772→                          <div className="flex justify-between">
+   773→                            <span className="text-white/40 flex items-center gap-1.5">
+   774→                              <Camera className="h-3 w-3" /> {t("photo.camera")}
+   775→                            </span>
+   776→                            <span className="text-white/70">{photo.exif.camera}</span>
+   777→                          </div>
+   778→                        )}
+   779→                        {photo.exif.lens && (
+   780→                          <div className="flex justify-between">
+   781→                            <span className="text-white/40 flex items-center gap-1.5">
+   782→                              <Aperture className="h-3 w-3" /> {t("photo.lens")}
+   783→                            </span>
+   784→                            <span className="text-white/70">{photo.exif.lens}</span>
+   785→                          </div>
+   786→                        )}
+   787→                        {photo.exif.focalLength && (
+   788→                          <div className="flex justify-between">
+   789→                            <span className="text-white/40">{t("photo.focalLength")}</span>
+   790→                            <span className="text-white/70">{photo.exif.focalLength}</span>
+   791→                          </div>
+   792→                        )}
+   793→                        {photo.exif.aperture && (
+   794→                          <div className="flex justify-between">
+   795→                            <span className="text-white/40 flex items-center gap-1.5">
+   796→                              <Gauge className="h-3 w-3" /> {t("photo.aperture")}
+   797→                            </span>
+   798→                            <span className="text-white/70">f/{photo.exif.aperture}</span>
+   799→                          </div>
+   800→                        )}
+   801→                        {photo.exif.shutterSpeed && (
+   802→                          <div className="flex justify-between">
+   803→                            <span className="text-white/40">{t("photo.shutterSpeed")}</span>
+   804→                            <span className="text-white/70">{photo.exif.shutterSpeed}</span>
+   805→                          </div>
+   806→                        )}
+   807→                        {photo.exif.iso && (
+   808→                          <div className="flex justify-between">
+   809→                            <span className="text-white/40 flex items-center gap-1.5">
+   810→                              <CircleDot className="h-3 w-3" /> ISO
+   811→                            </span>
+   812→                            <span className="text-white/70">{photo.exif.iso}</span>
+   813→                          </div>
+   814→                        )}
+   815→                      </div>
+   816→                    </motion.div>
+   817→                  )}
+   818→                </AnimatePresence>
+   819→              </div>
+   820→            )}
+   821→
+   822→            {/* Photo details */}
+   823→            <div className="space-y-2.5 text-sm">
+   824→              <p className="text-xs font-medium text-white/40 uppercase tracking-wider">{t("photo.details")}</p>
+   825→              {photo.width && photo.height && (
+   826→                <div className="flex justify-between">
+   827→                  <span className="text-white/40">{t("photo.dimensions")}</span>
+   828→                  <span className="text-white/70">{photo.width} × {photo.height}</span>
+   829→                </div>
+   830→              )}
+   831→              <div className="flex justify-between">
+   832→                <span className="text-white/40 flex items-center gap-1.5">
+   833→                  <Calendar className="h-3 w-3" /> {t("photo.uploadedOn")}
+   834→                </span>
+   835→                <span className="text-white/70">
+   836→                  {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: dateLocale })}
+   837→                </span>
+   838→              </div>
+   839→              {photo.album && (
+   840→                <div className="flex justify-between items-center">
+   841→                  <span className="text-white/40 flex items-center gap-1.5">
+   842→                    <Folder className="h-3 w-3" /> {t("photo.album")}
+   843→                  </span>
+   844→                  <Link href={`/album/${photo.album.id}`}>
+   845→                    <Badge variant="secondary" className="text-xs bg-white/10 text-white/60 border-0 hover:bg-white/15 cursor-pointer">
+   846→                      {photo.album.name}
+   847→                    </Badge>
+   848→                  </Link>
+   849→                </div>
+   850→              )}
+   851→              <div className="flex justify-between">
+   852→                <span className="text-white/40">{t("photo.fileSize")}</span>
+   853→                <span className="text-white/70">
+   854→                  {photo.size > 1048576
+   855→                    ? `${(photo.size / 1048576).toFixed(1)} MB`
+   856→                    : `${(photo.size / 1024).toFixed(0)} KB`}
+   857→                </span>
+   858→              </div>
+   859→            </div>
+   860→
+   861→            <Separator className="bg-white/10" />
+   862→
+   863→            {/* Comments section */}
+   864→            <CommentSection
+   865→              photoId={photoId}
+   866→              comments={photo.comments || []}
+   867→            />
+   868→          </div>
+   869→        </div>
+   870→      </main>
+   871→
+   872→      {/* Add To: Flickr-style modal with Album/Groups tabs */}
+   873→      <Dialog open={addToOpen} onOpenChange={setAddToOpen}>
+   874→        <DialogContent className="bg-[#212124] border-white/10 max-w-md">
+   875→          <DialogHeader>
+   876→            <DialogTitle className="text-white text-lg">{t("photo.addTo")}</DialogTitle>
+   877→          </DialogHeader>
+   878→
+   879→          {/* Tabs: Album / Gruppi */}
+   880→          <div className="flex border-b border-white/10">
+   881→            <button
+   882→              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
+   883→                addToTab === "albums"
+   884→                  ? "text-[#0063dc]"
+   885→                  : "text-white/50 hover:text-white/70"
+   886→              }`}
+   887→              onClick={() => setAddToTab("albums")}
+   888→            >
+   889→              {t("photo.albums")}
+   890→              {addToTab === "albums" && (
+   891→                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0063dc]" />
+   892→              )}
+   893→            </button>
+   894→            <button
+   895→              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
+   896→                addToTab === "groups"
+   897→                  ? "text-[#0063dc]"
+   898→                  : "text-white/50 hover:text-white/70"
+   899→              }`}
+   900→              onClick={() => setAddToTab("groups")}
+   901→            >
+   902→              {t("photo.groups")}
+   903→              {addToTab === "groups" && (
+   904→                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0063dc]" />
+   905→              )}
+   906→            </button>
+   907→          </div>
+   908→
+   909→          {/* Search bar */}
+   910→          <div className="relative">
+   911→            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+   912→            <Input
+   913→              value={addToSearch}
+   914→              onChange={(e) => setAddToSearch(e.target.value)}
+   915→              placeholder={addToTab === "albums" ? t("photo.searchAlbums") : t("photo.searchGroups")}
+   916→              className="pl-9 bg-white/5 border-white/10 text-white text-sm placeholder:text-white/30"
+   917→            />
+   918→          </div>
+   919→
+   920→          {/* Album list */}
+   921→          {addToTab === "albums" && (
+   922→            <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+   923→              {albums.length === 0 ? (
+   924→                <p className="text-sm text-white/40 text-center py-6">
+   925→                  {t("photo.noAlbums")}
+   926→                </p>
+   927→              ) : (
+   928→                albums
+   929→                  .filter((a: any) => !addToSearch || a.name.toLowerCase().includes(addToSearch.toLowerCase()))
+   930→                  .map((album: any) => {
+   931→                    const isSelected = selectedAlbums.has(album.id);
+   932→                    return (
+   933→                      <button
+   934→                        key={album.id}
+   935→                        className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors text-left group"
+   936→                        onClick={() => {
+   937→                          setSelectedAlbums((prev) => {
+   938→                            const next = new Set(prev);
+   939→                            if (next.has(album.id)) next.delete(album.id);
+   940→                            else next.add(album.id);
+   941→                            return next;
+   942→                          });
+   943→                        }}
+   944→                      >
+   945→                        {/* Checkbox */}
+   946→                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+   947→                          isSelected
+   948→                            ? "bg-[#0063dc] border-[#0063dc]"
+   949→                            : "border-white/30 group-hover:border-white/50"
+   950→                        }`}>
+   951→                          {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
+   952→                        </div>
+   953→                        {/* Album thumbnail */}
+   954→                        <div className="h-10 w-10 rounded bg-white/5 overflow-hidden shrink-0">
+   955→                          {album.cover ? (
+   956→                            <img src={album.cover} alt="" className="h-full w-full object-cover" />
+   957→                          ) : (
+   958→                            <div className="h-full w-full flex items-center justify-center">
+   959→                              <ImageIcon className="h-5 w-5 text-white/20" />
+   960→                            </div>
+   961→                          )}
+   962→                        </div>
+   963→                        {/* Album info */}
+   964→                        <div className="flex-1 min-w-0">
+   965→                          <p className="text-sm text-white/90 truncate">{album.name}</p>
+   966→                          <p className="text-xs text-white/40">{album.photoCount || 0} {t("photo.items")}</p>
+   967→                        </div>
+   968→                      </button>
+   969→                    );
+   970→                  })
+   971→              )}
+   972→            </div>
+   973→          )}
+   974→
+   975→          {/* Groups list */}
+   976→          {addToTab === "groups" && (
+   977→            <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+   978→              {groups.length === 0 ? (
+   979→                <p className="text-sm text-white/40 text-center py-6">
+   980→                  {t("photo.noGroups")}
+   981→                  <Link href="/gruppi" className="text-[#0063dc] hover:underline ml-1">{t("photo.exploreGroups")}</Link>
+   982→                </p>
+   983→              ) : (
+   984→                groups
+   985→                  .filter((g: any) => !addToSearch || g.name.toLowerCase().includes(addToSearch.toLowerCase()))
+   986→                  .map((group: any) => {
+   987→                    const isSelected = selectedGroups.has(group.id);
+   988→                    return (
+   989→                      <button
+   990→                        key={group.id}
+   991→                        className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors text-left group"
+   992→                        onClick={() => {
+   993→                          setSelectedGroups((prev) => {
+   994→                            const next = new Set(prev);
+   995→                            if (next.has(group.id)) next.delete(group.id);
+   996→                            else next.add(group.id);
+   997→                            return next;
+   998→                          });
+   999→                        }}
+  1000→                      >
+  1001→                        {/* Checkbox */}
+  1002→                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+  1003→                          isSelected
+  1004→                            ? "bg-[#0063dc] border-[#0063dc]"
+  1005→                            : "border-white/30 group-hover:border-white/50"
+  1006→                        }`}>
+  1007→                          {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
+  1008→                        </div>
+  1009→                        {/* Group icon */}
+  1010→                        <div className="h-10 w-10 rounded bg-white/5 flex items-center justify-center shrink-0">
+  1011→                          <Users className="h-5 w-5 text-white/30" />
+  1012→                        </div>
+  1013→                        {/* Group info */}
+  1014→                        <div className="flex-1 min-w-0">
+  1015→                          <p className="text-sm text-white/90 truncate">{group.name}</p>
+  1016→                          <p className="text-xs text-white/40">{group.memberCount || 0} {t("common.members")}</p>
+  1017→                        </div>
+  1018→                      </button>
+  1019→                    );
+  1020→                  })
+  1021→              )}
+  1022→            </div>
+  1023→          )}
+  1024→
+  1025→          {/* Create new album */}
+  1026→          {addToTab === "albums" && !showNewAlbumInput && (
+  1027→            <button
+  1028→              className="w-full flex items-center gap-2 py-2.5 text-[#0063dc] hover:text-[#0052b5] text-sm font-medium transition-colors"
+  1029→              onClick={() => setShowNewAlbumInput(true)}
+  1030→            >
+  1031→              <Plus className="h-4 w-4" />
+  1032→              {t("photo.createAlbum")}
+  1033→            </button>
+  1034→          )}
+  1035→
+  1036→          {/* New album input */}
+  1037→          {addToTab === "albums" && showNewAlbumInput && (
+  1038→            <div className="flex gap-2">
+  1039→              <Input
+  1040→                value={newAlbumName}
+  1041→                onChange={(e) => setNewAlbumName(e.target.value)}
+  1042→                placeholder={t("photo.albumName")}
+  1043→                className="flex-1 bg-white/5 border-white/10 text-white text-sm placeholder:text-white/30"
+  1044→                onKeyDown={(e) => {
+  1045→                  if (e.key === "Enter") handleCreateAndAddAlbum();
+  1046→                }}
+  1047→                autoFocus
+  1048→              />
+  1049→              <Button
+  1050→                size="sm"
+  1051→                onClick={handleCreateAndAddAlbum}
+  1052→                disabled={!newAlbumName.trim()}
+  1053→                className="bg-[#0063dc] hover:bg-[#0052b5] text-white"
+  1054→              >
+  1055→                <Check className="h-4 w-4" />
+  1056→              </Button>
+  1057→              <Button
+  1058→                size="sm"
+  1059→                variant="outline"
+  1060→                onClick={() => { setShowNewAlbumInput(false); setNewAlbumName(""); }}
+  1061→                className="border-white/20 text-white/50"
+  1062→              >
+  1063→                <X className="h-4 w-4" />
+  1064→              </Button>
+  1065→            </div>
+  1066→          )}
+  1067→
+  1068→          {/* Save button */}
+  1069→          {(selectedAlbums.size > 0 || selectedGroups.size > 0) && (
+  1070→            <Button
+  1071→              onClick={handleAddToSave}
+  1072→              className="w-full bg-[#0063dc] hover:bg-[#0052b5] text-white"
+  1073→            >
+  1074→              {t("photo.save")}
+  1075→            </Button>
+  1076→          )}
+  1077→        </DialogContent>
+  1078→      </Dialog>
+  1079→    </div>
+  1080→  );
+  1081→}
+  1082→

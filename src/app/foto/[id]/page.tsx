@@ -479,17 +479,34 @@ export default function FotoDetailPage() {
                 <Share2 className="h-5 w-5" />
               </button>
 
-              {/* Download */}
-              <a
-                href={photo.filepath}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors"
-                title={t("photo.download")}
-              >
-                <Download className="h-5 w-5" />
-              </a>
+              {/* Download with size selection */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/5 transition-colors" title={t("photo.download")}>
+                    <Download className="h-5 w-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-[#2a2a2d] border-white/10" align="end">
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                    onClick={() => { window.open(`/api/download?photoId=${photo.id}&size=thumbnail`, "_blank"); }}
+                  >
+                    <Download className="h-4 w-4 mr-2" /> {t("photo.downloadThumbnail")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                    onClick={() => { window.open(`/api/download?photoId=${photo.id}&size=medium`, "_blank"); }}
+                  >
+                    <Download className="h-4 w-4 mr-2" /> {t("photo.downloadMedium")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                    onClick={() => { window.open(`/api/download?photoId=${photo.id}&size=full`, "_blank"); }}
+                  >
+                    <Download className="h-4 w-4 mr-2" /> {t("photo.downloadFull")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {/* More actions (owner) */}
               {isOwner && (
@@ -639,17 +656,35 @@ export default function FotoDetailPage() {
                 {t("photo.addToAlbum")}
               </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1.5 text-white/60 hover:text-white hover:bg-white/5"
-                asChild
-              >
-                <a href={photo.filepath} download target="_blank" rel="noopener noreferrer">
-                  <Download className="h-4 w-4" />
-                  {t("photo.download")}
-                </a>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-white/60 hover:text-white hover:bg-white/5">
+                    <Download className="h-4 w-4" />
+                    {t("photo.download")}
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-[#2a2a2d] border-white/10" align="start">
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                    onClick={() => { window.open(`/api/download?photoId=${photo.id}&size=thumbnail`, "_blank"); }}
+                  >
+                    {t("photo.downloadThumbnail")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                    onClick={() => { window.open(`/api/download?photoId=${photo.id}&size=medium`, "_blank"); }}
+                  >
+                    {t("photo.downloadMedium")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                    onClick={() => { window.open(`/api/download?photoId=${photo.id}&size=full`, "_blank"); }}
+                  >
+                    {t("photo.downloadFull")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Button
                 variant="ghost"
