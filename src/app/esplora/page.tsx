@@ -148,13 +148,13 @@ export default function EsploraPage() {
 
             {/* Sidebar */}
             <aside className="hidden lg:block w-72 shrink-0 space-y-6">
-              {/* Trending - only show when users have created tags */}
-              {trendingTags.length > 0 && (
-                <div className="bg-white/5 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2 mb-3">
-                    <TrendingUp className="h-4 w-4 text-[#ff0084]" />
-                    {t("explore.trending")}
-                  </h3>
+              {/* Trending tags */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2 mb-3">
+                  <TrendingUp className="h-4 w-4 text-[#ff0084]" />
+                  {t("explore.trending")}
+                </h3>
+                {trendingTags.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {trendingTags.map(({ tag, count }) => (
                       <Link key={tag} href={`/cerca?q=${encodeURIComponent(tag)}`}>
@@ -169,8 +169,10 @@ export default function EsploraPage() {
                       </Link>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-white/30">{t("explore.noTrendingTags")}</p>
+                )}
+              </div>
 
               {/* Most viewed today */}
               <div className="bg-white/5 rounded-lg p-4">
