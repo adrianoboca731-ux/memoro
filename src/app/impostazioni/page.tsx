@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { Header } from "@/components/header";
@@ -63,7 +63,7 @@ type SettingsSection = "profile" | "privacy" | "content-filters" | "notification
 
 export default function ImpostazioniPage() {
   const { t } = useI18n();
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const { theme, setTheme } = useTheme();
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
   const [settings, setSettings] = useState<any>(null);
@@ -80,6 +80,9 @@ export default function ImpostazioniPage() {
     new: "",
     confirm: "",
   });
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const sidebarItems: { key: SettingsSection; label: string; icon: typeof Settings }[] = [
     { key: "profile", label: t("settings.profile"), icon: User },
@@ -113,7 +116,7 @@ export default function ImpostazioniPage() {
         }
       }
     } catch (err) {
-      console.error("Errore:", err);
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }
@@ -164,6 +167,76 @@ export default function ImpostazioniPage() {
       setSaving(false);
     }
   }, [session, profileData, t]);
+
+  const handleAvatarChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t("settings.avatarInvalidType"));
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t("settings.avatarTooLarge"));
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const res = await fetch("/api/upload/avatar", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setAvatarUrl(data.avatar);
+        toast.success(t("settings.avatarUpdated"));
+        // Force session refresh to show new avatar in header
+        await updateSession({ image: data.avatar });
+      } else {
+        const errData = await res.json();
+        toast.error(errData.error || t("settings.avatarUploadError"));
+      }
+    } catch {
+      toast.error(t("settings.avatarUploadError"));
+    } finally {
+      setAvatarUploading(false);
+      // Reset file input
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = "";
+      }
+    }
+  }, [t]);
+
+  const handleRemoveAvatar = useCallback(async () => {
+    setAvatarUploading(true);
+    try {
+      const res = await fetch("/api/upload/avatar", {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setAvatarUrl(null);
+        toast.success(t("settings.avatarRemoved"));
+        // Force session refresh
+        await updateSession({ image: null });
+      } else {
+        toast.error(t("settings.avatarUploadError"));
+      }
+    } catch {
+      toast.error(t("settings.avatarUploadError"));
+    } finally {
+      setAvatarUploading(false);
+    }
+  }, [t]);
 
   const handleUpdateSetting = useCallback((key: string, value: unknown) => {
     setSettings((prev: any) => {
@@ -248,17 +321,59 @@ export default function ImpostazioniPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <Avatar className="h-20 w-20">
-                          <AvatarImage src={(session.user as any).image || undefined} />
-                          <AvatarFallback className="bg-[#0063dc] text-white text-2xl">
-                            {session.user.name?.charAt(0)?.toUpperCase() || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <Button variant="outline" size="sm" className="border-white/10 text-white/70 hover:bg-white/5">
+                        <div className="relative group">
+                          <Avatar className="h-20 w-20">
+                            <AvatarImage src={avatarUrl || (session.user as any).image || undefined} />
+                            <AvatarFallback className="bg-[#0063dc] text-white text-2xl">
+                              {session.user.name?.charAt(0)?.toUpperCase() || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          {avatarUploading && (
+                            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                              <div className="h-6 w-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            </div>
+                          )}
+                          {!avatarUploading && (
+                            <div
+                              className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                              onClick={() => avatarInputRef.current?.click()}
+                            >
+                              <Camera className="h-6 w-6 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-white/10 text-white/70 hover:bg-white/5"
+                            onClick={() => avatarInputRef.current?.click()}
+                            disabled={avatarUploading}
+                          >
+                            <Camera className="h-4 w-4 mr-1.5" />
                             {t("settings.changeAvatar")}
                           </Button>
+                          {((session.user as any).image || avatarUrl) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-400/70 hover:text-red-400 hover:bg-red-400/5 text-xs h-7"
+                              onClick={handleRemoveAvatar}
+                              disabled={avatarUploading}
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              {t("settings.removeAvatar")}
+                            </Button>
+                          )}
+                          <p className="text-[11px] text-white/25">{t("settings.avatarHint")}</p>
                         </div>
+                        <input
+                          ref={avatarInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/gif,image/webp"
+                          className="hidden"
+                          onChange={handleAvatarChange}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white/60 text-sm">{t("settings.name")}</Label>

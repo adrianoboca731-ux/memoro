@@ -39,10 +39,16 @@ export const authOptions: NextAuthOptions = {
   ],
   session: { strategy: "jwt" },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.username = (user as any).username;
+      }
+      // Handle session update (e.g. avatar change)
+      if (trigger === "update" && session) {
+        if (session.image !== undefined) {
+          token.picture = session.image;
+        }
       }
       return token;
     },
@@ -50,6 +56,10 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).username = token.username;
+        // Ensure image is always in sync with token
+        if (token.picture) {
+          session.user.image = token.picture as string;
+        }
       }
       return session;
     },
