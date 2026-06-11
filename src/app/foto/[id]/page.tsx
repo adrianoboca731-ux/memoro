@@ -37,6 +37,10 @@ import {
   AlertTriangle,
   ShieldAlert,
   Maximize2,
+  Search,
+  Plus,
+  Check,
+  FolderPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +98,16 @@ export default function FotoDetailPage() {
   const [addToGroupOpen, setAddToGroupOpen] = useState(false);
   const [galleries, setGalleries] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
+
+  // Add-to modal state (Flickr-style)
+  const [addToOpen, setAddToOpen] = useState(false);
+  const [addToTab, setAddToTab] = useState<"albums" | "groups">("albums");
+  const [albums, setAlbums] = useState<any[]>([]);
+  const [selectedAlbums, setSelectedAlbums] = useState<Set<string>>(new Set());
+  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
+  const [addToSearch, setAddToSearch] = useState("");
+  const [newAlbumName, setNewAlbumName] = useState("");
+  const [showNewAlbumInput, setShowNewAlbumInput] = useState(false);
 
   // Navigation state
   const [navData, setNavData] = useState<{ prev: { id: string; title: string; thumbnail: string } | null; next: { id: string; title: string; thumbnail: string } | null; thumbnails: { id: string; title: string; thumbnail: string; isCurrent: boolean }[] } | null>(null);
@@ -178,6 +192,88 @@ export default function FotoDetailPage() {
       }
     }
   }, [navData]);
+
+  // Fetch albums and groups when "Add to" modal opens
+  useEffect(() => {
+    if (!addToOpen || !session?.user?.id) return;
+    const fetchData = async () => {
+      try {
+        const [albumsRes, groupsRes] = await Promise.all([
+          fetch(`/api/albums?userId=${(session.user as any).id}`),
+          fetch(`/api/groups?userId=${(session.user as any).id}`),
+        ]);
+        if (albumsRes.ok) {
+          const albumsData = await albumsRes.json();
+          setAlbums(Array.isArray(albumsData) ? albumsData : []);
+        }
+        if (groupsRes.ok) {
+          const groupsData = await groupsRes.json();
+          setGroups(Array.isArray(groupsData) ? groupsData : (groupsData.groups || []));
+        }
+      } catch (err) {
+        console.error("Error fetching albums/groups:", err);
+      }
+    };
+    fetchData();
+    // Reset state when modal opens
+    setSelectedAlbums(new Set());
+    setSelectedGroups(new Set());
+    setAddToSearch("");
+    setNewAlbumName("");
+    setShowNewAlbumInput(false);
+  }, [addToOpen, session]);
+
+  // Handle saving selections from Add-to modal
+  const handleAddToSave = useCallback(async () => {
+    try {
+      // Add to selected albums
+      for (const albumId of selectedAlbums) {
+        await fetch(`/api/photos/${photoId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ albumId }),
+        });
+      }
+      // Add to selected groups
+      for (const groupId of selectedGroups) {
+        await fetch(`/api/groups/${groupId}/photos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ photoId }),
+        });
+      }
+      setAddToOpen(false);
+    } catch (err) {
+      console.error("Error adding to albums/groups:", err);
+    }
+  }, [photoId, selectedAlbums, selectedGroups]);
+
+  // Handle creating a new album and adding the photo to it
+  const handleCreateAndAddAlbum = useCallback(async () => {
+    if (!newAlbumName.trim()) return;
+    try {
+      const res = await fetch("/api/albums", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newAlbumName.trim() }),
+      });
+      if (res.ok) {
+        const album = await res.json();
+        // Add photo to the new album
+        await fetch(`/api/photos/${photoId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ albumId: album.id }),
+        });
+        setAlbums((prev) => [album, ...prev]);
+        setSelectedAlbums((prev) => new Set(prev).add(album.id));
+        setNewAlbumName("");
+        setShowNewAlbumInput(false);
+      }
+    } catch (err) {
+      console.error("Error creating album:", err);
+    }
+  }, [photoId, newAlbumName]);
 
   const handleToggleFavorite = useCallback(async () => {
     try {
@@ -458,11 +554,11 @@ export default function FotoDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setAddToGalleryOpen(true)}
+                onClick={() => { setAddToOpen(true); setAddToTab("albums"); }}
                 className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
               >
                 <BookmarkPlus className="h-4 w-4" />
-                {t("photo.gallery")}
+                {t("photo.addTo")}
               </Button>
 
               <Button
@@ -521,7 +617,7 @@ export default function FotoDetailPage() {
                       <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setIsEditing(true)}>
                         <Edit3 className="h-4 w-4 mr-2" /> {t("photo.edit")}
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setAddToGroupOpen(true)}>
+                      <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => { setAddToOpen(true); setAddToTab("groups"); }}>
                         <Users className="h-4 w-4 mr-2" /> {t("photo.addToGroups")}
                       </DropdownMenuItem>
                       <DropdownMenuItem className="text-red-400 focus:text-red-300 focus:bg-white/5 cursor-pointer" onClick={handleDelete}>
@@ -716,80 +812,211 @@ export default function FotoDetailPage() {
         </div>
       </main>
 
-      {/* Add to Gallery Dialog */}
-      <Dialog open={addToGalleryOpen} onOpenChange={setAddToGalleryOpen}>
-        <DialogContent className="bg-[#2a2a2d] border-white/10">
+      {/* Add To: Flickr-style modal with Album/Groups tabs */}
+      <Dialog open={addToOpen} onOpenChange={setAddToOpen}>
+        <DialogContent className="bg-[#212124] border-white/10 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white">{t("photo.addToGallery")}</DialogTitle>
+            <DialogTitle className="text-white text-lg">{t("photo.addTo")}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {galleries.length === 0 ? (
-              <p className="text-sm text-white/40 text-center py-4">
-                {t("photo.noGalleries")}
-                <Link href="/gallerie" className="text-[#0063dc] hover:underline ml-1">{t("photo.createGallery")}</Link>
-              </p>
-            ) : (
-              galleries.map((g) => (
-                <button
-                  key={g.id}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-left"
-                  onClick={async () => {
-                    try {
-                      await fetch(`/api/galleries/${g.id}/items`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ photoId }),
-                      });
-                      setAddToGalleryOpen(false);
-                    } catch {}
-                  }}
-                >
-                  <ImageIcon className="h-8 w-8 text-white/20" />
-                  <span className="text-sm text-white/80">{g.name}</span>
-                </button>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Add to Group Dialog */}
-      <Dialog open={addToGroupOpen} onOpenChange={setAddToGroupOpen}>
-        <DialogContent className="bg-[#2a2a2d] border-white/10">
-          <DialogHeader>
-            <DialogTitle className="text-white">{t("photo.addToGroup")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 max-h-64 overflow-y-auto">
-            {groups.length === 0 ? (
-              <p className="text-sm text-white/40 text-center py-4">
-                {t("photo.noGroups")}
-                <Link href="/gruppi" className="text-[#0063dc] hover:underline ml-1">{t("photo.exploreGroups")}</Link>
-              </p>
-            ) : (
-              groups.map((g) => (
-                <button
-                  key={g.id}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-left"
-                  onClick={async () => {
-                    try {
-                      await fetch(`/api/groups/${g.id}/photos`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ photoId }),
-                      });
-                      setAddToGroupOpen(false);
-                    } catch {}
-                  }}
-                >
-                  <Users className="h-8 w-8 text-white/20" />
-                  <div>
-                    <span className="text-sm text-white/80 block">{g.name}</span>
-                    <span className="text-xs text-white/30">{g.memberCount} {t("common.members")}</span>
-                  </div>
-                </button>
-              ))
-            )}
+          {/* Tabs: Album / Gruppi */}
+          <div className="flex border-b border-white/10">
+            <button
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
+                addToTab === "albums"
+                  ? "text-[#0063dc]"
+                  : "text-white/50 hover:text-white/70"
+              }`}
+              onClick={() => setAddToTab("albums")}
+            >
+              {t("photo.albums")}
+              {addToTab === "albums" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0063dc]" />
+              )}
+            </button>
+            <button
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
+                addToTab === "groups"
+                  ? "text-[#0063dc]"
+                  : "text-white/50 hover:text-white/70"
+              }`}
+              onClick={() => setAddToTab("groups")}
+            >
+              {t("photo.groups")}
+              {addToTab === "groups" && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0063dc]" />
+              )}
+            </button>
           </div>
+
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+            <Input
+              value={addToSearch}
+              onChange={(e) => setAddToSearch(e.target.value)}
+              placeholder={addToTab === "albums" ? t("photo.searchAlbums") : t("photo.searchGroups")}
+              className="pl-9 bg-white/5 border-white/10 text-white text-sm placeholder:text-white/30"
+            />
+          </div>
+
+          {/* Album list */}
+          {addToTab === "albums" && (
+            <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+              {albums.length === 0 ? (
+                <p className="text-sm text-white/40 text-center py-6">
+                  {t("photo.noAlbums")}
+                </p>
+              ) : (
+                albums
+                  .filter((a: any) => !addToSearch || a.name.toLowerCase().includes(addToSearch.toLowerCase()))
+                  .map((album: any) => {
+                    const isSelected = selectedAlbums.has(album.id);
+                    return (
+                      <button
+                        key={album.id}
+                        className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors text-left group"
+                        onClick={() => {
+                          setSelectedAlbums((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(album.id)) next.delete(album.id);
+                            else next.add(album.id);
+                            return next;
+                          });
+                        }}
+                      >
+                        {/* Checkbox */}
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                          isSelected
+                            ? "bg-[#0063dc] border-[#0063dc]"
+                            : "border-white/30 group-hover:border-white/50"
+                        }`}>
+                          {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
+                        </div>
+                        {/* Album thumbnail */}
+                        <div className="h-10 w-10 rounded bg-white/5 overflow-hidden shrink-0">
+                          {album.cover ? (
+                            <img src={album.cover} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center">
+                              <ImageIcon className="h-5 w-5 text-white/20" />
+                            </div>
+                          )}
+                        </div>
+                        {/* Album info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white/90 truncate">{album.name}</p>
+                          <p className="text-xs text-white/40">{album.photoCount || 0} {t("photo.items")}</p>
+                        </div>
+                      </button>
+                    );
+                  })
+              )}
+            </div>
+          )}
+
+          {/* Groups list */}
+          {addToTab === "groups" && (
+            <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+              {groups.length === 0 ? (
+                <p className="text-sm text-white/40 text-center py-6">
+                  {t("photo.noGroups")}
+                  <Link href="/gruppi" className="text-[#0063dc] hover:underline ml-1">{t("photo.exploreGroups")}</Link>
+                </p>
+              ) : (
+                groups
+                  .filter((g: any) => !addToSearch || g.name.toLowerCase().includes(addToSearch.toLowerCase()))
+                  .map((group: any) => {
+                    const isSelected = selectedGroups.has(group.id);
+                    return (
+                      <button
+                        key={group.id}
+                        className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors text-left group"
+                        onClick={() => {
+                          setSelectedGroups((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(group.id)) next.delete(group.id);
+                            else next.add(group.id);
+                            return next;
+                          });
+                        }}
+                      >
+                        {/* Checkbox */}
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                          isSelected
+                            ? "bg-[#0063dc] border-[#0063dc]"
+                            : "border-white/30 group-hover:border-white/50"
+                        }`}>
+                          {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
+                        </div>
+                        {/* Group icon */}
+                        <div className="h-10 w-10 rounded bg-white/5 flex items-center justify-center shrink-0">
+                          <Users className="h-5 w-5 text-white/30" />
+                        </div>
+                        {/* Group info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white/90 truncate">{group.name}</p>
+                          <p className="text-xs text-white/40">{group.memberCount || 0} {t("common.members")}</p>
+                        </div>
+                      </button>
+                    );
+                  })
+              )}
+            </div>
+          )}
+
+          {/* Create new album */}
+          {addToTab === "albums" && !showNewAlbumInput && (
+            <button
+              className="w-full flex items-center gap-2 py-2.5 text-[#0063dc] hover:text-[#0052b5] text-sm font-medium transition-colors"
+              onClick={() => setShowNewAlbumInput(true)}
+            >
+              <Plus className="h-4 w-4" />
+              {t("photo.createAlbum")}
+            </button>
+          )}
+
+          {/* New album input */}
+          {addToTab === "albums" && showNewAlbumInput && (
+            <div className="flex gap-2">
+              <Input
+                value={newAlbumName}
+                onChange={(e) => setNewAlbumName(e.target.value)}
+                placeholder={t("photo.albumName")}
+                className="flex-1 bg-white/5 border-white/10 text-white text-sm placeholder:text-white/30"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreateAndAddAlbum();
+                }}
+                autoFocus
+              />
+              <Button
+                size="sm"
+                onClick={handleCreateAndAddAlbum}
+                disabled={!newAlbumName.trim()}
+                className="bg-[#0063dc] hover:bg-[#0052b5] text-white"
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => { setShowNewAlbumInput(false); setNewAlbumName(""); }}
+                className="border-white/20 text-white/50"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* Save button */}
+          {(selectedAlbums.size > 0 || selectedGroups.size > 0) && (
+            <Button
+              onClick={handleAddToSave}
+              className="w-full bg-[#0063dc] hover:bg-[#0052b5] text-white"
+            >
+              {t("photo.save")}
+            </Button>
+          )}
         </DialogContent>
       </Dialog>
     </div>

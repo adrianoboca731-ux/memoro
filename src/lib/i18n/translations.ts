@@ -567,6 +567,15 @@ const it: TranslationDict = {
   "photo.prevPhoto": "Foto precedente",
   "photo.nextPhoto": "Foto successiva",
   "photo.photostream": "Fotostream",
+  "photo.addTo": "Aggiungi a:",
+  "photo.albums": "Album",
+  "photo.groups": "Gruppi",
+  "photo.searchAlbums": "Cerca tra gli album",
+  "photo.searchGroups": "Cerca tra i gruppi",
+  "photo.noAlbums": "Nessun album trovato",
+  "photo.items": "elementi",
+  "photo.createAlbum": "Crea nuovo album",
+  "photo.albumName": "Nome album",
 };
 
 const en: TranslationDict = {
@@ -1123,6 +1132,15 @@ const en: TranslationDict = {
   "photo.prevPhoto": "Previous photo",
   "photo.nextPhoto": "Next photo",
   "photo.photostream": "Photostream",
+  "photo.addTo": "Add to:",
+  "photo.albums": "Albums",
+  "photo.groups": "Groups",
+  "photo.searchAlbums": "Search albums",
+  "photo.searchGroups": "Search groups",
+  "photo.noAlbums": "No albums found",
+  "photo.items": "items",
+  "photo.createAlbum": "Create new album",
+  "photo.albumName": "Album name",
 };
 
 const fr: TranslationDict = {
@@ -1679,6 +1697,15 @@ const fr: TranslationDict = {
   "photo.prevPhoto": "Photo précédente",
   "photo.nextPhoto": "Photo suivante",
   "photo.photostream": "Flux photo",
+  "photo.addTo": "Ajouter à :",
+  "photo.albums": "Albums",
+  "photo.groups": "Groupes",
+  "photo.searchAlbums": "Rechercher des albums",
+  "photo.searchGroups": "Rechercher des groupes",
+  "photo.noAlbums": "Aucun album trouvé",
+  "photo.items": "éléments",
+  "photo.createAlbum": "Créer un nouvel album",
+  "photo.albumName": "Nom de l'album",
 };
 
 const de: TranslationDict = {
@@ -2235,6 +2262,15 @@ const de: TranslationDict = {
   "photo.prevPhoto": "Vorheriges Foto",
   "photo.nextPhoto": "Nächstes Foto",
   "photo.photostream": "Fotostream",
+  "photo.addTo": "Hinzufügen zu:",
+  "photo.albums": "Alben",
+  "photo.groups": "Gruppen",
+  "photo.searchAlbums": "Alben durchsuchen",
+  "photo.searchGroups": "Gruppen durchsuchen",
+  "photo.noAlbums": "Keine Alben gefunden",
+  "photo.items": "Elemente",
+  "photo.createAlbum": "Neues Album erstellen",
+  "photo.albumName": "Albumname",
 };
 
 const es: TranslationDict = {
@@ -2791,6 +2827,15 @@ const es: TranslationDict = {
   "photo.prevPhoto": "Foto anterior",
   "photo.nextPhoto": "Foto siguiente",
   "photo.photostream": "Fotostream",
+  "photo.addTo": "Añadir a:",
+  "photo.albums": "Álbumes",
+  "photo.groups": "Grupos",
+  "photo.searchAlbums": "Buscar álbumes",
+  "photo.searchGroups": "Buscar grupos",
+  "photo.noAlbums": "No se encontraron álbumes",
+  "photo.items": "elementos",
+  "photo.createAlbum": "Crear nuevo álbum",
+  "photo.albumName": "Nombre del álbum",
 };
 
 const ptBR: TranslationDict = {
@@ -3347,6 +3392,15 @@ const ptBR: TranslationDict = {
   "photo.prevPhoto": "Foto anterior",
   "photo.nextPhoto": "Próxima foto",
   "photo.photostream": "Fluxo de fotos",
+  "photo.addTo": "Adicionar a:",
+  "photo.albums": "Álbuns",
+  "photo.groups": "Grupos",
+  "photo.searchAlbums": "Pesquisar álbuns",
+  "photo.searchGroups": "Pesquisar grupos",
+  "photo.noAlbums": "Nenhum álbum encontrado",
+  "photo.items": "itens",
+  "photo.createAlbum": "Criar novo álbum",
+  "photo.albumName": "Nome do álbum",
 };
 
 const ja: TranslationDict = {
@@ -3903,6 +3957,15 @@ const ja: TranslationDict = {
   "photo.prevPhoto": "前の写真",
   "photo.nextPhoto": "次の写真",
   "photo.photostream": "フォトストリーム",
+  "photo.addTo": "追加先：",
+  "photo.albums": "アルバム",
+  "photo.groups": "グループ",
+  "photo.searchAlbums": "アルバムを検索",
+  "photo.searchGroups": "グループを検索",
+  "photo.noAlbums": "アルバムが見つかりません",
+  "photo.items": "項目",
+  "photo.createAlbum": "新しいアルバムを作成",
+  "photo.albumName": "アルバム名",
 };
 
 const ko: TranslationDict = {
@@ -4459,6 +4522,15 @@ const ko: TranslationDict = {
   "photo.prevPhoto": "이전 사진",
   "photo.nextPhoto": "다음 사진",
   "photo.photostream": "포토스트림",
+  "photo.addTo": "추가하기:",
+  "photo.albums": "앨범",
+  "photo.groups": "그룹",
+  "photo.searchAlbums": "앨범 검색",
+  "photo.searchGroups": "그룹 검색",
+  "photo.noAlbums": "앨범을 찾을 수 없습니다",
+  "photo.items": "항목",
+  "photo.createAlbum": "새 앨범 만들기",
+  "photo.albumName": "앨범 이름",
 };
 
 const zhCN: TranslationDict = {
@@ -5015,6 +5087,15 @@ const zhCN: TranslationDict = {
   "photo.prevPhoto": "上一张照片",
   "photo.nextPhoto": "下一张照片",
   "photo.photostream": "照片流",
+  "photo.addTo": "添加到：",
+  "photo.albums": "相册",
+  "photo.groups": "群组",
+  "photo.searchAlbums": "搜索相册",
+  "photo.searchGroups": "搜索群组",
+  "photo.noAlbums": "未找到相册",
+  "photo.items": "项",
+  "photo.createAlbum": "创建新相册",
+  "photo.albumName": "相册名称",
 };
 
 const zhTW: TranslationDict = {
@@ -5571,6 +5652,15 @@ const zhTW: TranslationDict = {
   "photo.prevPhoto": "上一張照片",
   "photo.nextPhoto": "下一張照片",
   "photo.photostream": "照片串流",
+  "photo.addTo": "加入至：",
+  "photo.albums": "相簿",
+  "photo.groups": "群組",
+  "photo.searchAlbums": "搜尋相簿",
+  "photo.searchGroups": "搜尋群組",
+  "photo.noAlbums": "未找到相簿",
+  "photo.items": "項目",
+  "photo.createAlbum": "建立新相簿",
+  "photo.albumName": "相簿名稱",
 };
 
 export const translations: Record<string, TranslationDict> = { it, en, fr, de, es, "pt-BR": ptBR, ja, ko, "zh-CN": zhCN, "zh-TW": zhTW };
