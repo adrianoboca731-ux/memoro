@@ -519,3 +519,36 @@ The translations file at `/src/lib/i18n/translations.ts` had 10 languages with 4
 
 #### Note on ptBR False Positives
 The verification script's ASCII detection flags legitimate Portuguese words (e.g., "Explorar", "Salvar", "Cancelar") because they use the Latin alphabet like English. Manual review confirms all 428 ptBR values are proper Brazilian Portuguese — none are English fallbacks.
+---
+Task ID: i18n-fix
+Agent: Main Agent
+Task: Fix language switching so the interface actually changes when selecting a different language
+
+Work Log:
+- Analyzed the i18n system: I18nProvider + useI18n hook + t() function
+- Found that most pages already used t() calls correctly
+- Identified the ROOT CAUSE: Many components had hardcoded Italian strings (photo-card, photo-grid, photo-detail, albums-view, galleries-view, groups-view, messages-view, notifications-view, upload-modal)
+- Also found that translations were incomplete for fr (187/428), de (85/428), es (74/428)
+- Found that ptBR, ja, ko, zhCN, zhTW had all 428 keys but ~109 had English fallback values
+- Found that <html lang="it"> was hardcoded in layout.tsx
+
+Fixes Applied:
+1. Updated 9 components to use t() instead of hardcoded Italian strings
+2. Created html-lang.tsx component to dynamically update <html lang> attribute
+3. Updated layout.tsx to include HtmlLang component
+4. Completed French translations (428 keys)
+5. Completed German translations (428 keys)
+6. Completed Spanish translations (428 keys)
+7. Fixed Portuguese Brazil translations (replaced English fallbacks with proper Portuguese)
+8. Fixed Japanese translations (replaced English fallbacks with proper Japanese)
+9. Fixed Korean translations (replaced English fallbacks with proper Korean)
+10. Fixed Chinese Simplified translations (replaced English fallbacks with proper Simplified Chinese)
+11. Fixed Chinese Traditional translations (replaced English fallbacks with proper Traditional Chinese)
+
+Build verified: npx next build passes with 0 errors
+
+Stage Summary:
+- All 10 languages now have 428 keys each with proper native translations
+- All components now use t() for text content
+- <html lang> attribute updates dynamically when language is changed
+- Language switching should now visually change the interface text
