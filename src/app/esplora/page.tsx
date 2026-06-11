@@ -130,16 +130,15 @@ export default function EsploraPage() {
                   description={t("explore.noPhotosDesc")}
                 />
               ) : (
-                <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {photos.map((photo, index) => (
                     <motion.div
                       key={photo.id}
-                      className="break-inside-avoid"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
                     >
-                      <PhotoCard photo={photo} />
+                      <PhotoCard photo={photo} flickrStyle />
                     </motion.div>
                   ))}
                 </div>

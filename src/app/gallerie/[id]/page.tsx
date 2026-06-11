@@ -145,18 +145,17 @@ export default function GalleriaDetailPage() {
               onAction={() => router.push("/esplora")}
             />
           ) : (
-            <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {items.map((item: any, index: number) => {
                 const photo = item.photo || item;
                 return (
                   <motion.div
                     key={item.id || photo.id}
-                    className="break-inside-avoid"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
                   >
-                    <PhotoCard photo={photo} />
+                    <PhotoCard photo={photo} flickrStyle />
                     {item.note && (
                       <p className="text-xs text-white/30 mt-1 px-0.5 italic">{item.note}</p>
                     )}

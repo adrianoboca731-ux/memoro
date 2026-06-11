@@ -3,25 +3,57 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+function isMinor(birthDate: Date | null): boolean {
+  if (!birthDate) return false;
+  const today = new Date();
+  const age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    return age - 1 < 18;
+  }
+  return age < 18;
+}
+
 function computeShouldBlur(
   photo: { isMature: boolean; safetyLevel: string; userId: string },
   viewerId: string | null | undefined,
   userSafeSearch: string,
-  showMatureContent: boolean
+  showMatureContent: boolean,
+  showRestrictedContent: boolean,
+  viewerIsMinor: boolean
 ): boolean {
   // Photo owner ALWAYS sees their own photos unblurred
   if (viewerId && photo.userId === viewerId) return false;
-  // User with showMatureContent = true sees mature content unblurred
-  if (showMatureContent) return false;
 
-  // If photo isMature or safetyLevel = "restricted" AND viewer safeSearch is not "off"
-  if ((photo.isMature || photo.safetyLevel === "restricted") && userSafeSearch !== "off") {
-    return true;
+  // Minors ALWAYS see moderate and restricted blurred
+  if (viewerIsMinor) {
+    if (photo.safetyLevel === "moderate" || photo.safetyLevel === "restricted" || photo.isMature) {
+      return true;
+    }
   }
-  // If photo safetyLevel = "moderate" AND viewer safeSearch = "strict"
-  if (photo.safetyLevel === "moderate" && userSafeSearch === "strict") {
-    return true;
+
+  // safeSearch strict: blur moderate and restricted
+  if (userSafeSearch === "strict") {
+    if (photo.safetyLevel === "moderate" || photo.safetyLevel === "restricted" || photo.isMature) {
+      return true;
+    }
   }
+
+  // safeSearch moderate: blur restricted (default Flickr behavior)
+  if (userSafeSearch === "moderate") {
+    if (photo.safetyLevel === "restricted") {
+      if (showRestrictedContent && !viewerIsMinor) return false;
+      return true;
+    }
+    if (photo.isMature || photo.safetyLevel === "moderate") {
+      if (showMatureContent && !viewerIsMinor) return false;
+      return true;
+    }
+  }
+
+  // safeSearch off: don't blur anything
+  if (userSafeSearch === "off") return false;
+
   return false;
 }
 
@@ -40,6 +72,8 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     let userSafeSearch = "moderate";
     let showMatureContent = false;
+    let showRestrictedContent = false;
+    let viewerIsMinor = false;
     const viewerId = (session?.user as any)?.id;
     if (viewerId) {
       const settings = await db.userSettings.findUnique({
@@ -48,13 +82,17 @@ export async function GET(request: NextRequest) {
       if (settings) {
         userSafeSearch = settings.safeSearch;
         showMatureContent = settings.showMatureContent;
+        showRestrictedContent = settings.showRestrictedContent;
       }
+      // Check if viewer is a minor
+      const viewerUser = await db.user.findUnique({
+        where: { id: viewerId },
+        select: { birthDate: true },
+      });
+      viewerIsMinor = isMinor(viewerUser?.birthDate || null);
     }
 
     const where: Record<string, unknown> = {};
-
-    // No longer filter by safety level in the where clause
-    // Instead, we add shouldBlur flag to each photo
 
     if (safetyLevel) {
       where.safetyLevel = safetyLevel;
@@ -120,7 +158,9 @@ export async function GET(request: NextRequest) {
         { isMature: photo.isMature, safetyLevel: photo.safetyLevel, userId: photo.userId },
         viewerId,
         userSafeSearch,
-        showMatureContent
+        showMatureContent,
+        showRestrictedContent,
+        viewerIsMinor
       ),
     }));
 

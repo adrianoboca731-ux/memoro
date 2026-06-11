@@ -838,16 +838,15 @@ export default function ProfiloPage() {
                 {photos.length === 0 ? (
                   <EmptyState icon={Camera} title={t("profile.noPhotos")} description={isOwnProfile ? t("profile.noPhotosOwn") : t("profile.noPhotosOther")} />
                 ) : (
-                  <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {sortedPhotos(photos).map((photo: any, index: number) => (
                       <motion.div
                         key={photo.id}
-                        className="break-inside-avoid"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
                       >
-                        <PhotoCard photo={photo} showSafety={false} />
+                        <PhotoCard photo={photo} showSafety={false} flickrStyle />
                       </motion.div>
                     ))}
                   </div>
@@ -903,16 +902,15 @@ export default function ProfiloPage() {
                 {favorites.length === 0 ? (
                   <EmptyState icon={Heart} title={t("profile.noFavorites")} description={isOwnProfile ? t("profile.noFavoritesOwn") : t("profile.noFavoritesOther")} />
                 ) : (
-                  <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {sortedPhotos(favorites).map((photo: any, index: number) => (
                       <motion.div
                         key={photo.id}
-                        className="break-inside-avoid"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
                       >
-                        <PhotoCard photo={photo} />
+                        <PhotoCard photo={photo} flickrStyle />
                       </motion.div>
                     ))}
                   </div>

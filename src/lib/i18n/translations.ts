@@ -558,6 +558,9 @@ const it: TranslationDict = {
   "photo.restrictedContentDesc": "Questa foto è classificata come contenuto riservato. Modifica le impostazioni del filtro per visualizzarla.",
   "photo.showContent": "Mostra",
   "photo.confirmShowMature": "Vuoi visualizzare questo contenuto maturo?",
+  "photo.addFavorite": "Aggiungi ai preferiti",
+  "photo.removeFavorite": "Rimuovi dai preferiti",
+  "photo.favoriteError": "Errore nell'aggiornamento dei preferiti",
 };
 
 const en: TranslationDict = {
@@ -1105,6 +1108,9 @@ const en: TranslationDict = {
   "photo.restrictedContentDesc": "This photo is classified as restricted content. Change your filter settings to view it.",
   "photo.showContent": "Show",
   "photo.confirmShowMature": "Do you want to view this mature content?",
+  "photo.addFavorite": "Add to favorites",
+  "photo.removeFavorite": "Remove from favorites",
+  "photo.favoriteError": "Error updating favorites",
 };
 
 const fr: TranslationDict = {
@@ -1652,6 +1658,9 @@ const fr: TranslationDict = {
   "photo.restrictedContentDesc": "Cette photo est classée comme contenu restreint. Modifiez vos paramètres de filtre pour la voir.",
   "photo.showContent": "Afficher",
   "photo.confirmShowMature": "Voulez-vous voir ce contenu mature ?",
+  "photo.addFavorite": "Ajouter aux favoris",
+  "photo.removeFavorite": "Retirer des favoris",
+  "photo.favoriteError": "Erreur lors de la mise à jour des favoris",
 };
 
 const de: TranslationDict = {
@@ -2199,6 +2208,9 @@ const de: TranslationDict = {
   "photo.restrictedContentDesc": "Dieses Foto ist als eingeschränkter Inhalt klassifiziert. Ändern Sie Ihre Filtereinstellungen.",
   "photo.showContent": "Anzeigen",
   "photo.confirmShowMature": "Möchten Sie diesen Inhalt für Erwachsene sehen?",
+  "photo.addFavorite": "Zu Favoriten hinzufügen",
+  "photo.removeFavorite": "Aus Favoriten entfernen",
+  "photo.favoriteError": "Fehler beim Aktualisieren der Favoriten",
 };
 
 const es: TranslationDict = {
@@ -2746,6 +2758,9 @@ const es: TranslationDict = {
   "photo.restrictedContentDesc": "Esta foto está clasificada como contenido restringido. Cambia la configuración del filtro para verla.",
   "photo.showContent": "Mostrar",
   "photo.confirmShowMature": "¿Quieres ver este contenido maduro?",
+  "photo.addFavorite": "Añadir a favoritos",
+  "photo.removeFavorite": "Quitar de favoritos",
+  "photo.favoriteError": "Error al actualizar favoritos",
 };
 
 const ptBR: TranslationDict = {
@@ -3293,6 +3308,9 @@ const ptBR: TranslationDict = {
   "photo.restrictedContentDesc": "Esta foto está classificada como conteúdo restrito. Altere as configurações do filtro para visualizar.",
   "photo.showContent": "Mostrar",
   "photo.confirmShowMature": "Deseja visualizar este conteúdo maduro?",
+  "photo.addFavorite": "Adicionar aos favoritos",
+  "photo.removeFavorite": "Remover dos favoritos",
+  "photo.favoriteError": "Erro ao atualizar favoritos",
 };
 
 const ja: TranslationDict = {
@@ -3840,6 +3858,9 @@ const ja: TranslationDict = {
   "photo.restrictedContentDesc": "この写真は制限付きコンテンツに分類されています。フィルター設定を変更してください。",
   "photo.showContent": "表示",
   "photo.confirmShowMature": "この成人向けコンテンツを表示しますか？",
+  "photo.addFavorite": "お気に入りに追加",
+  "photo.removeFavorite": "お気に入りから削除",
+  "photo.favoriteError": "お気に入りの更新エラー",
 };
 
 const ko: TranslationDict = {
@@ -4387,6 +4408,9 @@ const ko: TranslationDict = {
   "photo.restrictedContentDesc": "이 사진은 제한된 콘텐츠로 분류되어 있습니다. 필터 설정을 변경하세요.",
   "photo.showContent": "보기",
   "photo.confirmShowMature": "이 성인 콘텐츠를 보시겠습니까?",
+  "photo.addFavorite": "즐겨찾기에 추가",
+  "photo.removeFavorite": "즐겨찾기에서 제거",
+  "photo.favoriteError": "즐겨찾기 업데이트 오류",
 };
 
 const zhCN: TranslationDict = {
@@ -4934,6 +4958,9 @@ const zhCN: TranslationDict = {
   "photo.restrictedContentDesc": "此照片被归类为受限内容。更改过滤设置以查看。",
   "photo.showContent": "显示",
   "photo.confirmShowMature": "您要查看此成人内容吗？",
+  "photo.addFavorite": "添加到收藏",
+  "photo.removeFavorite": "从收藏中移除",
+  "photo.favoriteError": "更新收藏时出错",
 };
 
 const zhTW: TranslationDict = {
@@ -5481,6 +5508,9 @@ const zhTW: TranslationDict = {
   "photo.restrictedContentDesc": "此照片被歸類為受限內容。更改過濾設定以查看。",
   "photo.showContent": "顯示",
   "photo.confirmShowMature": "您要查看此成人內容嗎？",
+  "photo.addFavorite": "加入收藏",
+  "photo.removeFavorite": "從收藏中移除",
+  "photo.favoriteError": "更新收藏時出錯",
 };
 
 export const translations: Record<string, TranslationDict> = { it, en, fr, de, es, "pt-BR": ptBR, ja, ko, "zh-CN": zhCN, "zh-TW": zhTW };

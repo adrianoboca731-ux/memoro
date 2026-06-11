@@ -36,10 +36,14 @@ model User {
   sentMessages  Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   notifications Notification[]
+  birthDate      DateTime? @map("birth_date")
+
   followers     Follow[]  @relation("UserFollowers")
   following     Follow[]  @relation("UserFollowing")
   favorites     Favorite[]
   settings      UserSettings?
+  profileViewers  ProfileViewer[] @relation("ProfileOwner")
+  viewableProfiles ProfileViewer[] @relation("ProfileViewer")
 
   @@map("users")
 }
@@ -95,6 +99,19 @@ model Follow {
 
   @@unique([followerId, followingId])
   @@map("follows")
+}
+
+model ProfileViewer {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  viewerId   String   @map("viewer_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User     @relation("ProfileOwner", fields: [userId], references: [id], onDelete: Cascade)
+  viewer     User     @relation("ProfileViewer", fields: [viewerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, viewerId])
+  @@map("profile_viewers")
 }
 
 // === FOTO ===

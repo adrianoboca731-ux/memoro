@@ -137,16 +137,15 @@ function CercaContent() {
                 {photoResults.length === 0 ? (
                   <EmptyState icon={Camera} title={t("search.noPhotos")} description={t("search.noPhotosDesc")} />
                 ) : (
-                  <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {photoResults.map((photo, index) => (
                       <motion.div
                         key={photo.id}
-                        className="break-inside-avoid"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
                       >
-                        <PhotoCard photo={photo} />
+                        <PhotoCard photo={photo} flickrStyle />
                       </motion.div>
                     ))}
                   </div>
