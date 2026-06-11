@@ -1,6 +1,6 @@
 #!/bin/sh
 # Render start script for Next.js standalone
-# Copies static assets to the standalone directory
+set -e
 
 echo "Copying static assets..."
 
@@ -12,5 +12,5 @@ if [ -d "public" ]; then
   cp -r public .next/standalone/public
 fi
 
-echo "Starting server..."
-NODE_ENV=production node .next/standalone/server.js
+echo "Starting server on 0.0.0.0:$PORT..."
+HOSTNAME=0.0.0.0 NODE_ENV=production PORT=${PORT:-10000} node .next/standalone/server.js
