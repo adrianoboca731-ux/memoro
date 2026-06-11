@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 interface UploadFile {
   file: File;
@@ -41,6 +42,7 @@ interface UploadFile {
 
 export function UploadModal() {
   const { isUploadOpen, toggleUpload, albums, addPhoto } = useAppStore();
+  const { t } = useI18n();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -165,7 +167,7 @@ export function UploadModal() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5 text-[#0063dc]" />
-            Carica Foto
+            {t("upload.title")}
           </DialogTitle>
         </DialogHeader>
 
@@ -185,9 +187,9 @@ export function UploadModal() {
             onDrop={handleDrop}
           >
             <ImagePlus className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-            <p className="font-medium">Trascina le foto qui</p>
+            <p className="font-medium">{t("upload.dragHere")}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              oppure clicca per selezionare file
+              {t("upload.orClick")}
             </p>
             <Button
               variant="outline"
@@ -195,7 +197,7 @@ export function UploadModal() {
               className="mt-3"
               onClick={() => fileInputRef.current?.click()}
             >
-              Scegli File
+              {t("upload.chooseFiles")}
             </Button>
             <input
               ref={fileInputRef}
@@ -231,7 +233,7 @@ export function UploadModal() {
                           updateFile(index, { title: e.target.value })
                         }
                         className="h-7 text-sm font-medium"
-                        placeholder="Titolo"
+                        placeholder={t("upload.photoTitle")}
                         disabled={uploadFile.status !== "pending"}
                       />
                       <Button
@@ -253,10 +255,10 @@ export function UploadModal() {
                         disabled={uploadFile.status !== "pending"}
                       >
                         <SelectTrigger className="h-7 text-xs w-32">
-                          <SelectValue placeholder="Album" />
+                          <SelectValue placeholder={t("upload.album")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">Nessun album</SelectItem>
+                          <SelectItem value="none">{t("upload.noAlbum")}</SelectItem>
                           {albums.map((album) => (
                             <SelectItem key={album.id} value={album.id}>
                               {album.name}
@@ -269,7 +271,7 @@ export function UploadModal() {
                         onChange={(e) =>
                           updateFile(index, { tags: e.target.value })
                         }
-                        placeholder="Tag (virgola)"
+                        placeholder={t("upload.tags")}
                         className="h-7 text-xs flex-1"
                         disabled={uploadFile.status !== "pending"}
                       />
@@ -279,7 +281,7 @@ export function UploadModal() {
                       onChange={(e) =>
                         updateFile(index, { description: e.target.value })
                       }
-                      placeholder="Descrizione..."
+                      placeholder={t("upload.description")}
                       className="h-16 text-xs resize-none"
                       disabled={uploadFile.status !== "pending"}
                     />
@@ -293,7 +295,7 @@ export function UploadModal() {
                       <Loader2 className="h-5 w-5 text-[#0063dc] animate-spin" />
                     )}
                     {uploadFile.status === "error" && (
-                      <span className="text-xs text-destructive">Errore</span>
+                      <span className="text-xs text-destructive">{t("common.error")}</span>
                     )}
                   </div>
                 </div>
@@ -319,18 +321,18 @@ export function UploadModal() {
               {files.some((f) => f.status === "uploading") ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Caricamento...
+                  {t("upload.uploading")}
                 </>
               ) : files.every((f) => f.status === "done") ? (
                 <>
                   <Check className="h-4 w-4 mr-2" />
-                  Completato!
+                  {t("common.completed")}
                 </>
               ) : (
                 <>
                   <Upload className="h-4 w-4 mr-2" />
-                  Carica {files.filter((f) => f.status === "pending").length}{" "}
-                  foto
+                  {t("common.create")} {files.filter((f) => f.status === "pending").length}{" "}
+                  {t("common.photos")}
                 </>
               )}
             </Button>

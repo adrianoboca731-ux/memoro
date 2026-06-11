@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useI18n } from "@/lib/i18n";
 
 export function MessagesView() {
   const {
@@ -41,6 +42,7 @@ export function MessagesView() {
   const [body, setBody] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [selectedMsg, setSelectedMsg] = useState<Message | null>(null);
+  const { t } = useI18n();
 
   const handleSend = useCallback(async () => {
     if (!toUser.trim() || !subject.trim() || !body.trim()) return;
@@ -101,7 +103,7 @@ export function MessagesView() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <Mail className="h-5 w-5 text-[#0063dc]" />
-          Messaggi
+          {t("messages.title")}
         </h2>
         <Button
           size="sm"
@@ -109,7 +111,7 @@ export function MessagesView() {
           onClick={() => setComposeOpen(true)}
         >
           <Plus className="h-4 w-4" />
-          Nuovo Messaggio
+          {t("messages.newMessage")}
         </Button>
       </div>
 
@@ -120,8 +122,8 @@ export function MessagesView() {
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                 <Mail className="h-16 w-16 mb-4 opacity-30" />
-                <p className="text-lg font-medium">Nessun messaggio</p>
-                <p className="text-sm">Invia un messaggio per iniziare</p>
+                <p className="text-lg font-medium">{t("messages.noMessages")}</p>
+                <p className="text-sm">{t("messages.noMessagesDesc")}</p>
               </div>
             ) : (
               <div className="divide-y">
@@ -146,7 +148,7 @@ export function MessagesView() {
                           </p>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {msg.fromUser === "Admin" ? "A" : "Da"}: {msg.fromUser === "Admin" ? msg.toUser : msg.fromUser}
+                          {msg.fromUser === "Admin" ? t("messages.toLabel") : t("messages.from")} {msg.fromUser === "Admin" ? msg.toUser : msg.fromUser}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">
                           {msg.body}
@@ -173,9 +175,9 @@ export function MessagesView() {
                     <h3 className="text-lg font-semibold">{selectedMsg.subject}</h3>
                     <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                       <User className="h-4 w-4" />
-                      <span>Da: {selectedMsg.fromUser}</span>
+                      <span>{t("messages.from")} {selectedMsg.fromUser}</span>
                       <span>•</span>
-                      <span>A: {selectedMsg.toUser}</span>
+                      <span>{t("messages.toLabel")} {selectedMsg.toUser}</span>
                       <span>•</span>
                       <span>{format(new Date(selectedMsg.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}</span>
                     </div>
@@ -198,7 +200,7 @@ export function MessagesView() {
           ) : (
             <div className="flex flex-col items-center justify-center w-full text-muted-foreground">
               <MailOpen className="h-16 w-16 mb-4 opacity-30" />
-              <p>Seleziona un messaggio per leggerlo</p>
+              <p>{t("messages.selectMessage")}</p>
             </div>
           )}
         </div>
@@ -208,21 +210,21 @@ export function MessagesView() {
       <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Nuovo Messaggio</DialogTitle>
+            <DialogTitle>{t("messages.composeTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="A (nome utente)"
+              placeholder={t("messages.to")}
               value={toUser}
               onChange={(e) => setToUser(e.target.value)}
             />
             <Input
-              placeholder="Oggetto"
+              placeholder={t("messages.subject")}
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
             />
             <Textarea
-              placeholder="Scrivi il tuo messaggio..."
+              placeholder={t("messages.body")}
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={6}
@@ -233,11 +235,11 @@ export function MessagesView() {
               className="w-full bg-[#0063dc] hover:bg-[#0052b5]"
             >
               {isSending ? (
-                "Invio..."
+                t("messages.sending")
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  Invia Messaggio
+                  {t("messages.sendButton")}
                 </>
               )}
             </Button>

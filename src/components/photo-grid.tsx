@@ -6,11 +6,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Camera } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface PhotoGridProps { photos: Photo[]; loading?: boolean; }
 
 export function PhotoGrid({ photos, loading }: PhotoGridProps) {
   const { selectPhoto, toggleFavorite } = useAppStore();
+  const { t } = useI18n();
 
   if (loading) {
     return (
@@ -28,8 +30,8 @@ export function PhotoGrid({ photos, loading }: PhotoGridProps) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-white/30">
         <Camera className="h-16 w-16 mb-4" />
-        <p className="text-lg font-medium">Nessuna foto trovata</p>
-        <p className="text-sm">Prova a cercare qualcos&apos;altro o carica una foto</p>
+        <p className="text-lg font-medium">{t("photoGrid.noPhotos")}</p>
+        <p className="text-sm">{t("photoGrid.trySearching")}</p>
       </div>
     );
   }
@@ -87,7 +89,7 @@ export function PhotoGrid({ photos, loading }: PhotoGridProps) {
                     <Folder className="h-2.5 w-2.5" />{photo.album.name}
                   </Badge>
                 )}
-                {photo.user && <span className="text-xs text-white/30 truncate">di {photo.user.name}</span>}
+                {photo.user && <span className="text-xs text-white/30 truncate">{t("common.by")} {photo.user.name}</span>}
               </div>
             </div>
           </motion.div>

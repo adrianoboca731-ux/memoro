@@ -338,3 +338,184 @@
 7. **Added `t` to useCallback deps**: `handleSaveSettings` and `handleSaveProfile` now include `t` in their dependency arrays since they call `t()` inside.
 
 8. **Verification**: Checked for remaining hardcoded Italian strings (none found except component name), confirmed typo fix, confirmed sidebarItems moved inside component
+
+---
+
+## Task ID: 2 - i18n Component Migration
+
+### i18n Migration for Core Components (Replacing Hardcoded Italian with t() Calls)
+
+#### Completed Changes
+
+1. **`src/components/photo-card.tsx`** — Added `useI18n` import and hook
+   - `di {photo.user.name}` → `{t("common.by")} {photo.user.name}`
+
+2. **`src/components/photo-grid.tsx`** — Added `useI18n` import and hook
+   - `"Nessuna foto trovata"` → `{t("photoGrid.noPhotos")}`
+   - `"Prova a cercare qualcos'altro o carica una foto"` → `{t("photoGrid.trySearching")}`
+   - `di {photo.user.name}` → `{t("common.by")} {photo.user.name}`
+
+3. **`src/components/photo-detail.tsx`** — Added `useI18n` import and hook (22 replacements)
+   - `"Preferito"` → `{t("photo.favorite")}`
+   - `"Condividi"` → `{t("photo.share")}`
+   - `"Scarica"` → `{t("photo.download")}`
+   - `"Salva"` → `{t("common.save")}`
+   - `"Modifica"` → `{t("common.edit")}`
+   - `"Elimina"` → `{t("common.delete")}`
+   - `"Info"` → `{t("photo.info")}`
+   - `placeholder="Aggiungi una descrizione..."` → `placeholder={t("photo.addDescription")}`
+   - `placeholder="Tag separati da virgola..."` → `placeholder={t("photo.tagPlaceholder")}`
+   - `"Tag"` (label) → `{t("photo.tag")}`
+   - `"Dettagli foto"` → `{t("photo.photoDetails")}`
+   - `"Dimensioni"` → `{t("photo.dimensions")}`
+   - `"Dimensione file"` → `{t("photo.fileSize")}`
+   - `"Tipo"` → `{t("photo.type")}`
+   - `"Album"` → `{t("photo.album")}`
+   - `"Date"` → `{t("photo.dates")}`
+   - `"Scattata"` → `{t("photo.taken")}`
+   - `"Caricata"` → `{t("photo.uploadedOn")}`
+   - `"Commenti"` → `{t("comments.title")}`
+   - `placeholder="Aggiungi un commento..."` → `placeholder={t("comments.addComment")}`
+
+4. **`src/components/albums-view.tsx`** — Added `useI18n` import and hook (12 replacements)
+   - `"Tutti gli Album"` → `{t("albums.allAlbums")}`
+   - `"Album"` (fallback) → `{t("nav.album")}`
+   - `"foto"` (count) → `{t("common.photos")}` (3 occurrences)
+   - `"Nuovo Album"` → `{t("albums.newAlbum")}`
+   - `"Crea Nuovo Album"` → `{t("albums.createTitle")}`
+   - `placeholder="Nome dell'album"` → `placeholder={t("albums.albumName")}`
+   - `placeholder="Descrizione (opzionale)"` → `placeholder={t("albums.albumDesc")}`
+   - `"Creazione..."` / `"Crea Album"` → `t("common.creating")` / `t("albums.createButton")`
+   - `"Nessun album ancora"` → `{t("albums.noAlbums")}`
+   - `"Crea il tuo primo album per organizzare le foto"` → `{t("albums.noAlbumsDesc")}`
+
+5. **`src/components/galleries-view.tsx`** — Added `useI18n` import and hook (10 replacements)
+   - `"Tutte le Gallerie"` → `{t("galleries.allGalleries")}`
+   - `"Gallerie"` → `{t("nav.galleries")}`
+   - `"Nuova Galleria"` → `{t("galleries.createNew")}`
+   - `"Crea Nuova Galleria"` → `{t("galleries.createTitle")}`
+   - `placeholder="Nome della galleria"` → `placeholder={t("galleries.galleryName")}`
+   - `placeholder="Descrizione (opzionale)"` → `placeholder={t("galleries.galleryDesc")}`
+   - `"Creazione..."` / `"Crea Galleria"` → `t("common.creating")` / `t("galleries.createButton")`
+   - `"Le gallerie sono collezioni curate..."` → `{t("galleries.subtitleShort")}`
+   - `"Nessuna galleria"` → `{t("galleries.noGalleries")}`
+   - `"foto"` → `{t("common.photos")}`
+
+6. **`src/components/groups-view.tsx`** — Added `useI18n` import and hook (15 replacements)
+   - `"Tutti i Gruppi"` → `{t("groups.allGroupsNav")}`
+   - `"Gruppi"` → `{t("groups.title")}`
+   - `"Nuovo Gruppo"` → `{t("groups.createGroup")}`
+   - `"Crea Nuovo Gruppo"` → `{t("groups.createTitle")}`
+   - `placeholder="Nome del gruppo"` → `placeholder={t("groups.groupName")}`
+   - `placeholder="Descrizione (opzionale)"` → `placeholder={t("groups.groupDesc")}`
+   - `placeholder="Regole del gruppo (opzionale)"` → `placeholder={t("groups.groupRules")}`
+   - `"Creazione..."` / `"Crea Gruppo"` → `t("common.creating")` / `t("groups.createButton")`
+   - `"Regole del gruppo"` → `{t("groups.groupRulesTitle")}`
+   - `"membri"` → `{t("common.members")}`
+   - `"foto"` → `{t("common.photos")}`
+   - `"Pubblico"` → `{t("groups.public")}`
+   - `"Privato"` → `{t("groups.private")}`
+   - `"Nessun gruppo ancora"` → `{t("groups.noGroups")}`
+   - `"Crea un gruppo per condividere foto con la community"` → `{t("groups.noGroupsCreateAlt")}`
+
+7. **`src/components/messages-view.tsx`** — Added `useI18n` import and hook (13 replacements)
+   - `"Messaggi"` → `{t("messages.title")}`
+   - `"Nuovo Messaggio"` (button) → `{t("messages.newMessage")}`
+   - `"Nessun messaggio"` → `{t("messages.noMessages")}`
+   - `"Invia un messaggio per iniziare"` → `{t("messages.noMessagesDesc")}`
+   - `"Da:"` → `{t("messages.from")}`
+   - `"A:"` → `{t("messages.toLabel")}`
+   - `"Seleziona un messaggio per leggerlo"` → `{t("messages.selectMessage")}`
+   - `"Nuovo Messaggio"` (dialog) → `{t("messages.composeTitle")}`
+   - `placeholder="A (nome utente)"` → `placeholder={t("messages.to")}`
+   - `placeholder="Oggetto"` → `placeholder={t("messages.subject")}`
+   - `placeholder="Scrivi il tuo messaggio..."` → `placeholder={t("messages.body")}`
+   - `"Invio..."` → `{t("messages.sending")}`
+   - `"Invia Messaggio"` → `{t("messages.sendButton")}`
+
+8. **`src/components/notifications-view.tsx`** — Added `useI18n` import and hook (4 replacements)
+   - `"Notifiche"` → `{t("notifications.title")}`
+   - `"Segna tutto come letto"` → `{t("notifications.markAllRead")}`
+   - `"Nessuna notifica"` → `{t("notifications.noNotifications")}`
+   - `"Le tue notifiche appariranno qui"` → `{t("notifications.noNotificationsDesc")}`
+
+9. **`src/components/upload-modal.tsx`** — Added `useI18n` import and hook (12 replacements)
+   - `"Carica Foto"` → `{t("upload.title")}`
+   - `"Trascina le foto qui"` → `{t("upload.dragHere")}`
+   - `"oppure clicca per selezionare file"` → `{t("upload.orClick")}`
+   - `"Scegli File"` → `{t("upload.chooseFiles")}`
+   - `placeholder="Titolo"` → `placeholder={t("upload.photoTitle")}`
+   - `placeholder="Album"` → `placeholder={t("upload.album")}`
+   - `"Nessun album"` → `{t("upload.noAlbum")}`
+   - `placeholder="Tag (virgola)"` → `placeholder={t("upload.tags")}`
+   - `placeholder="Descrizione..."` → `placeholder={t("upload.description")}`
+   - `"Errore"` → `{t("common.error")}`
+   - `"Caricamento..."` → `{t("upload.uploading")}`
+   - `"Completato!"` → `{t("common.completed")}`
+   - `"Carica ... foto"` → `{t("common.create")} ... {t("common.photos")}`
+
+10. **`src/components/user-card.tsx`** — Already uses `useI18n`, no changes needed
+11. **`src/components/follow-button.tsx`** — Already uses `useI18n`, no changes needed
+
+12. **Created `src/components/html-lang.tsx`** — New client component that dynamically updates `<html lang>` based on i18n locale
+
+13. **Updated `src/app/layout.tsx`** — Added `HtmlLang` component import and placed it inside `<I18nProvider>`
+
+#### Not translated (correctly excluded):
+- `console.error(...)` — developer-facing, not visible
+- CSS classes, API endpoints, variable names
+- Brand names ("Memoro")
+- Date-fns locale import (used for date formatting, not UI text)
+
+#### Verification:
+- `npx next build` — passes with 0 TypeScript errors
+- `bun run lint` — 0 errors (1 pre-existing warning in carousel.tsx, unrelated)
+
+---
+
+## Task ID: 3b
+
+### Fix Asian & ptBR Translation Fallbacks in translations.ts
+
+#### Problem
+The translations file at `/src/lib/i18n/translations.ts` had 10 languages with 428 keys each, but 5 languages had many English fallback values instead of proper native translations:
+- **ptBR (Portuguese Brazil)** — ~109 keys had English values
+- **ja (Japanese)** — many keys had English values
+- **ko (Korean)** — many keys had English values
+- **zhCN (Chinese Simplified)** — many keys had English values
+- **zhTW (Chinese Traditional)** — many keys had English values
+
+#### Approach
+1. Read the current `translations.ts` file (4326 lines)
+2. Identified all keys from the `en` dictionary (428 keys total)
+3. For each of the 5 languages, created a COMPLETE dictionary with all 428 keys properly translated
+4. Wrote a Node.js script (`scripts/fix-asian-translations.js`) that:
+   - Reads the current file
+   - Uses regex to find and replace each language section
+   - Generates proper TypeScript dict syntax from JS objects
+   - Writes the complete file back
+   - Includes verification (key count + spot-checks)
+
+#### Script Details
+- **File**: `/home/z/my-project/scripts/fix-asian-translations.js`
+- Hardcodes complete translation dictionaries for all 5 languages
+- Uses `replaceLangSection()` helper to swap each `const LANG: TranslationDict = { ... };` block
+- Handles backslash escaping in values (e.g., `\\` in `settings.showRestrictedContentDesc`)
+
+#### Key Translations Fixed (examples)
+| Key | Before (English fallback) | After (Native) |
+|---|---|---|
+| `photo.addToGroups` | "Add to groups" | ptBR: "Adicionar aos grupos", ja: "グループに追加", ko: "그룹에 추가", zhCN: "添加到群组", zhTW: "新增到群組" |
+| `upload.photoTitle` | "Photo title" | ptBR: "Título da foto", ja: "写真のタイトル", ko: "사진 제목", zhCN: "照片标题", zhTW: "照片標題" |
+| `settings.allowComments` | "Allow comments" | ptBR: "Permitir comentários", ja: "コメントを許可", ko: "댓글 허용", zhCN: "允许评论", zhTW: "允許留言" |
+| `comments.at` | "at" | ptBR: "às", ja: "に", ko: "에", zhCN: "于", zhTW: "於" |
+| `photo.focalLength` | "Focal length" | ptBR: "Distância focal", ja: "焦点距離", ko: "초점 거리", zhCN: "焦距", zhTW: "焦距" |
+
+#### Verification Results
+- **All 10 languages still have 428 keys each** ✓
+- **No English fallbacks remain** in ja, ko, zhCN, zhTW (only "EXIF" flagged — correct, it's a universal technical term)
+- **ptBR**: All previously-English keys replaced with proper Portuguese; detection script flags legitimate Portuguese words (same Latin alphabet) as false positives
+- **Spot-checks passed** for `nav.explore`, `photo.addToGroups`, `settings.allowComments`, `upload.photoTitle`, `comments.at`
+
+#### Note on ptBR False Positives
+The verification script's ASCII detection flags legitimate Portuguese words (e.g., "Explorar", "Salvar", "Cancelar") because they use the Latin alphabet like English. Manual review confirms all 428 ptBR values are proper Brazilian Portuguese — none are English fallbacks.

@@ -5,6 +5,7 @@ import { Eye, Heart, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SafetyBadge } from "./safety-badge";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 interface PhotoCardProps {
   photo: {
@@ -28,6 +29,7 @@ interface PhotoCardProps {
 }
 
 export function PhotoCard({ photo, showOverlay = true, showSafety = true }: PhotoCardProps) {
+  const { t } = useI18n();
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -86,7 +88,7 @@ export function PhotoCard({ photo, showOverlay = true, showSafety = true }: Phot
         <p className="text-sm font-medium truncate text-foreground/80">{photo.title}</p>
         {photo.user && (
           <Link href={`/persone/${photo.user.username}`} className="text-xs text-muted-foreground hover:text-foreground/60 truncate block">
-            di {photo.user.name}
+            {t("common.by")} {photo.user.name}
           </Link>
         )}
       </div>

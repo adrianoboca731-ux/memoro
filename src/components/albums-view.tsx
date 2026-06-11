@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoGrid } from "./photo-grid";
+import { useI18n } from "@/lib/i18n";
 
 export function AlbumsView() {
   const {
@@ -36,6 +37,7 @@ export function AlbumsView() {
   const [newAlbumDesc, setNewAlbumDesc] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const { t } = useI18n();
 
   const handleCreateAlbum = useCallback(async () => {
     if (!newAlbumName.trim()) return;
@@ -92,9 +94,9 @@ export function AlbumsView() {
               onClick={() => selectAlbum(null)}
               className="text-muted-foreground mb-1 -ml-2"
             >
-              ← Tutti gli Album
+              ← {t("albums.allAlbums")}
             </Button>
-            <h2 className="text-xl font-bold">{album?.name || "Album"}</h2>
+            <h2 className="text-xl font-bold">{album?.name || t("nav.album")}</h2>
             {album?.description && (
               <p className="text-sm text-muted-foreground mt-0.5">
                 {album.description}
@@ -102,7 +104,7 @@ export function AlbumsView() {
             )}
           </div>
           <span className="text-sm text-muted-foreground">
-            {albumPhotos.length} foto
+            {albumPhotos.length} {t("common.photos")}
           </span>
         </div>
         <PhotoGrid photos={albumPhotos} />
@@ -113,26 +115,26 @@ export function AlbumsView() {
   return (
     <div className="p-4 space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Album</h2>
+        <h2 className="text-xl font-bold">{t("nav.album")}</h2>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="bg-[#0063dc] hover:bg-[#0052b5] gap-1.5">
               <Plus className="h-4 w-4" />
-              Nuovo Album
+              {t("albums.newAlbum")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Crea Nuovo Album</DialogTitle>
+              <DialogTitle>{t("albums.createTitle")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Input
-                placeholder="Nome dell'album"
+                placeholder={t("albums.albumName")}
                 value={newAlbumName}
                 onChange={(e) => setNewAlbumName(e.target.value)}
               />
               <Textarea
-                placeholder="Descrizione (opzionale)"
+                placeholder={t("albums.albumDesc")}
                 value={newAlbumDesc}
                 onChange={(e) => setNewAlbumDesc(e.target.value)}
                 rows={3}
@@ -142,7 +144,7 @@ export function AlbumsView() {
                 disabled={!newAlbumName.trim() || isCreating}
                 className="w-full bg-[#0063dc] hover:bg-[#0052b5]"
               >
-                {isCreating ? "Creazione..." : "Crea Album"}
+                {isCreating ? t("common.creating") : t("albums.createButton")}
               </Button>
             </div>
           </DialogContent>
@@ -152,8 +154,8 @@ export function AlbumsView() {
       {albums.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <FolderOpen className="h-16 w-16 mb-4 opacity-30" />
-          <p className="text-lg font-medium">Nessun album ancora</p>
-          <p className="text-sm">Crea il tuo primo album per organizzare le foto</p>
+          <p className="text-lg font-medium">{t("albums.noAlbums")}</p>
+          <p className="text-sm">{t("albums.noAlbumsDesc")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -200,7 +202,7 @@ export function AlbumsView() {
                     <div className="p-3">
                       <h3 className="font-medium text-sm truncate">{album.name}</h3>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {album.photoCount ?? album.photos?.length ?? 0} foto
+                        {album.photoCount ?? album.photos?.length ?? 0} {t("common.photos")}
                       </p>
                     </div>
                   </CardContent>

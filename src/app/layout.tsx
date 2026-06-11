@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { I18nProvider } from "@/lib/i18n";
+import { HtmlLang } from "@/components/html-lang";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <AuthProvider>
           <I18nProvider>
+            <HtmlLang />
             <ThemeProvider
               attribute="class"
               defaultTheme="dark"

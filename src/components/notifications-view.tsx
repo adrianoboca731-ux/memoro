@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { useI18n } from "@/lib/i18n";
 
 const getNotifIcon = (type: string) => {
   switch (type) {
@@ -43,6 +44,7 @@ export function NotificationsView() {
     markNotificationRead,
     markAllNotificationsRead,
   } = useAppStore();
+  const { t } = useI18n();
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -81,7 +83,7 @@ export function NotificationsView() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <Bell className="h-5 w-5 text-[#ff0084]" />
-          Notifiche
+          {t("notifications.title")}
           {unreadCount > 0 && (
             <span className="ml-1 text-xs bg-[#ff0084] text-white rounded-full px-2 py-0.5">
               {unreadCount}
@@ -96,7 +98,7 @@ export function NotificationsView() {
             className="gap-1.5"
           >
             <CheckCheck className="h-4 w-4" />
-            Segna tutto come letto
+            {t("notifications.markAllRead")}
           </Button>
         )}
       </div>
@@ -104,8 +106,8 @@ export function NotificationsView() {
       {notifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <Bell className="h-16 w-16 mb-4 opacity-30" />
-          <p className="text-lg font-medium">Nessuna notifica</p>
-          <p className="text-sm">Le tue notifiche appariranno qui</p>
+          <p className="text-lg font-medium">{t("notifications.noNotifications")}</p>
+          <p className="text-sm">{t("notifications.noNotificationsDesc")}</p>
         </div>
       ) : (
         <ScrollArea className="h-[calc(100vh-220px)]">

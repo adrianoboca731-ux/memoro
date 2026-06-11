@@ -31,6 +31,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useI18n } from "@/lib/i18n";
 
 export function PhotoDetail() {
   const {
@@ -50,6 +51,7 @@ export function PhotoDetail() {
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInfo, setShowInfo] = useState(true);
+  const { t } = useI18n();
 
   const currentIndex = photos.findIndex((p) => p.id === selectedPhotoId);
   const prevPhoto = currentIndex > 0 ? photos[currentIndex - 1] : null;
@@ -210,7 +212,7 @@ export function PhotoDetail() {
                 onClick={handleToggleFavorite}
               >
                 <Heart className={`h-4 w-4 ${photo.favorite ? "fill-[#ff0084]" : ""}`} />
-                <span className="hidden sm:inline text-xs">Preferito</span>
+                <span className="hidden sm:inline text-xs">{t("photo.favorite")}</span>
               </Button>
               <Button
                 variant="ghost"
@@ -218,7 +220,7 @@ export function PhotoDetail() {
                 className="text-white/70 hover:text-white hover:bg-white/10 gap-1.5 h-8"
               >
                 <Share2 className="h-4 w-4" />
-                <span className="hidden sm:inline text-xs">Condividi</span>
+                <span className="hidden sm:inline text-xs">{t("photo.share")}</span>
               </Button>
               <Button
                 variant="ghost"
@@ -228,7 +230,7 @@ export function PhotoDetail() {
               >
                 <a href={photo.filepath} download target="_blank" rel="noopener noreferrer">
                   <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline text-xs">Scarica</span>
+                  <span className="hidden sm:inline text-xs">{t("photo.download")}</span>
                 </a>
               </Button>
               <Separator orientation="vertical" className="h-5 mx-1 bg-white/10" />
@@ -240,7 +242,7 @@ export function PhotoDetail() {
                   onClick={handleSave}
                 >
                   <Save className="h-4 w-4" />
-                  <span className="text-xs">Salva</span>
+                  <span className="text-xs">{t("common.save")}</span>
                 </Button>
               ) : (
                 <Button
@@ -250,7 +252,7 @@ export function PhotoDetail() {
                   onClick={() => setIsEditing(true)}
                 >
                   <Edit3 className="h-4 w-4" />
-                  <span className="text-xs">Modifica</span>
+                  <span className="text-xs">{t("common.edit")}</span>
                 </Button>
               )}
               <Button
@@ -260,7 +262,7 @@ export function PhotoDetail() {
                 onClick={handleDelete}
               >
                 <Trash2 className="h-4 w-4" />
-                <span className="text-xs">Elimina</span>
+                <span className="text-xs">{t("common.delete")}</span>
               </Button>
               <Separator orientation="vertical" className="h-5 mx-1 bg-white/10" />
               <Button
@@ -270,7 +272,7 @@ export function PhotoDetail() {
                 onClick={() => setShowInfo(!showInfo)}
               >
                 <Maximize2 className="h-4 w-4" />
-                <span className="text-xs">Info</span>
+                <span className="text-xs">{t("photo.info")}</span>
               </Button>
             </div>
           </div>
@@ -340,7 +342,7 @@ export function PhotoDetail() {
                       <Textarea
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
-                        placeholder="Aggiungi una descrizione..."
+                        placeholder={t("photo.addDescription")}
                         rows={3}
                         className="bg-white/5 border-white/10 text-white text-sm resize-none"
                       />
@@ -355,13 +357,13 @@ export function PhotoDetail() {
                       <Input
                         value={editTags}
                         onChange={(e) => setEditTags(e.target.value)}
-                        placeholder="Tag separati da virgola..."
+                        placeholder={t("photo.tagPlaceholder")}
                         className="bg-white/5 border-white/10 text-white text-sm"
                       />
                     ) : (
                       photo.tags && (
                         <div className="space-y-2">
-                          <p className="text-xs font-medium text-white/50 uppercase tracking-wide">Tag</p>
+                          <p className="text-xs font-medium text-white/50 uppercase tracking-wide">{t("photo.tag")}</p>
                           <div className="flex flex-wrap gap-1.5">
                             {photo.tags.split(",").map((tag) => (
                               <Badge
@@ -382,17 +384,17 @@ export function PhotoDetail() {
 
                     {/* Photo details - Flickr style */}
                     <div className="space-y-3">
-                      <p className="text-xs font-medium text-white/50 uppercase tracking-wide">Dettagli foto</p>
+                      <p className="text-xs font-medium text-white/50 uppercase tracking-wide">{t("photo.photoDetails")}</p>
 
                       <div className="space-y-2.5 text-sm">
                         {photo.width && photo.height && (
                           <div className="flex justify-between">
-                            <span className="text-white/50">Dimensioni</span>
+                            <span className="text-white/50">{t("photo.dimensions")}</span>
                             <span className="text-white/80">{photo.width} × {photo.height}</span>
                           </div>
                         )}
                         <div className="flex justify-between">
-                          <span className="text-white/50">Dimensione file</span>
+                          <span className="text-white/50">{t("photo.fileSize")}</span>
                           <span className="text-white/80">
                             {photo.size > 1048576
                               ? `${(photo.size / 1048576).toFixed(1)} MB`
@@ -400,12 +402,12 @@ export function PhotoDetail() {
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-white/50">Tipo</span>
+                          <span className="text-white/50">{t("photo.type")}</span>
                           <span className="text-white/80">{photo.mimetype.split("/")[1]?.toUpperCase()}</span>
                         </div>
                         {photo.album && (
                           <div className="flex justify-between items-center">
-                            <span className="text-white/50">Album</span>
+                            <span className="text-white/50">{t("photo.album")}</span>
                             <Badge variant="secondary" className="text-xs bg-white/10 text-white/70 border-0">
                               <Folder className="h-2.5 w-2.5 mr-1" />
                               {photo.album.name}
@@ -419,11 +421,11 @@ export function PhotoDetail() {
 
                     {/* Dates - Flickr style */}
                     <div className="space-y-3">
-                      <p className="text-xs font-medium text-white/50 uppercase tracking-wide">Date</p>
+                      <p className="text-xs font-medium text-white/50 uppercase tracking-wide">{t("photo.dates")}</p>
                       <div className="space-y-2.5 text-sm">
                         <div className="flex justify-between">
                           <span className="text-white/50 flex items-center gap-1.5">
-                            <Camera className="h-3.5 w-3.5" /> Scattata
+                            <Camera className="h-3.5 w-3.5" /> {t("photo.taken")}
                           </span>
                           <span className="text-white/80">
                             {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: it })}
@@ -431,7 +433,7 @@ export function PhotoDetail() {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-white/50 flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" /> Caricata
+                            <Calendar className="h-3.5 w-3.5" /> {t("photo.uploadedOn")}
                           </span>
                           <span className="text-white/80">
                             {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: it })}
@@ -446,7 +448,7 @@ export function PhotoDetail() {
                     <div className="space-y-3">
                       <p className="text-xs font-medium text-white/50 uppercase tracking-wide flex items-center gap-1.5">
                         <MessageCircle className="h-3.5 w-3.5" />
-                        Commenti ({photo.comments?.length || 0})
+                        {t("comments.title")} ({photo.comments?.length || 0})
                       </p>
 
                       {photo.comments && photo.comments.length > 0 && (
@@ -472,7 +474,7 @@ export function PhotoDetail() {
                       <div className="space-y-2 pt-1">
                         <div className="flex gap-2">
                           <Input
-                            placeholder="Aggiungi un commento..."
+                            placeholder={t("comments.addComment")}
                             value={commentText}
                             onChange={(e) => setCommentText(e.target.value)}
                             onKeyDown={(e) => {

@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoGrid } from "./photo-grid";
+import { useI18n } from "@/lib/i18n";
 
 export function GalleriesView() {
   const { galleries, selectedGalleryId, selectGallery, photos, addGallery, deleteGallery } = useAppStore();
@@ -17,6 +18,7 @@ export function GalleriesView() {
   const [newDesc, setNewDesc] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const { t } = useI18n();
 
   const handleCreate = useCallback(async () => {
     if (!newName.trim()) return;
@@ -35,7 +37,7 @@ export function GalleriesView() {
     const gallery = galleries.find((g) => g.id === selectedGalleryId);
     return (
       <div className="p-4">
-        <Button variant="ghost" size="sm" onClick={() => selectGallery(null)} className="text-white/50 hover:text-white mb-2">← Tutte le Gallerie</Button>
+        <Button variant="ghost" size="sm" onClick={() => selectGallery(null)} className="text-white/50 hover:text-white mb-2">← {t("galleries.allGalleries")}</Button>
         <h2 className="text-xl font-bold text-white">{gallery?.name}</h2>
         {gallery?.description && <p className="text-sm text-white/40 mt-0.5">{gallery.description}</p>}
         <PhotoGrid photos={photos.slice(0, 10)} />
@@ -46,22 +48,22 @@ export function GalleriesView() {
   return (
     <div className="p-4 space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2"><LayoutGrid className="h-5 w-5 text-[#ff0084]" /> Gallerie</h2>
+        <h2 className="text-xl font-bold text-white flex items-center gap-2"><LayoutGrid className="h-5 w-5 text-[#ff0084]" /> {t("nav.galleries")}</h2>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <Button size="sm" className="bg-[#ff0084] hover:bg-[#d6006f] gap-1.5" onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> Nuova Galleria</Button>
+          <Button size="sm" className="bg-[#ff0084] hover:bg-[#d6006f] gap-1.5" onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> {t("galleries.createNew")}</Button>
           <DialogContent className="bg-[#2a2a2d] border-white/10">
-            <DialogHeader><DialogTitle className="text-white">Crea Nuova Galleria</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle className="text-white">{t("galleries.createTitle")}</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <Input placeholder="Nome della galleria" value={newName} onChange={(e) => setNewName(e.target.value)} className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
-              <Textarea placeholder="Descrizione (opzionale)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={3} className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
-              <Button onClick={handleCreate} disabled={!newName.trim() || isCreating} className="w-full bg-[#ff0084] hover:bg-[#d6006f]">{isCreating ? "Creazione..." : "Crea Galleria"}</Button>
+              <Input placeholder={t("galleries.galleryName")} value={newName} onChange={(e) => setNewName(e.target.value)} className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+              <Textarea placeholder={t("galleries.galleryDesc")} value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={3} className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+              <Button onClick={handleCreate} disabled={!newName.trim() || isCreating} className="w-full bg-[#ff0084] hover:bg-[#d6006f]">{isCreating ? t("common.creating") : t("galleries.createButton")}</Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
-      <p className="text-sm text-white/30">Le gallerie sono collezioni curate delle tue foto preferite.</p>
+      <p className="text-sm text-white/30">{t("galleries.subtitleShort")}</p>
       {galleries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-white/30"><LayoutGrid className="h-16 w-16 mb-4" /><p className="text-lg font-medium">Nessuna galleria</p></div>
+        <div className="flex flex-col items-center justify-center py-20 text-white/30"><LayoutGrid className="h-16 w-16 mb-4" /><p className="text-lg font-medium">{t("galleries.noGalleries")}</p></div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <AnimatePresence>
@@ -77,7 +79,7 @@ export function GalleriesView() {
                         <Button variant="destructive" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); handleDelete(gallery.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
                     </div>
-                    <div className="p-3"><h3 className="font-medium text-sm truncate text-white/80">{gallery.name}</h3><p className="text-xs text-white/40 mt-0.5">{gallery.itemCount ?? 0} foto</p></div>
+                    <div className="p-3"><h3 className="font-medium text-sm truncate text-white/80">{gallery.name}</h3><p className="text-xs text-white/40 mt-0.5">{gallery.itemCount ?? 0} {t("common.photos")}</p></div>
                   </CardContent>
                 </Card>
               </motion.div>
