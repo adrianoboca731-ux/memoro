@@ -38,8 +38,10 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function GruppoDetailPage() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
@@ -162,7 +164,7 @@ export default function GruppoDetailPage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d]">
         <Header />
-        <EmptyState icon={Users} title="Gruppo non trovato" description="Il gruppo richiesto non esiste o è stato eliminato" />
+        <EmptyState icon={Users} title={t("groups.groupNotFound")} description={t("groups.groupNotFoundDesc")} />
       </div>
     );
   }
@@ -179,7 +181,7 @@ export default function GruppoDetailPage() {
             onClick={() => router.push("/gruppi")}
             className="text-white/50 hover:text-white hover:bg-white/5 -ml-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" /> Tutti i Gruppi
+            <ArrowLeft className="h-4 w-4 mr-1" /> {t("groups.allGroupsNav")}
           </Button>
 
           {/* Group banner */}
@@ -207,11 +209,11 @@ export default function GruppoDetailPage() {
             <div className="flex items-center gap-4 text-sm text-white/50">
               <Badge variant="secondary" className="gap-1 bg-white/10 text-white/60 border-0">
                 {group.isPublic ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                {group.isPublic ? "Pubblico" : "Privato"}
+                {group.isPublic ? "t("groups.public") : t("groups.private")}
               </Badge>
-              <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {group.memberCount} membri</span>
-              <span className="flex items-center gap-1"><ImageIcon className="h-4 w-4" /> {group.photoCount} foto</span>
-              <span className="flex items-center gap-1"><MessageSquare className="h-4 w-4" /> {group.discussionCount} discussioni</span>
+              <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {group.memberCount} {t("common.members")}</span>
+              <span className="flex items-center gap-1"><ImageIcon className="h-4 w-4" /> {group.photoCount} {t("common.photos")}</span>
+              <span className="flex items-center gap-1"><MessageSquare className="h-4 w-4" /> {group.discussionCount} {t("groups.discussions").toLowerCase()}</span>
             </div>
             <div className="flex items-center gap-2">
               {session?.user && (
@@ -227,9 +229,9 @@ export default function GruppoDetailPage() {
                   }
                 >
                   {isMember ? (
-                    <><UserMinus className="h-4 w-4 mr-1" /> Lascia il gruppo</>
+                    <><UserMinus className="h-4 w-4 mr-1" /> {t("groups.leaveGroup")}</>
                   ) : (
-                    <><UserPlus className="h-4 w-4 mr-1" /> Unisciti al gruppo</>
+                    <><UserPlus className="h-4 w-4 mr-1" /> {t("groups.joinGroup")}</>
                   )}
                 </Button>
               )}
@@ -239,7 +241,7 @@ export default function GruppoDetailPage() {
           {/* Rules */}
           {group.rules && (
             <div className="bg-white/5 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-white/60 mb-2">Regole del gruppo</h3>
+              <h3 className="text-sm font-semibold text-white/60 mb-2">{t("groups.groupRulesTitle")}</h3>
               <p className="text-sm text-white/40 whitespace-pre-wrap">{group.rules}</p>
             </div>
           )}
@@ -250,13 +252,13 @@ export default function GruppoDetailPage() {
           <Tabs defaultValue="photos">
             <TabsList className="bg-white/5 border border-white/10">
               <TabsTrigger value="photos" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
-                <ImageIcon className="h-4 w-4 mr-1.5" /> Foto
+                <ImageIcon className="h-4 w-4 mr-1.5" /> {t("groups.photos")}
               </TabsTrigger>
               <TabsTrigger value="discussions" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
-                <MessageSquare className="h-4 w-4 mr-1.5" /> Discussioni
+                <MessageSquare className="h-4 w-4 mr-1.5" /> {t("groups.discussions")}
               </TabsTrigger>
               <TabsTrigger value="members" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
-                <Users className="h-4 w-4 mr-1.5" /> Membri
+                <Users className="h-4 w-4 mr-1.5" /> {t("groups.membersList")}
               </TabsTrigger>
             </TabsList>
 
@@ -264,8 +266,8 @@ export default function GruppoDetailPage() {
               {photos.length === 0 ? (
                 <EmptyState
                   icon={Camera}
-                  title="Nessuna foto nel gruppo"
-                  description="Unisciti al gruppo e condividi le tue foto"
+                  title={t("groups.noPhotosInGroup")}
+                  description={t("groups.noPhotosInGroupDesc")}
                 />
               ) : (
                 <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
@@ -291,15 +293,15 @@ export default function GruppoDetailPage() {
                   onClick={() => setDiscussionOpen(true)}
                   className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1.5"
                 >
-                  <Plus className="h-4 w-4" /> Nuova discussione
+                  <Plus className="h-4 w-4" /> {t("groups.newDiscussion")}
                 </Button>
               )}
 
               {discussions.length === 0 ? (
                 <EmptyState
                   icon={MessageSquare}
-                  title="Nessuna discussione"
-                  description="Inizia una nuova discussione nel gruppo"
+                  title={t("groups.noDiscussions")}
+                  description={t("groups.noDiscussionsDesc")}
                 />
               ) : (
                 <div className="space-y-3">
@@ -310,9 +312,9 @@ export default function GruppoDetailPage() {
                           <CardContent className="p-4">
                             <h3 className="font-medium text-white/80 text-sm">{discussion.title}</h3>
                             <div className="flex items-center gap-3 mt-2 text-xs text-white/30">
-                              <span>di {discussion.author?.name || "Utente"}</span>
+                              <span>{t("common.by")} {discussion.author?.name || t("common.user")}</span>
                               <span className="flex items-center gap-1">
-                                <MessageSquare className="h-3 w-3" /> {discussion.replyCount || 0} risposte
+                                <MessageSquare className="h-3 w-3" /> {discussion.replyCount || 0} {t("groups.replies")}
                               </span>
                               <span>{format(new Date(discussion.createdAt), "d MMM yyyy", { locale: it })}</span>
                             </div>
@@ -337,14 +339,14 @@ export default function GruppoDetailPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-medium text-white/80">{member.user?.name || "Utente"}</p>
-                        <p className="text-xs text-white/30">{member.role || "membro"}</p>
+                        <p className="text-sm font-medium text-white/80">{member.user?.name || t("common.user")}</p>
+                        <p className="text-xs text-white/30">{member.role || t("common.member")}</p>
                       </div>
                     </div>
                   </Link>
                 )) : (
                   <p className="text-sm text-white/30 col-span-full text-center py-8">
-                    Informazioni sui membri non disponibili
+                    {t("groups.memberInfoUnavailable")}
                   </p>
                 )}
               </div>
@@ -357,17 +359,17 @@ export default function GruppoDetailPage() {
       <Dialog open={discussionOpen} onOpenChange={setDiscussionOpen}>
         <DialogContent className="bg-[#2a2a2d] border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Nuova Discussione</DialogTitle>
+            <DialogTitle className="text-white">{t("discussion.newTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="Titolo della discussione"
+              placeholder={t("groups.discussionTitle")}
               value={newDiscussionTitle}
               onChange={(e) => setNewDiscussionTitle(e.target.value)}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
             <Textarea
-              placeholder="Scrivi il tuo messaggio..."
+              placeholder={t("groups.discussionBody")}
               value={newDiscussionBody}
               onChange={(e) => setNewDiscussionBody(e.target.value)}
               rows={5}
@@ -378,8 +380,8 @@ export default function GruppoDetailPage() {
               disabled={!newDiscussionTitle.trim() || !newDiscussionBody.trim() || isCreatingDiscussion}
               className="w-full bg-[#0063dc] hover:bg-[#0052b5] text-white"
             >
-              {isCreatingDiscussion ? "Creazione..." : (
-                <><Send className="h-4 w-4 mr-1.5" /> Crea discussione</>
+              {isCreatingDiscussion ? t("common.creating") : (
+                <><Send className="h-4 w-4 mr-1.5" /> {t("groups.createDiscussion")}</>
               )}
             </Button>
           </div>
@@ -388,7 +390,7 @@ export default function GruppoDetailPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

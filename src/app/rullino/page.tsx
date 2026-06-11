@@ -11,8 +11,10 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function RullinoPage() {
+  const { t } = useI18n();
   const { data: session } = useSession();
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,8 +67,8 @@ export default function RullinoPage() {
         <Header />
         <EmptyState
           icon={Film}
-          title="Accedi per vedere il rullino"
-          description="Effettua l'accesso per visualizzare tutte le tue foto"
+          title={t("cameraRoll.loginToSee")}
+          description={t("cameraRoll.loginToSeeDesc")}
         />
       </div>
     );
@@ -82,9 +84,9 @@ export default function RullinoPage() {
               <div>
                 <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                   <Film className="h-8 w-8 text-[#0063dc]" />
-                  Rullino
+                  {t("cameraRoll.title")}
                 </h1>
-                <p className="text-white/40 mt-1">Tutte le tue foto in ordine cronologico</p>
+                <p className="text-white/40 mt-1">{t("cameraRoll.subtitle")}</p>
               </div>
               <Button
                 variant={selectMode ? "default" : "outline"}
@@ -99,20 +101,20 @@ export default function RullinoPage() {
                     : "border-white/10 text-white/70 hover:bg-white/5"
                 }
               >
-                {selectMode ? "Annulla selezione" : "Seleziona"}
+                {selectMode ? t("cameraRoll.cancelSelection") : t("cameraRoll.select")}
               </Button>
             </div>
           </motion.div>
 
           {selectMode && selectedIds.size > 0 && (
             <div className="bg-white/5 rounded-lg p-3 flex items-center justify-between">
-              <span className="text-sm text-white/60">{selectedIds.size} foto selezionate</span>
+              <span className="text-sm text-white/60">{selectedIds.size} {t("cameraRoll.selectedPhotos")}</span>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" className="border-white/10 text-white/70 text-xs">
-                  Aggiungi ad album
+                  {t("cameraRoll.addToAlbum")}
                 </Button>
                 <Button size="sm" variant="outline" className="border-red-500/20 text-red-400 text-xs hover:bg-red-500/10">
-                  Elimina selezionate
+                  {t("cameraRoll.deleteSelected")}
                 </Button>
               </div>
             </div>
@@ -134,9 +136,9 @@ export default function RullinoPage() {
           ) : photos.length === 0 ? (
             <EmptyState
               icon={Camera}
-              title="Nessuna foto"
-              description="Carica la tua prima foto per iniziare!"
-              actionLabel="Carica foto"
+              title={t("cameraRoll.noPhotos")}
+              description={t("cameraRoll.noPhotosDesc")}
+              actionLabel={t("cameraRoll.uploadPhotos")}
               onAction={() => (window.location.href = "/carica")}
             />
           ) : (
@@ -202,7 +204,7 @@ export default function RullinoPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

@@ -8,9 +8,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
 
 // Hero section for logged-out users
 function HeroSection() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
       <Header />
@@ -34,7 +36,7 @@ function HeroSection() {
               </div>
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight">
-              Unisciti alla community fotografica più grande del mondo
+              {t("home.heroTitle")}
             </h1>
           </motion.div>
 
@@ -44,8 +46,7 @@ function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Carica, organizza e condividi le tue foto con milioni di persone.
-            Spazio illimitato, completamente gratuito.
+            {t("home.heroSubtitle")}
           </motion.p>
 
           <motion.div
@@ -59,7 +60,7 @@ function HeroSection() {
                 size="lg"
                 className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white font-semibold px-8 h-12 text-base rounded-lg shadow-lg shadow-[#0063dc]/25"
               >
-                Inizia gratuitamente
+                {t("home.getStart")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -69,7 +70,7 @@ function HeroSection() {
                 size="lg"
                 className="border-white/20 text-white hover:bg-white/5 h-12 px-8 text-base rounded-lg"
               >
-                Accedi
+                {t("auth.loginButton")}
               </Button>
             </Link>
           </motion.div>
@@ -82,15 +83,15 @@ function HeroSection() {
           >
             <span className="flex items-center gap-1.5">
               <Sparkles className="h-4 w-4 text-[#ff0084]" />
-              Spazio illimitato
+              {t("home.unlimitedSpace")}
             </span>
             <span className="flex items-center gap-1.5">
               <Heart className="h-4 w-4 text-[#ff0084]" />
-              Completamente gratis
+              {t("home.completelyFree")}
             </span>
             <span className="flex items-center gap-1.5">
               <Users className="h-4 w-4 text-[#ff0084]" />
-              Community globale
+              {t("home.globalCommunity")}
             </span>
           </motion.div>
         </div>
@@ -100,7 +101,7 @@ function HeroSection() {
       <section className="bg-[#0d0d0d] px-4 pb-16">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-center text-white/20 text-sm uppercase tracking-widest mb-8">
-            Scopri foto straordinarie
+            {t("home.discoverPhotos")}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {Array.from({ length: 12 }).map((_, i) => (
@@ -123,7 +124,7 @@ function HeroSection() {
           Memoro
         </span>
         <span className="text-white/20 text-sm ml-2">
-          &mdash; Condividi i Tuoi Ricordi &bull; Gratis per sempre
+          &mdash; {t("home.footerTagline")}
         </span>
       </footer>
     </div>
@@ -149,7 +150,7 @@ export default function HomePage() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0063dc] to-[#ff0084] flex items-center justify-center animate-pulse">
             <Camera className="h-4 w-4 text-white" />
           </div>
-          <span className="text-white/40 text-sm">Caricamento...</span>
+          <span className="text-white/40 text-sm">{t("common.loading")}</span>
         </div>
       </div>
     );
@@ -167,7 +168,7 @@ export default function HomePage() {
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0063dc] to-[#ff0084] flex items-center justify-center animate-pulse">
           <Camera className="h-4 w-4 text-white" />
         </div>
-        <span className="text-white/40 text-sm">Reindirizzamento...</span>
+        <span className="text-white/40 text-sm">{t("common.redirecting")}</span>
       </div>
     </div>
   );

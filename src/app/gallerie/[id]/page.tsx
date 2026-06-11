@@ -17,8 +17,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { useI18n } from "@/lib/i18n";
 
 export default function GalleriaDetailPage() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const galleryId = params.id as string;
@@ -67,7 +69,7 @@ export default function GalleriaDetailPage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d]">
         <Header />
-        <EmptyState icon={LayoutGrid} title="Galleria non trovata" description="La galleria richiesta non esiste o è stata eliminata" />
+        <EmptyState icon={LayoutGrid} title={t("galleries.galleryNotFound")} description={t("galleries.galleryNotFoundDesc")} />
       </div>
     );
   }
@@ -83,7 +85,7 @@ export default function GalleriaDetailPage() {
             onClick={() => router.push("/gallerie")}
             className="text-white/50 hover:text-white hover:bg-white/5 -ml-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" /> Tutte le gallerie
+            <ArrowLeft className="h-4 w-4 mr-1" /> {t("galleries.allGalleries")}
           </Button>
 
           {/* Gallery header */}
@@ -114,10 +116,10 @@ export default function GalleriaDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-sm text-white/40">
               <span className="flex items-center gap-1">
-                <ImageIcon className="h-4 w-4" /> {items.length} foto
+                <ImageIcon className="h-4 w-4" /> {items.length} {t("common.photos")}
               </span>
               <span>&bull;</span>
-              <span>Creata il {format(new Date(gallery.createdAt), "d MMMM yyyy", { locale: it })}</span>
+              <span>{t("galleries.createdOn")} {format(new Date(gallery.createdAt), "d MMMM yyyy", { locale: it })}</span>
             </div>
             <Button
               size="sm"
@@ -125,7 +127,7 @@ export default function GalleriaDetailPage() {
               className="border-white/10 text-white/70 hover:bg-white/5 gap-1"
               onClick={() => router.push("/esplora")}
             >
-              <ImageIcon className="h-4 w-4" /> Aggiungi foto
+              <ImageIcon className="h-4 w-4" /> {t("galleries.addPhotos")}
             </Button>
           </div>
 
@@ -134,9 +136,9 @@ export default function GalleriaDetailPage() {
           {items.length === 0 ? (
             <EmptyState
               icon={Camera}
-              title="Nessuna foto in questa galleria"
-              description="Esplora le foto e aggiungile a questa galleria"
-              actionLabel="Esplora foto"
+              title={t("galleries.noPhotosInGallery")}
+              description={t("galleries.exploreToAdd")}
+              actionLabel={t("galleries.explorePhotos")}
               onAction={() => router.push("/esplora")}
             />
           ) : (
@@ -165,7 +167,7 @@ export default function GalleriaDetailPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

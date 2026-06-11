@@ -8,8 +8,10 @@ import { EmptyState } from "@/components/empty-state";
 import { Heart, Camera } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 export default function PreferitiPage() {
+  const { t } = useI18n();
   const { data: session } = useSession();
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,8 +41,8 @@ export default function PreferitiPage() {
         <Header />
         <EmptyState
           icon={Heart}
-          title="Accedi per vedere i preferiti"
-          description="Effettua l'accesso per visualizzare le tue foto preferite"
+          title={t("favorites.loginToSee")}
+          description={t("favorites.loginToSeeDesc")}
         />
       </div>
     );
@@ -54,9 +56,9 @@ export default function PreferitiPage() {
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <Heart className="h-8 w-8 text-[#ff0084]" />
-              I tuoi preferiti
+              {t("favorites.yourFavorites")}
             </h1>
-            <p className="text-white/40 mt-1">Le foto che hai aggiunto ai preferiti</p>
+            <p className="text-white/40 mt-1">{t("favorites.subtitle")}</p>
           </motion.div>
 
           {loading ? (
@@ -73,9 +75,9 @@ export default function PreferitiPage() {
           ) : photos.length === 0 ? (
             <EmptyState
               icon={Heart}
-              title="Nessun preferito"
-              description="Esplora le foto e aggiungile ai preferiti cliccando il cuore"
-              actionLabel="Esplora foto"
+              title={t("favorites.noFavorites")}
+              description={t("favorites.noFavoritesDesc")}
+              actionLabel={t("favorites.explorePhotos")}
               onAction={() => window.location.href = "/esplora"}
             />
           ) : (
@@ -98,7 +100,7 @@ export default function PreferitiPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

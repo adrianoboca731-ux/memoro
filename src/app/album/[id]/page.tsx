@@ -26,8 +26,10 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function AlbumDetailPage() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
@@ -88,7 +90,7 @@ export default function AlbumDetailPage() {
   }, [albumId, album, editName, editDescription]);
 
   const handleDeleteAlbum = useCallback(async () => {
-    if (!confirm("Sei sicuro di voler eliminare questo album e tutte le foto contenute?")) return;
+    if (!confirm("t("albums.deleteAlbumAndPhotos")")) return;
     try {
       const res = await fetch(`/api/albums/${albumId}`, { method: "DELETE" });
       if (res.ok) router.push("/album");
@@ -118,7 +120,7 @@ export default function AlbumDetailPage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d]">
         <Header />
-        <EmptyState icon={FolderOpen} title="Album non trovato" description="L'album richiesto non esiste o è stato eliminato" />
+        <EmptyState icon={FolderOpen} title={t("albums.albumNotFound")} description={t("albums.albumNotFoundDesc")} />
       </div>
     );
   }
@@ -135,7 +137,7 @@ export default function AlbumDetailPage() {
             onClick={() => router.push("/album")}
             className="text-white/50 hover:text-white hover:bg-white/5 -ml-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" /> Tutti gli Album
+            <ArrowLeft className="h-4 w-4 mr-1" /> {t("albums.allAlbums")}
           </Button>
 
           {/* Album header with cover */}
@@ -162,7 +164,7 @@ export default function AlbumDetailPage() {
                     <Textarea
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
-                      placeholder="Descrizione..."
+                      placeholder={t("albums.descriptionPlaceholder")}
                       rows={2}
                       className="bg-white/10 border-white/20 text-white text-sm resize-none mt-2"
                     />
@@ -194,20 +196,20 @@ export default function AlbumDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-sm text-white/40">
               <span className="flex items-center gap-1">
-                <ImageIcon className="h-4 w-4" /> {photos.length} foto
+                <ImageIcon className="h-4 w-4" /> {photos.length} {t("common.photos")}
               </span>
               <span>&bull;</span>
-              <span>Creato il {format(new Date(album.createdAt), "d MMMM yyyy", { locale: it })}</span>
+              <span>{t("common.createdAt")} {format(new Date(album.createdAt), "d MMMM yyyy", { locale: it })}</span>
             </div>
             {isOwner && (
               <div className="flex items-center gap-2">
                 {isEditing ? (
                   <>
                     <Button size="sm" onClick={handleSave} className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1">
-                      <Save className="h-4 w-4" /> Salva
+                      <Save className="h-4 w-4" /> {t("common.save")}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} className="border-white/20 text-white/70">
-                      Annulla
+                      {t("common.cancel")}
                     </Button>
                   </>
                 ) : (
@@ -218,7 +220,7 @@ export default function AlbumDetailPage() {
                       onClick={() => setIsEditing(true)}
                       className="border-white/10 text-white/70 hover:bg-white/5 gap-1"
                     >
-                      <Edit3 className="h-4 w-4" /> Modifica album
+                      <Edit3 className="h-4 w-4" /> {t("albums.editAlbum")}
                     </Button>
                     <Button
                       size="sm"
@@ -226,7 +228,7 @@ export default function AlbumDetailPage() {
                       onClick={handleDeleteAlbum}
                       className="border-red-500/20 text-red-400 hover:bg-red-500/10 gap-1"
                     >
-                      <Trash2 className="h-4 w-4" /> Elimina
+                      <Trash2 className="h-4 w-4" /> {t("common.delete")}
                     </Button>
                   </>
                 )}
@@ -240,9 +242,9 @@ export default function AlbumDetailPage() {
           {photos.length === 0 ? (
             <EmptyState
               icon={Camera}
-              title="Nessuna foto in questo album"
-              description="Aggiungi foto al tuo album per iniziare"
-              actionLabel="Carica foto"
+              title={t("albums.noPhotosInAlbum")}
+              description={t("albums.addPhotosDesc")}
+              actionLabel={t("albums.uploadPhotos")}
               onAction={() => router.push("/carica")}
             />
           ) : (
@@ -265,7 +267,7 @@ export default function AlbumDetailPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

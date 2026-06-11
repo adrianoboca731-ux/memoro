@@ -474,6 +474,20 @@ const it: TranslationDict = {
   "comments.loginToComment": "Accedi per aggiungere un commento",
   "comments.noComments": "Nessun commento ancora. Sii il primo a commentare!",
   "comments.at": "alle",
+  "home.footerShort": "Condividi i Tuoi Ricordi",
+  "auth.loginAltSubtitle": "1TB gratuito per le tue foto",
+  "auth.registerAltSubtitle": "Gratis per sempre • 1TB di spazio",
+  "auth.accessing": "Accesso...",
+  "photo.photoDetails": "Dettagli foto",
+  "photo.dates": "Date",
+  "photo.taken": "Scattata",
+  "photo.type": "Tipo",
+  "photo.info": "Info",
+  "photoGrid.noPhotos": "Nessuna foto trovata",
+  "photoGrid.trySearching": "Prova a cercare qualcos'altro o carica una foto",
+  "galleries.subtitleShort": "Le gallerie sono collezioni curate delle tue foto preferite.",
+  "groups.noGroupsCreateAlt": "Crea un gruppo per condividere foto con la community",
+  "messages.toLabel": "A:"
 };
 
 const en: TranslationDict = {
@@ -910,6 +924,20 @@ const en: TranslationDict = {
   "comments.loginToComment": "Log in to add a comment",
   "comments.noComments": "No comments yet. Be the first to comment!",
   "comments.at": "at",
+  "home.footerShort": "Share Your Memories",
+  "auth.loginAltSubtitle": "1TB free for your photos",
+  "auth.registerAltSubtitle": "Free forever • 1TB of space",
+  "auth.accessing": "Logging in...",
+  "photo.photoDetails": "Photo details",
+  "photo.dates": "Dates",
+  "photo.taken": "Taken",
+  "photo.type": "Type",
+  "photo.info": "Info",
+  "photoGrid.noPhotos": "No photos found",
+  "photoGrid.trySearching": "Try searching for something else or upload a photo",
+  "galleries.subtitleShort": "Galleries are curated collections of your favorite photos.",
+  "groups.noGroupsCreateAlt": "Create a group to share photos with the community",
+  "messages.toLabel": "To:"
 };
 
 const fr: TranslationDict = {
@@ -1086,6 +1114,20 @@ const fr: TranslationDict = {
   "comments.loginToComment": "Connectez-vous pour ajouter un commentaire",
   "comments.noComments": "Aucun commentaire encore. Soyez le premier à commenter !",
   "comments.at": "à",
+  "home.footerShort": "Partagez vos souvenirs",
+  "auth.loginAltSubtitle": "1 To gratuit pour vos photos",
+  "auth.registerAltSubtitle": "Gratuit pour toujours • 1 To d'espace",
+  "auth.accessing": "Connexion...",
+  "photo.photoDetails": "Détails de la photo",
+  "photo.dates": "Dates",
+  "photo.taken": "Prise",
+  "photo.type": "Type",
+  "photo.info": "Info",
+  "photoGrid.noPhotos": "Aucune photo trouvée",
+  "photoGrid.trySearching": "Essayez de chercher autre chose ou téléchargez une photo",
+  "galleries.subtitleShort": "Les galeries sont des collections organisées de vos photos préférées.",
+  "groups.noGroupsCreateAlt": "Créez un groupe pour partager des photos avec la communauté",
+  "messages.toLabel": "À :"
 };
 
 const de: TranslationDict = {
@@ -1160,6 +1202,20 @@ const de: TranslationDict = {
   "comments.loginToComment": "Melden Sie sich an, um einen Kommentar hinzuzufügen",
   "comments.noComments": "Noch keine Kommentare. Seien Sie der Erste!",
   "comments.at": "um",
+  "home.footerShort": "Teile deine Erinnerungen",
+  "auth.loginAltSubtitle": "1 TB kostenlos für deine Fotos",
+  "auth.registerAltSubtitle": "Für immer kostenlos • 1 TB Speicherplatz",
+  "auth.accessing": "Anmeldung...",
+  "photo.photoDetails": "Fotodetails",
+  "photo.dates": "Daten",
+  "photo.taken": "Aufgenommen",
+  "photo.type": "Typ",
+  "photo.info": "Info",
+  "photoGrid.noPhotos": "Keine Fotos gefunden",
+  "photoGrid.trySearching": "Versuche etwas anderes zu suchen oder lade ein Foto hoch",
+  "galleries.subtitleShort": "Galerien sind kuratierte Sammlungen deiner Lieblingsfotos.",
+  "groups.noGroupsCreateAlt": "Erstelle eine Gruppe, um Fotos mit der Community zu teilen",
+  "messages.toLabel": "An:"
 };
 
 const es: TranslationDict = {
@@ -1223,6 +1279,20 @@ const es: TranslationDict = {
   "comments.submit": "Comentar",
   "comments.noComments": "Sin comentarios aún. ¡Sé el primero!",
   "comments.at": "a las",
+  "home.footerShort": "Comparte tus recuerdos",
+  "auth.loginAltSubtitle": "1TB gratis para tus fotos",
+  "auth.registerAltSubtitle": "Gratis para siempre • 1TB de espacio",
+  "auth.accessing": "Accediendo...",
+  "photo.photoDetails": "Detalles de la foto",
+  "photo.dates": "Fechas",
+  "photo.taken": "Tomada",
+  "photo.type": "Tipo",
+  "photo.info": "Info",
+  "photoGrid.noPhotos": "No se encontraron fotos",
+  "photoGrid.trySearching": "Intenta buscar otra cosa o sube una foto",
+  "galleries.subtitleShort": "Las galerías son colecciones curadas de tus fotos favoritas.",
+  "groups.noGroupsCreateAlt": "Crea un grupo para compartir fotos con la comunidad",
+  "messages.toLabel": "Para:"
 };
 
 export const translations: Record<string, TranslationDict> = { it, en, fr, de, es };

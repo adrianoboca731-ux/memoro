@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function CercaPage() {
   return (
@@ -30,6 +31,7 @@ export default function CercaPage() {
 }
 
 function CercaContent() {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
 
@@ -82,20 +84,20 @@ function CercaContent() {
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3 mb-4">
               <SearchIcon className="h-8 w-8 text-[#ff0084]" />
-              Cerca
+              {t("search.title")}
             </h1>
             <form onSubmit={handleSearch} className="relative max-w-2xl">
               <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/30" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Cerca foto, persone o gruppi..."
+                placeholder={t("search.placeholder")}
                 className="pl-12 h-12 text-base bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl"
               />
             </form>
             {activeQuery && (
               <p className="text-sm text-white/40 mt-2">
-                {totalResults} risultati per &quot;{activeQuery}&quot;
+                {totalResults} {t("search.resultsFor")} &quot;{activeQuery}&quot;
               </p>
             )}
           </motion.div>
@@ -119,20 +121,20 @@ function CercaContent() {
             <Tabs defaultValue="photos">
               <TabsList className="bg-white/5 border border-white/10">
                 <TabsTrigger value="photos" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 gap-1">
-                  <ImageIcon className="h-4 w-4" /> Foto ({photoResults.length})
+                  <ImageIcon className="h-4 w-4" /> {t("search.photos")} ({photoResults.length})
                 </TabsTrigger>
                 <TabsTrigger value="people" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 gap-1">
-                  <Users className="h-4 w-4" /> Persone ({peopleResults.length})
+                  <Users className="h-4 w-4" /> {t("search.people")} ({peopleResults.length})
                 </TabsTrigger>
                 <TabsTrigger value="groups" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 gap-1">
-                  <Camera className="h-4 w-4" /> Gruppi ({groupResults.length})
+                  <Camera className="h-4 w-4" /> {t("search.groups")} ({groupResults.length})
                 </TabsTrigger>
               </TabsList>
 
               {/* Photos results */}
               <TabsContent value="photos" className="mt-4">
                 {photoResults.length === 0 ? (
-                  <EmptyState icon={Camera} title="Nessuna foto trovata" description="Prova con termini diversi" />
+                  <EmptyState icon={Camera} title={t("search.noPhotos")} description={t("search.noPhotosDesc")} />
                 ) : (
                   <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4">
                     {photoResults.map((photo, index) => (
@@ -153,7 +155,7 @@ function CercaContent() {
               {/* People results */}
               <TabsContent value="people" className="mt-4">
                 {peopleResults.length === 0 ? (
-                  <EmptyState icon={Users} title="Nessuna persona trovata" description="Prova con un nome diverso" />
+                  <EmptyState icon={Users} title={t("search.noPeople")} description={t("search.noPeopleDesc")} />
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {peopleResults.map((user: any) => (
@@ -166,7 +168,7 @@ function CercaContent() {
               {/* Groups results */}
               <TabsContent value="groups" className="mt-4">
                 {groupResults.length === 0 ? (
-                  <EmptyState icon={Camera} title="Nessun gruppo trovato" description="Prova con un termine diverso" />
+                  <EmptyState icon={Camera} title={t("search.noGroups")} description={t("search.noGroupsDesc")} />
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {groupResults.map((group: any) => (
@@ -185,8 +187,8 @@ function CercaContent() {
                             <div className="p-3">
                               <h3 className="font-medium text-sm truncate text-white/80">{group.name}</h3>
                               <div className="flex items-center gap-2 mt-1 text-xs text-white/30">
-                                <span>{group.memberCount || 0} membri</span>
-                                <span>{group.photoCount || 0} foto</span>
+                                <span>{group.memberCount || 0} {t("common.members")}</span>
+                                <span>{group.photoCount || 0} {t("common.photos")}</span>
                               </div>
                             </div>
                           </CardContent>
@@ -202,8 +204,8 @@ function CercaContent() {
           {!loading && !activeQuery && (
             <EmptyState
               icon={SearchIcon}
-              title="Cerca su Memoro"
-              description="Cerca foto, persone o gruppi per scoprire contenuti straordinari"
+              title={t("search.searchOnMemoro")}
+              description={t("search.searchMemoroDesc")}
             />
           )}
         </div>
@@ -211,7 +213,7 @@ function CercaContent() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

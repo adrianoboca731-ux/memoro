@@ -22,8 +22,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function GalleriePage() {
+  const { t } = useI18n();
   const [galleries, setGalleries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
@@ -74,7 +76,7 @@ export default function GalleriePage() {
   }, [newName, newDesc]);
 
   const handleDelete = useCallback(async (id: string) => {
-    if (!confirm("Sei sicuro di voler eliminare questa galleria?")) return;
+    if (!confirm("t("galleries.deleteConfirm")")) return;
     try {
       const res = await fetch(`/api/galleries/${id}`, { method: "DELETE" });
       if (res.ok) setGalleries((prev) => prev.filter((g) => g.id !== id));
@@ -93,9 +95,9 @@ export default function GalleriePage() {
               <div>
                 <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                   <LayoutGrid className="h-8 w-8 text-[#ff0084]" />
-                  Le tue gallerie
+                  {t("galleries.yourGalleries")}
                 </h1>
-                <p className="text-white/40 mt-1">Collezioni curate delle tue foto preferite</p>
+                <p className="text-white/40 mt-1">{t("galleries.subtitle")}</p>
               </div>
               <Button
                 size="sm"
@@ -103,7 +105,7 @@ export default function GalleriePage() {
                 onClick={() => setCreateOpen(true)}
               >
                 <Plus className="h-4 w-4" />
-                Crea nuova galleria
+                {t("galleries.createNew")}
               </Button>
             </div>
           </motion.div>
@@ -117,9 +119,9 @@ export default function GalleriePage() {
           ) : galleries.length === 0 ? (
             <EmptyState
               icon={LayoutGrid}
-              title="Nessuna galleria"
-              description="Crea la tua prima galleria per curare le tue foto preferite"
-              actionLabel="Crea nuova galleria"
+              title={t("galleries.noGalleries")}
+              description={t("galleries.noGalleriesDesc")}
+              actionLabel={t("galleries.createNew")}
               onAction={() => setCreateOpen(true)}
             />
           ) : (
@@ -166,7 +168,7 @@ export default function GalleriePage() {
                           <div className="p-3">
                             <h3 className="font-medium text-sm truncate text-white/80">{gallery.name}</h3>
                             <p className="text-xs text-white/40 mt-0.5">
-                              {gallery.itemCount ?? gallery.items?.length ?? 0} foto
+                              {gallery.itemCount ?? gallery.items?.length ?? 0} {t("common.photos")}
                             </p>
                             {gallery.description && (
                               <p className="text-xs text-white/25 mt-1 line-clamp-2">{gallery.description}</p>
@@ -186,17 +188,17 @@ export default function GalleriePage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="bg-[#2a2a2d] border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Crea Nuova Galleria</DialogTitle>
+            <DialogTitle className="text-white">{t("galleries.createTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="Nome della galleria"
+              placeholder={t("galleries.galleryName")}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
             <Textarea
-              placeholder="Descrizione (opzionale)"
+              placeholder={t("galleries.galleryDesc")}
               value={newDesc}
               onChange={(e) => setNewDesc(e.target.value)}
               rows={3}
@@ -207,7 +209,7 @@ export default function GalleriePage() {
               disabled={!newName.trim() || isCreating}
               className="w-full bg-gradient-to-r from-[#ff0084] to-[#0063dc] hover:opacity-90 text-white"
             >
-              {isCreating ? "Creazione..." : "Crea Galleria"}
+              {isCreating ? t("common.creating") : t("galleries.createButton")}
             </Button>
           </div>
         </DialogContent>
@@ -215,7 +217,7 @@ export default function GalleriePage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

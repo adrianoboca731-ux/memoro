@@ -22,8 +22,10 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function DiscussionePage() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
@@ -100,7 +102,7 @@ export default function DiscussionePage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d]">
         <Header />
-        <EmptyState icon={MessageSquare} title="Discussione non trovata" description="La discussione richiesta non esiste" />
+        <EmptyState icon={MessageSquare} title={t("discussion.notFound")} description={t("discussion.notFoundDesc")} />
       </div>
     );
   }
@@ -117,7 +119,7 @@ export default function DiscussionePage() {
             onClick={() => router.push(`/gruppi/${groupId}`)}
             className="text-white/50 hover:text-white hover:bg-white/5 -ml-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" /> Torna al gruppo
+            <ArrowLeft className="h-4 w-4 mr-1" /> {t("discussion.backToGroup")}
           </Button>
 
           {/* Discussion header */}
@@ -130,12 +132,12 @@ export default function DiscussionePage() {
                     {discussion.author?.name?.charAt(0)?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
-                <span>{discussion.author?.name || "Utente"}</span>
+                <span>{discussion.author?.name || t("common.user")}</span>
               </div>
               <span>&bull;</span>
               <span>{format(new Date(discussion.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}</span>
               <span>&bull;</span>
-              <span className="flex items-center gap-1"><Reply className="h-3 w-3" /> {discussion.replyCount || replies.length} risposte</span>
+              <span className="flex items-center gap-1"><Reply className="h-3 w-3" /> {discussion.replyCount || replies.length} {t("groups.replies")}</span>
             </div>
           </motion.div>
 
@@ -153,12 +155,12 @@ export default function DiscussionePage() {
           {/* Replies */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-white/50">
-              Risposte ({replies.length})
+              {t("discussion.replies")} ({replies.length})
             </h3>
 
             {replies.length === 0 && (
               <p className="text-sm text-white/30 text-center py-4">
-                Nessuna risposta ancora. Sii il primo a rispondere!
+                {t("discussion.noReplies")}
               </p>
             )}
 
@@ -181,7 +183,7 @@ export default function DiscussionePage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-white/80">
-                            {reply.author?.name || "Utente"}
+                            {reply.author?.name || t("common.user")}
                           </span>
                           <span className="text-[10px] text-white/30">
                             {format(new Date(reply.createdAt), "d MMM yyyy 'alle' HH:mm", { locale: it })}
@@ -199,7 +201,7 @@ export default function DiscussionePage() {
           {/* Reply form */}
           {session?.user && (
             <div className="space-y-3 pt-4 border-t border-white/5">
-              <h3 className="text-sm font-medium text-white/60">Rispondi</h3>
+              <h3 className="text-sm font-medium text-white/60">{t("discussion.reply")}</h3>
               <div className="flex gap-3">
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={(session.user as any).image || undefined} />
@@ -209,7 +211,7 @@ export default function DiscussionePage() {
                 </Avatar>
                 <div className="flex-1 space-y-2">
                   <Textarea
-                    placeholder="Scrivi la tua risposta..."
+                    placeholder={t("discussion.replyPlaceholder")}
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     rows={3}
@@ -223,7 +225,7 @@ export default function DiscussionePage() {
                       className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1.5"
                     >
                       <Send className="h-3.5 w-3.5" />
-                      {isSubmitting ? "Invio..." : "Rispondi"}
+                      {isSubmitting ? t("common.sending") : t("discussion.reply")}
                     </Button>
                   </div>
                 </div>
@@ -233,7 +235,7 @@ export default function DiscussionePage() {
 
           {!session?.user && (
             <p className="text-sm text-white/30 text-center py-4">
-              <a href="/auth/accedi" className="text-[#0063dc] hover:underline">Accedi</a> per rispondere a questa discussione
+              <a href="/auth/accedi" className="text-[#0063dc] hover:underline">{t("auth.loginButton")}</a> {t("discussion.loginToReply")}
             </p>
           )}
         </div>
@@ -241,7 +243,7 @@ export default function DiscussionePage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

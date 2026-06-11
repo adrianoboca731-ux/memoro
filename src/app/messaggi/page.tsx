@@ -28,8 +28,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { useI18n } from "@/lib/i18n";
 
 export default function MessaggiPage() {
+  const { t } = useI18n();
   const { data: session } = useSession();
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,14 +133,14 @@ export default function MessaggiPage() {
               <div>
                 <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                   <Mail className="h-8 w-8 text-[#0063dc]" />
-                  Messaggi
+                  {t("messages.title")}
                   {unreadCount > 0 && (
                     <span className="text-xs bg-[#0063dc] text-white rounded-full px-2 py-0.5">
                       {unreadCount}
                     </span>
                   )}
                 </h1>
-                <p className="text-white/40 mt-1">Le tue conversazioni private</p>
+                <p className="text-white/40 mt-1">{t("messages.subtitle")}</p>
               </div>
               <Button
                 size="sm"
@@ -146,7 +148,7 @@ export default function MessaggiPage() {
                 onClick={() => setComposeOpen(true)}
               >
                 <Plus className="h-4 w-4" />
-                Nuovo messaggio
+                {t("messages.newMessage")}
               </Button>
             </div>
           </motion.div>
@@ -170,8 +172,8 @@ export default function MessaggiPage() {
                 ) : messages.length === 0 ? (
                   <EmptyState
                     icon={Mail}
-                    title="Nessun messaggio"
-                    description="Invia un messaggio per iniziare una conversazione"
+                    title={t("messages.noMessages")}
+                    description={t("messages.noMessagesDesc")}
                   />
                 ) : (
                   <div className="divide-y divide-white/5">
@@ -201,7 +203,7 @@ export default function MessaggiPage() {
                               )}
                             </div>
                             <p className="text-xs text-white/40 mt-0.5">
-                              {msg.sender?.name || "Utente"}
+                              {msg.sender?.name || t("common.user")}
                             </p>
                             <p className="text-xs text-white/30 mt-0.5 truncate">{msg.body}</p>
                             <p className="text-[10px] text-white/20 mt-1">
@@ -226,7 +228,7 @@ export default function MessaggiPage() {
                         <h3 className="text-lg font-semibold text-white">{selectedMsg.subject}</h3>
                         <div className="flex items-center gap-2 mt-1 text-sm text-white/40">
                           <User className="h-4 w-4" />
-                          <span>Da: {selectedMsg.sender?.name || "Utente"}</span>
+                          <span>{t("messages.from")} {selectedMsg.sender?.name || t("common.user")}</span>
                           <span>&bull;</span>
                           <span>
                             {format(new Date(selectedMsg.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}
@@ -251,7 +253,7 @@ export default function MessaggiPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center w-full text-white/30">
                   <MailOpen className="h-16 w-16 mb-4 opacity-30" />
-                  <p>Seleziona un messaggio per leggerlo</p>
+                  <p>{t("messages.selectMessage")}</p>
                 </div>
               )}
             </div>
@@ -263,23 +265,23 @@ export default function MessaggiPage() {
       <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
         <DialogContent className="bg-[#2a2a2d] border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Nuovo Messaggio</DialogTitle>
+            <DialogTitle className="text-white">{t("messages.composeTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="A (nome utente)"
+              placeholder={t("messages.to")}
               value={toUser}
               onChange={(e) => setToUser(e.target.value)}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
             <Input
-              placeholder="Oggetto"
+              placeholder={t("messages.subject")}
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
             <Textarea
-              placeholder="Scrivi il tuo messaggio..."
+              placeholder={t("messages.body")}
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={6}
@@ -290,8 +292,8 @@ export default function MessaggiPage() {
               disabled={!toUser.trim() || !subject.trim() || !body.trim() || isSending}
               className="w-full bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white"
             >
-              {isSending ? "Invio..." : (
-                <><Send className="h-4 w-4 mr-2" /> Invia Messaggio</>
+              {isSending ? t("messages.sending") : (
+                <><Send className="h-4 w-4 mr-2" /> {t("messages.sendButton")}</>
               )}
             </Button>
           </div>
@@ -300,7 +302,7 @@ export default function MessaggiPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

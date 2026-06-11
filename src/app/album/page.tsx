@@ -24,8 +24,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function AlbumPage() {
+  const { t } = useI18n();
   const [albums, setAlbums] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newAlbumName, setNewAlbumName] = useState("");
@@ -76,7 +78,7 @@ export default function AlbumPage() {
   }, [newAlbumName, newAlbumDesc]);
 
   const handleDeleteAlbum = useCallback(async (id: string) => {
-    if (!confirm("Sei sicuro di voler eliminare questo album?")) return;
+    if (!confirm("t("albums.deleteConfirm")")) return;
     try {
       const res = await fetch(`/api/albums/${id}`, { method: "DELETE" });
       if (res.ok) setAlbums((prev) => prev.filter((a) => a.id !== id));
@@ -96,9 +98,9 @@ export default function AlbumPage() {
               <div>
                 <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                   <FolderOpen className="h-8 w-8 text-[#0063dc]" />
-                  I tuoi album
+                  {t("albums.yourAlbums")}
                 </h1>
-                <p className="text-white/40 mt-1">Organizza le tue foto in album</p>
+                <p className="text-white/40 mt-1">{t("albums.subtitle")}</p>
               </div>
               <Button
                 size="sm"
@@ -106,7 +108,7 @@ export default function AlbumPage() {
                 onClick={() => setCreateOpen(true)}
               >
                 <Plus className="h-4 w-4" />
-                Crea nuovo album
+                {t("albums.createNew")}
               </Button>
             </div>
           </motion.div>
@@ -132,9 +134,9 @@ export default function AlbumPage() {
           {!loading && albums.length === 0 && (
             <EmptyState
               icon={FolderOpen}
-              title="Nessun album ancora"
-              description="Crea il tuo primo album per organizzare le tue foto"
-              actionLabel="Crea nuovo album"
+              title={t("albums.noAlbums")}
+              description={t("albums.noAlbumsDesc")}
+              actionLabel={t("albums.createNew")}
               onAction={() => setCreateOpen(true)}
             />
           )}
@@ -157,7 +159,7 @@ export default function AlbumPage() {
                       <Plus className="h-12 w-12 text-white/15 group-hover:text-[#0063dc]/50 transition-colors" />
                     </div>
                     <div className="p-3">
-                      <h3 className="font-medium text-sm text-white/40">Nuovo album</h3>
+                      <h3 className="font-medium text-sm text-white/40">{t("albums.newAlbum")}</h3>
                     </div>
                   </CardContent>
                 </Card>
@@ -206,7 +208,7 @@ export default function AlbumPage() {
                           <div className="p-3">
                             <h3 className="font-medium text-sm truncate text-white/80">{album.name}</h3>
                             <p className="text-xs text-white/40 mt-0.5">
-                              {album.photos?.length || album.photoCount || 0} foto
+                              {album.photos?.length || album.photoCount || 0} {t("common.photos")}
                             </p>
                           </div>
                         </CardContent>
@@ -224,17 +226,17 @@ export default function AlbumPage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="bg-[#2a2a2d] border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Crea Nuovo Album</DialogTitle>
+            <DialogTitle className="text-white">{t("albums.createTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="Nome dell'album"
+              placeholder={t("albums.albumName")}
               value={newAlbumName}
               onChange={(e) => setNewAlbumName(e.target.value)}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
             <Textarea
-              placeholder="Descrizione (opzionale)"
+              placeholder={t("albums.albumDesc")}
               value={newAlbumDesc}
               onChange={(e) => setNewAlbumDesc(e.target.value)}
               rows={3}
@@ -245,7 +247,7 @@ export default function AlbumPage() {
               disabled={!newAlbumName.trim() || isCreating}
               className="w-full bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white"
             >
-              {isCreating ? "Creazione..." : "Crea Album"}
+              {isCreating ? t("common.creating") : t("albums.createButton")}
             </Button>
           </div>
         </DialogContent>
@@ -253,7 +255,7 @@ export default function AlbumPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

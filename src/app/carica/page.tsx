@@ -25,6 +25,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 interface UploadFile {
   file: File;
@@ -40,6 +41,7 @@ interface UploadFile {
 }
 
 export default function CaricaPage() {
+  const { t } = useI18n();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [albums, setAlbums] = useState<any[]>([]);
@@ -168,9 +170,9 @@ export default function CaricaPage() {
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
             <Upload className="h-8 w-8 text-[#0063dc]" />
-            Carica Foto
+            {t("upload.title")}
           </h1>
-          <p className="text-white/40 mt-1">Spazio illimitato, completamente gratuito</p>
+          <p className="text-white/40 mt-1">{t("upload.subtitle")}</p>
         </motion.div>
 
         {/* Drop zone */}
@@ -191,8 +193,8 @@ export default function CaricaPage() {
           onDrop={handleDrop}
         >
           <CloudUpload className="h-16 w-16 mx-auto text-white/20 mb-4" />
-          <p className="text-xl font-medium text-white/70">Trascina le foto qui</p>
-          <p className="text-sm text-white/30 mt-2">oppure clicca il pulsante per selezionare i file</p>
+          <p className="text-xl font-medium text-white/70">{t("upload.dragHere")}</p>
+          <p className="text-sm text-white/30 mt-2">{t("upload.orClick")}</p>
           <Button
             variant="outline"
             size="lg"
@@ -200,7 +202,7 @@ export default function CaricaPage() {
             onClick={() => fileInputRef.current?.click()}
           >
             <ImagePlus className="h-5 w-5 mr-2" />
-            Scegli file
+            {t("upload.chooseFiles")}
           </Button>
           <input
             ref={fileInputRef}
@@ -211,7 +213,7 @@ export default function CaricaPage() {
             onChange={(e) => e.target.files && handleFiles(e.target.files)}
           />
           <p className="text-xs text-white/20 mt-3">
-            JPEG, PNG, GIF, WebP &bull; Dimensione massima: 200MB per file
+            {t("upload.fileTypes")}
           </p>
         </motion.div>
 
@@ -255,7 +257,7 @@ export default function CaricaPage() {
                           value={uploadFile.title}
                           onChange={(e) => updateFile(index, { title: e.target.value })}
                           className="h-8 text-sm font-medium bg-white/5 border-white/10 text-white"
-                          placeholder="Titolo della foto"
+                          placeholder={t("upload.photoTitle")}
                           disabled={uploadFile.status !== "pending"}
                         />
                         <Button
@@ -272,7 +274,7 @@ export default function CaricaPage() {
                       <Textarea
                         value={uploadFile.description}
                         onChange={(e) => updateFile(index, { description: e.target.value })}
-                        placeholder="Descrizione (opzionale)..."
+                        placeholder={t("upload.description")}
                         className="h-16 text-xs bg-white/5 border-white/10 text-white resize-none"
                         disabled={uploadFile.status !== "pending"}
                       />
@@ -281,7 +283,7 @@ export default function CaricaPage() {
                         <Input
                           value={uploadFile.tags}
                           onChange={(e) => updateFile(index, { tags: e.target.value })}
-                          placeholder="Tag (separati da virgola)"
+                          placeholder={t("upload.tags")}
                           className="h-7 text-xs bg-white/5 border-white/10 text-white flex-1 min-w-[150px]"
                           disabled={uploadFile.status !== "pending"}
                         />
@@ -291,10 +293,10 @@ export default function CaricaPage() {
                           disabled={uploadFile.status !== "pending"}
                         >
                           <SelectTrigger className="h-7 text-xs w-36 bg-white/5 border-white/10 text-white">
-                            <SelectValue placeholder="Album" />
+                            <SelectValue placeholder={t("upload.album")} />
                           </SelectTrigger>
                           <SelectContent className="bg-[#2a2a2d] border-white/10">
-                            <SelectItem value="none">Nessun album</SelectItem>
+                            <SelectItem value="none">{t("upload.noAlbum")}</SelectItem>
                             {albums.map((album) => (
                               <SelectItem key={album.id} value={album.id}>
                                 {album.name}
@@ -314,19 +316,19 @@ export default function CaricaPage() {
                             <SelectItem value="safe">
                               <span className="flex items-center gap-1.5">
                                 <Badge className="bg-green-500/80 text-white text-[9px] h-3.5 px-1 border-0">S</Badge>
-                                Sicuro
+                                {t("safety.safe")}
                               </span>
                             </SelectItem>
                             <SelectItem value="moderate">
                               <span className="flex items-center gap-1.5">
                                 <Badge className="bg-yellow-500/80 text-black text-[9px] h-3.5 px-1 border-0">M</Badge>
-                                Moderato
+                                {t("safety.moderate")}
                               </span>
                             </SelectItem>
                             <SelectItem value="restricted">
                               <span className="flex items-center gap-1.5">
                                 <Badge className="bg-red-500/80 text-white text-[9px] h-3.5 px-1 border-0">R</Badge>
-                                Restretto
+                                {t("safety.restricted")}
                               </span>
                             </SelectItem>
                           </SelectContent>
@@ -340,10 +342,10 @@ export default function CaricaPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-[#2a2a2d] border-white/10">
-                            <SelectItem value="photo">Foto</SelectItem>
-                            <SelectItem value="art">Arte</SelectItem>
-                            <SelectItem value="screenshot">Screenshot</SelectItem>
-                            <SelectItem value="illustration">Illustrazione</SelectItem>
+                            <SelectItem value="photo">{t("upload.contentPhoto")}</SelectItem>
+                            <SelectItem value="art">{t("upload.contentArt")}</SelectItem>
+                            <SelectItem value="screenshot">{t("upload.contentScreenshot")}</SelectItem>
+                            <SelectItem value="illustration">{t("upload.contentIllustration")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -356,7 +358,7 @@ export default function CaricaPage() {
                   )}
 
                   {uploadFile.status === "error" && (
-                    <p className="text-xs text-red-400 mt-2">Errore nel caricamento. Riprova.</p>
+                    <p className="text-xs text-red-400 mt-2">{t("upload.uploadError")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -372,8 +374,8 @@ export default function CaricaPage() {
             className="mt-6 flex items-center justify-between"
           >
             <p className="text-sm text-white/40">
-              {doneCount}/{totalCount} completati
-              {pendingCount > 0 && ` &bull; ${pendingCount} in attesa`}
+              {doneCount}/{totalCount} {t("upload.completed")}
+              {pendingCount > 0 && ` &bull; ${pendingCount} {t("upload.pending")}`}
             </p>
             <Button
               size="lg"
@@ -384,17 +386,17 @@ export default function CaricaPage() {
               {files.some((f) => f.status === "uploading") ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Caricamento...
+                  {t("upload.uploading")}
                 </>
               ) : doneCount === totalCount && totalCount > 0 ? (
                 <>
                   <Check className="h-5 w-5" />
-                  Completato!
+                  {t("common.completed")}
                 </>
               ) : (
                 <>
                   <Upload className="h-5 w-5" />
-                  Carica {pendingCount > 0 ? `${pendingCount} foto` : "tutte"}
+                  {t("upload.uploadCount", { count: String(pendingCount) })}
                 </>
               )}
             </Button>
@@ -404,7 +406,7 @@ export default function CaricaPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi &bull; Gratis per sempre</span>
+        <span className="ml-1">&mdash; {t("home.footerTagline")}</span>
       </footer>
     </div>
   );

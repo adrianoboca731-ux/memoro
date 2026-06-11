@@ -30,8 +30,10 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function ProfiloPage() {
+  const { t } = useI18n();
   const params = useParams();
   const { data: session } = useSession();
   const username = params.username as string;
@@ -140,7 +142,7 @@ export default function ProfiloPage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d]">
         <Header />
-        <EmptyState icon={Users} title="Utente non trovato" description="L'utente richiesto non esiste" />
+        <EmptyState icon={Users} title={t("profile.userNotFound")} description={t("profile.userNotFoundDesc")} />
       </div>
     );
   }
@@ -176,7 +178,7 @@ export default function ProfiloPage() {
                     </a>
                   )}
                   <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" /> Membro dal {format(new Date(user.createdAt), "MMMM yyyy", { locale: it })}
+                    <Calendar className="h-3 w-3" /> {t("profile.memberSince")} {format(new Date(user.createdAt), "MMMM yyyy", { locale: it })}
                   </span>
                 </div>
               </div>
@@ -186,7 +188,7 @@ export default function ProfiloPage() {
                     <FollowButton userId={user.id} username={user.username} initialFollowing={isFollowing} />
                     <Link href="/messaggi">
                       <Button variant="outline" size="sm" className="gap-1.5 border-white/10 text-white/70 hover:bg-white/5">
-                        <Mail className="h-4 w-4" /> Invia messaggio
+                        <Mail className="h-4 w-4" /> {t("profile.sendMessage")}
                       </Button>
                     </Link>
                   </>
@@ -194,7 +196,7 @@ export default function ProfiloPage() {
                 {isOwnProfile && (
                   <Link href="/impostazioni">
                     <Button variant="outline" size="sm" className="gap-1.5 border-white/10 text-white/70 hover:bg-white/5">
-                      Modifica profilo
+                      {t("profile.editProfile")}
                     </Button>
                   </Link>
                 )}
@@ -207,17 +209,17 @@ export default function ProfiloPage() {
             <div className="flex items-center gap-2">
               <ImageIcon className="h-4 w-4 text-white/30" />
               <span className="text-white/80 font-medium">{user.photoCount || photos.length}</span>
-              <span className="text-white/40">foto</span>
+              <span className="text-white/40">{t("common.photos")}</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-white/30" />
               <span className="text-white/80 font-medium">{user.followerCount || 0}</span>
-              <span className="text-white/40">follower</span>
+              <span className="text-white/40">{t("common.followers")}</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-white/30" />
               <span className="text-white/80 font-medium">{user.followingCount || 0}</span>
-              <span className="text-white/40">seguiti</span>
+              <span className="text-white/40">{t("common.following")}</span>
             </div>
           </div>
 
@@ -227,26 +229,26 @@ export default function ProfiloPage() {
           <Tabs defaultValue="photos">
             <TabsList className="bg-white/5 border border-white/10">
               <TabsTrigger value="photos" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 gap-1">
-                <Camera className="h-4 w-4" /> Flusso foto
+                <Camera className="h-4 w-4" /> {t("profile.photoStream")}
               </TabsTrigger>
               <TabsTrigger value="albums" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 gap-1">
-                <FolderOpen className="h-4 w-4" /> Album
+                <FolderOpen className="h-4 w-4" /> {t("profile.albums")}
               </TabsTrigger>
               <TabsTrigger value="favorites" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 gap-1">
-                <Heart className="h-4 w-4" /> Preferiti
+                <Heart className="h-4 w-4" /> {t("profile.favorites")}
               </TabsTrigger>
               <TabsTrigger value="galleries" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 gap-1">
-                <LayoutGrid className="h-4 w-4" /> Gallerie
+                <LayoutGrid className="h-4 w-4" /> {t("profile.galleries")}
               </TabsTrigger>
               <TabsTrigger value="groups" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 gap-1">
-                <Users className="h-4 w-4" /> Gruppi
+                <Users className="h-4 w-4" /> {t("profile.groups")}
               </TabsTrigger>
             </TabsList>
 
             {/* Photos tab */}
             <TabsContent value="photos" className="mt-6">
               {photos.length === 0 ? (
-                <EmptyState icon={Camera} title="Nessuna foto" description={isOwnProfile ? "Carica la tua prima foto!" : "Questo utente non ha ancora caricato foto"} />
+                <EmptyState icon={Camera} title={t("profile.noPhotos")} description={isOwnProfile ? t("profile.noPhotosOwn") : t("profile.noPhotosOther")} />
               ) : (
                 <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
                   {photos.map((photo: any, index: number) => (
@@ -267,7 +269,7 @@ export default function ProfiloPage() {
             {/* Albums tab */}
             <TabsContent value="albums" className="mt-6">
               {albums.length === 0 ? (
-                <EmptyState icon={FolderOpen} title="Nessun album" description={isOwnProfile ? "Crea il tuo primo album!" : "Questo utente non ha album"} />
+                <EmptyState icon={FolderOpen} title={t("profile.noAlbums")} description={isOwnProfile ? t("profile.noAlbumsOwn") : t("profile.noAlbumsOther")} />
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {albums.map((album: any) => (
@@ -285,7 +287,7 @@ export default function ProfiloPage() {
                           </div>
                           <div className="p-3">
                             <h3 className="font-medium text-sm truncate text-white/80">{album.name}</h3>
-                            <p className="text-xs text-white/30 mt-0.5">{album.photoCount || album.photos?.length || 0} foto</p>
+                            <p className="text-xs text-white/30 mt-0.5">{album.photoCount || album.photos?.length || 0} {t("common.photos")}</p>
                           </div>
                         </CardContent>
                       </Card>
@@ -298,7 +300,7 @@ export default function ProfiloPage() {
             {/* Favorites tab */}
             <TabsContent value="favorites" className="mt-6">
               {favorites.length === 0 ? (
-                <EmptyState icon={Heart} title="Nessun preferito" description={isOwnProfile ? "Aggiungi foto ai preferiti!" : "Questo utente non ha preferiti pubblici"} />
+                <EmptyState icon={Heart} title={t("profile.noFavorites")} description={isOwnProfile ? t("profile.noFavoritesOwn") : t("profile.noFavoritesOther")} />
               ) : (
                 <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
                   {favorites.map((photo: any, index: number) => (
@@ -319,7 +321,7 @@ export default function ProfiloPage() {
             {/* Galleries tab */}
             <TabsContent value="galleries" className="mt-6">
               {galleries.length === 0 ? (
-                <EmptyState icon={LayoutGrid} title="Nessuna galleria" description={isOwnProfile ? "Crea la tua prima galleria!" : "Questo utente non ha gallerie"} />
+                <EmptyState icon={LayoutGrid} title={t("profile.noGalleries")} description={isOwnProfile ? t("profile.noGalleriesOwn") : t("profile.noGalleriesOther")} />
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {galleries.map((gallery: any) => (
@@ -337,7 +339,7 @@ export default function ProfiloPage() {
                           </div>
                           <div className="p-3">
                             <h3 className="font-medium text-sm truncate text-white/80">{gallery.name}</h3>
-                            <p className="text-xs text-white/30 mt-0.5">{gallery.itemCount ?? 0} foto</p>
+                            <p className="text-xs text-white/30 mt-0.5">{gallery.itemCount ?? 0} {t("common.photos")}</p>
                           </div>
                         </CardContent>
                       </Card>
@@ -350,7 +352,7 @@ export default function ProfiloPage() {
             {/* Groups tab */}
             <TabsContent value="groups" className="mt-6">
               {groups.length === 0 ? (
-                <EmptyState icon={Users} title="Nessun gruppo" description={isOwnProfile ? "Unisciti a un gruppo!" : "Questo utente non è membro di gruppi pubblici"} />
+                <EmptyState icon={Users} title={t("profile.noGroups")} description={isOwnProfile ? t("profile.noGroupsOwn") : t("profile.noGroupsOther")} />
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {groups.map((group: any) => (
@@ -365,7 +367,7 @@ export default function ProfiloPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-white/80 truncate">{group.name}</p>
-                          <p className="text-xs text-white/30">{group.memberCount || 0} membri</p>
+                          <p className="text-xs text-white/30">{group.memberCount || 0} {t("common.members")}</p>
                         </div>
                       </div>
                     </Link>
@@ -379,7 +381,7 @@ export default function ProfiloPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

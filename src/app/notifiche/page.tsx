@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 const getNotifIcon = (type: string) => {
   switch (type) {
@@ -67,6 +68,7 @@ const getNotifLink = (notif: any) => {
 };
 
 export default function NotifichePage() {
+  const { t } = useI18n();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -129,14 +131,14 @@ export default function NotifichePage() {
               <div>
                 <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                   <Bell className="h-8 w-8 text-[#ff0084]" />
-                  Notifiche
+                  {t("notifications.title")}
                   {unreadCount > 0 && (
                     <span className="text-xs bg-[#ff0084] text-white rounded-full px-2 py-0.5">
                       {unreadCount}
                     </span>
                   )}
                 </h1>
-                <p className="text-white/40 mt-1">Resta aggiornato sulle attività</p>
+                <p className="text-white/40 mt-1">{t("notifications.subtitle")}</p>
               </div>
               {unreadCount > 0 && (
                 <Button
@@ -146,7 +148,7 @@ export default function NotifichePage() {
                   className="gap-1.5 border-white/10 text-white/70 hover:bg-white/5"
                 >
                   <CheckCheck className="h-4 w-4" />
-                  Segna tutte come lette
+                  {t("notifications.markAllRead")}
                 </Button>
               )}
             </div>
@@ -169,8 +171,8 @@ export default function NotifichePage() {
           ) : notifications.length === 0 ? (
             <EmptyState
               icon={Bell}
-              title="Nessuna notifica"
-              description="Le tue notifiche appariranno qui"
+              title={t("notifications.noNotifications")}
+              description={t("notifications.noNotificationsDesc")}
             />
           ) : (
             <ScrollArea className="h-[calc(100vh-220px)]">
@@ -226,7 +228,7 @@ export default function NotifichePage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

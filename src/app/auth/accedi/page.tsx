@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function AccediPage() {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -28,7 +30,7 @@ export default function AccediPage() {
     });
 
     if (result?.error) {
-      setError("Email o password non validi");
+      setError(t("auth.loginError"));
       setLoading(false);
     } else {
       router.push("/");
@@ -46,13 +48,13 @@ export default function AccediPage() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-white">
-            Accedi a{" "}
+            {t("auth.loginTitle")}{" "}
             <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent">
               Memoro
             </span>
           </h1>
           <p className="text-white/40 text-sm">
-            Benvenuto! Accedi per continuare
+            {t("auth.loginWelcome")}
           </p>
         </div>
 
@@ -66,12 +68,12 @@ export default function AccediPage() {
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white/60 text-sm">
-              Email
+              {t("auth.email")}
             </Label>
             <Input
               id="email"
               type="email"
-              placeholder="la.tua@email.com"
+              placeholder={t("auth.emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -81,12 +83,12 @@ export default function AccediPage() {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-white/60 text-sm">
-              Password
+              {t("auth.password")}
             </Label>
             <Input
               id="password"
               type="password"
-              placeholder="La tua password"
+              placeholder={t("auth.passwordPlaceholder")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -102,21 +104,21 @@ export default function AccediPage() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Accesso in corso...
+                {t("auth.loggingIn")}
               </>
             ) : (
-              "Accedi"
+              t("auth.loginButton")
             )}
           </Button>
         </form>
 
         <p className="text-center text-sm text-white/40">
-          Non hai un account?{" "}
+          {t("auth.noAccount")}{" "}
           <Link
             href="/auth/registrati"
             className="text-[#0063dc] hover:underline font-medium"
           >
-            Registrati gratis
+            {t("auth.registerFree")}
           </Link>
         </p>
       </div>

@@ -27,8 +27,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function GruppiPage() {
+  const { t } = useI18n();
   const [groups, setGroups] = useState<any[]>([]);
   const [allGroups, setAllGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,9 +107,9 @@ export default function GruppiPage() {
               <div>
                 <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                   <Users className="h-8 w-8 text-[#0063dc]" />
-                  Gruppi
+                  {t("groups.title")}
                 </h1>
-                <p className="text-white/40 mt-1">Unisciti a gruppi per condividere e discutere foto</p>
+                <p className="text-white/40 mt-1">{t("groups.subtitle")}</p>
               </div>
               <Button
                 size="sm"
@@ -115,7 +117,7 @@ export default function GruppiPage() {
                 onClick={() => setCreateOpen(true)}
               >
                 <Plus className="h-4 w-4" />
-                Crea un gruppo
+                {t("groups.createGroup")}
               </Button>
             </div>
           </motion.div>
@@ -124,7 +126,7 @@ export default function GruppiPage() {
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
             <Input
-              placeholder="Cerca gruppi..."
+              placeholder={t("groups.searchGroups")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/30"
@@ -135,13 +137,13 @@ export default function GruppiPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="bg-white/5 border border-white/10">
               <TabsTrigger value="my" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
-                I miei gruppi
+                {t("groups.myGroups")}
               </TabsTrigger>
               <TabsTrigger value="all" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
-                Tutti i gruppi
+                {t("groups.allGroups")}
               </TabsTrigger>
               <TabsTrigger value="trending" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
-                In tendenza
+                {t("groups.trending")}
               </TabsTrigger>
             </TabsList>
 
@@ -155,9 +157,9 @@ export default function GruppiPage() {
               ) : filteredGroups.length === 0 ? (
                 <EmptyState
                   icon={Users}
-                  title="Nessun gruppo"
-                  description="Non sei ancora membro di nessun gruppo. Esplora o crea un gruppo!"
-                  actionLabel="Crea un gruppo"
+                  title={t("groups.noGroups")}
+                  description={t("groups.noGroupsDesc")}
+                  actionLabel={t("groups.createGroup")}
                   onAction={() => setCreateOpen(true)}
                 />
               ) : (
@@ -208,24 +210,24 @@ export default function GruppiPage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="bg-[#2a2a2d] border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Crea Nuovo Gruppo</DialogTitle>
+            <DialogTitle className="text-white">{t("groups.createTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="Nome del gruppo"
+              placeholder={t("groups.groupName")}
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
             <Textarea
-              placeholder="Descrizione (opzionale)"
+              placeholder={t("groups.groupDesc")}
               value={newGroupDesc}
               onChange={(e) => setNewGroupDesc(e.target.value)}
               rows={3}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
             />
             <Textarea
-              placeholder="Regole del gruppo (opzionale)"
+              placeholder={t("groups.groupRules")}
               value={newGroupRules}
               onChange={(e) => setNewGroupRules(e.target.value)}
               rows={3}
@@ -236,7 +238,7 @@ export default function GruppiPage() {
               disabled={!newGroupName.trim() || isCreating}
               className="w-full bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white"
             >
-              {isCreating ? "Creazione..." : "Crea Gruppo"}
+              {isCreating ? t("common.creating") : t("groups.createButton")}
             </Button>
           </div>
         </DialogContent>
@@ -244,7 +246,7 @@ export default function GruppiPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );
@@ -276,11 +278,11 @@ function GroupCard({ group, index }: { group: any; index: number }) {
               <div className="absolute top-2 left-2">
                 {group.isPublic ? (
                   <Badge variant="secondary" className="text-[10px] h-5 gap-1 bg-black/50 text-white/80 border-0">
-                    <Globe className="h-2.5 w-2.5" /> Pubblico
+                    <Globe className="h-2.5 w-2.5" /> {t("groups.public")}
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="text-[10px] h-5 gap-1 bg-black/50 text-white/80 border-0">
-                    <Lock className="h-2.5 w-2.5" /> Privato
+                    <Lock className="h-2.5 w-2.5" /> {t("groups.private")}
                   </Badge>
                 )}
               </div>

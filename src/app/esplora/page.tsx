@@ -10,10 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 type FilterType = "interesting" | "recent" | "popular";
 
 export default function EsploraPage() {
+  const { t } = useI18n();
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("interesting");
@@ -47,9 +49,9 @@ export default function EsploraPage() {
   }, []);
 
   const filters: { key: FilterType; label: string; icon: typeof Compass }[] = [
-    { key: "interesting", label: "Interessanti", icon: Compass },
-    { key: "recent", label: "Più recenti", icon: Clock },
-    { key: "popular", label: "Più visti", icon: Eye },
+    { key: "interesting", label: t("explore.interesting"), icon: Compass },
+    { key: "recent", label: t("explore.recent"), icon: Clock },
+    { key: "popular", label: t("explore.popular"), icon: Eye },
   ];
 
   return (
@@ -62,9 +64,9 @@ export default function EsploraPage() {
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
               <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                 <Compass className="h-8 w-8 text-[#ff0084]" />
-                Esplora
+                {t("explore.title")}
               </h1>
-              <p className="text-white/40 mt-1">Scopri le foto più interessanti della community</p>
+              <p className="text-white/40 mt-1">{t("explore.subtitle")}</p>
             </motion.div>
 
             {/* Filter bar */}
@@ -107,8 +109,8 @@ export default function EsploraPage() {
               ) : photos.length === 0 ? (
                 <EmptyState
                   icon={Camera}
-                  title="Nessuna foto trovata"
-                  description="Non ci sono foto da esplorare al momento. Torna più tardi!"
+                  title={t("explore.noPhotos")}
+                  description={t("explore.noPhotosDesc")}
                 />
               ) : (
                 <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
@@ -133,7 +135,7 @@ export default function EsploraPage() {
               <div className="bg-white/5 rounded-lg p-4">
                 <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2 mb-3">
                   <TrendingUp className="h-4 w-4 text-[#ff0084]" />
-                  In tendenza
+                  {t("explore.trending")}
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
                   {trendingTags.map((tag) => (
@@ -153,7 +155,7 @@ export default function EsploraPage() {
               <div className="bg-white/5 rounded-lg p-4">
                 <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2 mb-3">
                   <Eye className="h-4 w-4 text-[#0063dc]" />
-                  I più visti oggi
+                  {t("explore.mostViewedToday")}
                 </h3>
                 <div className="space-y-2">
                   {photos.slice(0, 5).map((photo) => (
@@ -169,7 +171,7 @@ export default function EsploraPage() {
                       />
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-xs">{photo.title}</p>
-                        <p className="text-[10px] text-white/30">{photo.views} visualizzazioni</p>
+                        <p className="text-[10px] text-white/30">{photo.views} {t("explore.views")}</p>
                       </div>
                     </Link>
                   ))}
@@ -182,7 +184,7 @@ export default function EsploraPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi &bull; Gratis per sempre</span>
+        <span className="ml-1">&mdash; {t("home.footerTagline")}</span>
       </footer>
     </div>
   );

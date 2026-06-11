@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function RegistratiPage() {
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -32,7 +34,7 @@ export default function RegistratiPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Errore di registrazione");
+        setError(data.error || t("auth.registerError"));
         setLoading(false);
         return;
       }
@@ -41,7 +43,7 @@ export default function RegistratiPage() {
       await signIn("credentials", { email, password, redirect: false });
       router.push("/");
     } catch {
-      setError("Errore di connessione");
+      setError(t("auth.connectionError"));
       setLoading(false);
     }
   };
@@ -57,13 +59,13 @@ export default function RegistratiPage() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-white">
-            Crea il tuo account{" "}
+            {t("auth.registerTitle")}{" "}
             <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent">
               Memoro
             </span>
           </h1>
           <p className="text-white/40 text-sm">
-            Gratis per sempre &bull; Spazio illimitato
+            {t("auth.registerSubtitle")}
           </p>
         </div>
 
@@ -77,11 +79,11 @@ export default function RegistratiPage() {
 
           <div className="space-y-2">
             <Label htmlFor="name" className="text-white/60 text-sm">
-              Nome
+              {t("auth.name")}
             </Label>
             <Input
               id="name"
-              placeholder="Il tuo nome"
+              placeholder={t("auth.namePlaceholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -91,11 +93,11 @@ export default function RegistratiPage() {
 
           <div className="space-y-2">
             <Label htmlFor="username" className="text-white/60 text-sm">
-              Nome utente
+              {t("auth.username")}
             </Label>
             <Input
               id="username"
-              placeholder="iltuousername"
+              placeholder={t("auth.usernamePlaceholder")}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -105,7 +107,7 @@ export default function RegistratiPage() {
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-white/60 text-sm">
-              Email
+              {t("auth.email")}
             </Label>
             <Input
               id="email"
@@ -120,12 +122,12 @@ export default function RegistratiPage() {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-white/60 text-sm">
-              Password
+              {t("auth.password")}
             </Label>
             <Input
               id="password"
               type="password"
-              placeholder="Minimo 6 caratteri"
+              placeholder={t("auth.passwordMin")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -142,21 +144,21 @@ export default function RegistratiPage() {
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Registrazione...
+                {t("auth.registering")}
               </>
             ) : (
-              "Registrati gratis"
+              t("auth.registerButton")
             )}
           </Button>
         </form>
 
         <p className="text-center text-sm text-white/40">
-          Hai già un account?{" "}
+          {t("auth.hasAccount")}{" "}
           <Link
             href="/auth/accedi"
             className="text-[#0063dc] hover:underline font-medium"
           >
-            Accedi
+            {t("auth.loginHere")}
           </Link>
         </p>
       </div>
