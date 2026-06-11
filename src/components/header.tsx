@@ -259,6 +259,15 @@ export function Header() {
           /* Right side - Not authenticated */
           <div className="flex items-center gap-2 shrink-0">
             <LanguageSwitcher />
+            <Link href="/chisiamo">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white/70 hover:text-white hover:bg-white/5"
+              >
+                {t("nav.about")}
+              </Button>
+            </Link>
             <Link href="/auth/accedi">
               <Button
                 variant="ghost"
