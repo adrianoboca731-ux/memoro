@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const result = await uploadToCloudinary(buffer, folder, filename, file.type);
+    const result = await uploadToCloudinary(buffer, folder, filename, file.type, { isAvatar: true });
 
     // Update user avatar in database
     const updatedUser = await db.user.update({
