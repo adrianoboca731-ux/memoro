@@ -74,6 +74,14 @@ export function Header() {
             memoro
           </span>
         </Link>
+        <Link
+          href="/chisiamo"
+          className="shrink-0 hidden sm:block"
+        >
+          <span className="text-xs text-white/40 hover:text-white/70 transition-colors">
+            {t("nav.about")}
+          </span>
+        </Link>
 
         {/* Left nav - Only when logged in */}
         {session?.user && (
@@ -259,15 +267,6 @@ export function Header() {
           /* Right side - Not authenticated */
           <div className="flex items-center gap-2 shrink-0">
             <LanguageSwitcher />
-            <Link href="/chisiamo">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white/70 hover:text-white hover:bg-white/5"
-              >
-                {t("nav.about")}
-              </Button>
-            </Link>
             <Link href="/auth/accedi">
               <Button
                 variant="ghost"
