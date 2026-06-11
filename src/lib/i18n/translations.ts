@@ -542,7 +542,9 @@ const it: TranslationDict = {
   "profile.logoRemoved": "Logo rimosso",
   "profile.logoUploadError": "Errore nel caricamento del logo",
   "profile.logoInvalidType": "Formato non valido. Usa JPEG, PNG, GIF o WebP.",
-  "profile.logoTooLarge": "Immagine troppo grande. Massimo 5MB."
+  "profile.logoTooLarge": "Immagine troppo grande. Massimo 5MB.",
+  "profile.privateProfile": "Profilo Privato",
+  "profile.privateProfileDesc": "Questo profilo è privato. Solo i follower approvati possono vedere le foto e i dettagli.",
 };
 
 const en: TranslationDict = {
@@ -1074,7 +1076,9 @@ const en: TranslationDict = {
   "profile.logoRemoved": "Logo removed",
   "profile.logoUploadError": "Error uploading logo",
   "profile.logoInvalidType": "Invalid format. Use JPEG, PNG, GIF or WebP.",
-  "profile.logoTooLarge": "Image too large. Maximum 5MB."
+  "profile.logoTooLarge": "Image too large. Maximum 5MB.",
+  "profile.privateProfile": "Private Profile",
+  "profile.privateProfileDesc": "This profile is private. Only approved followers can see photos and details.",
 };
 
 const fr: TranslationDict = {
@@ -1606,7 +1610,9 @@ const fr: TranslationDict = {
   "profile.logoRemoved": "Logo supprimé",
   "profile.logoUploadError": "Erreur lors du téléchargement du logo",
   "profile.logoInvalidType": "Format invalide. Utilisez JPEG, PNG, GIF ou WebP.",
-  "profile.logoTooLarge": "Image trop grande. Maximum 5 Mo."
+  "profile.logoTooLarge": "Image trop grande. Maximum 5 Mo.",
+  "profile.privateProfile": "Profil Privé",
+  "profile.privateProfileDesc": "Ce profil est privé. Seuls les abonnés approuvés peuvent voir les photos et les détails.",
 };
 
 const de: TranslationDict = {
@@ -2138,7 +2144,9 @@ const de: TranslationDict = {
   "profile.logoRemoved": "Logo entfernt",
   "profile.logoUploadError": "Fehler beim Hochladen des Logos",
   "profile.logoInvalidType": "Ungültiges Format. Verwenden Sie JPEG, PNG, GIF oder WebP.",
-  "profile.logoTooLarge": "Bild zu groß. Maximal 5 MB."
+  "profile.logoTooLarge": "Bild zu groß. Maximal 5 MB.",
+  "profile.privateProfile": "Privates Profil",
+  "profile.privateProfileDesc": "Dieses Profil ist privat. Nur genehmigte Follower können Fotos und Details sehen.",
 };
 
 const es: TranslationDict = {
@@ -2670,7 +2678,9 @@ const es: TranslationDict = {
   "profile.logoRemoved": "Logo eliminado",
   "profile.logoUploadError": "Error al subir el logo",
   "profile.logoInvalidType": "Formato inválido. Usa JPEG, PNG, GIF o WebP.",
-  "profile.logoTooLarge": "Imagen demasiado grande. Máximo 5MB."
+  "profile.logoTooLarge": "Imagen demasiado grande. Máximo 5MB.",
+  "profile.privateProfile": "Perfil Privado",
+  "profile.privateProfileDesc": "Este perfil es privado. Solo los seguidores aprobados pueden ver las fotos y los detalles.",
 };
 
 const ptBR: TranslationDict = {
@@ -3202,7 +3212,9 @@ const ptBR: TranslationDict = {
   "profile.logoRemoved": "Logo removido",
   "profile.logoUploadError": "Erro ao enviar o logo",
   "profile.logoInvalidType": "Formato inválido. Use JPEG, PNG, GIF ou WebP.",
-  "profile.logoTooLarge": "Imagem muito grande. Máximo 5MB."
+  "profile.logoTooLarge": "Imagem muito grande. Máximo 5MB.",
+  "profile.privateProfile": "Perfil Privado",
+  "profile.privateProfileDesc": "Este perfil é privado. Apenas seguidores aprovados podem ver fotos e detalhes.",
 };
 
 const ja: TranslationDict = {
@@ -3734,7 +3746,9 @@ const ja: TranslationDict = {
   "profile.logoRemoved": "ロゴを削除しました",
   "profile.logoUploadError": "ロゴのアップロードに失敗しました",
   "profile.logoInvalidType": "無効な形式です。JPEG, PNG, GIF, WebPを使用してください。",
-  "profile.logoTooLarge": "画像が大きすぎます。最大5MB。"
+  "profile.logoTooLarge": "画像が大きすぎます。最大5MB。",
+  "profile.privateProfile": "プライベートプロフィール",
+  "profile.privateProfileDesc": "このプロフィールは非公開です。承認されたフォロワーのみが写真と詳細を見ることができます。",
 };
 
 const ko: TranslationDict = {
@@ -4266,7 +4280,9 @@ const ko: TranslationDict = {
   "profile.logoRemoved": "로고가 제거되었습니다",
   "profile.logoUploadError": "로고 업로드 오류",
   "profile.logoInvalidType": "잘못된 형식입니다. JPEG, PNG, GIF, WebP를 사용하세요.",
-  "profile.logoTooLarge": "이미지가 너무 큽니다. 최대 5MB."
+  "profile.logoTooLarge": "이미지가 너무 큽니다. 최대 5MB.",
+  "profile.privateProfile": "비공개 프로필",
+  "profile.privateProfileDesc": "이 프로필은 비공개입니다. 승인된 팔로워만 사진과 세부정보를 볼 수 있습니다.",
 };
 
 const zhCN: TranslationDict = {
@@ -4798,7 +4814,9 @@ const zhCN: TranslationDict = {
   "profile.logoRemoved": "标志已移除",
   "profile.logoUploadError": "标志上传失败",
   "profile.logoInvalidType": "格式无效。请使用JPEG、PNG、GIF或WebP。",
-  "profile.logoTooLarge": "图片太大。最大5MB。"
+  "profile.logoTooLarge": "图片太大。最大5MB。",
+  "profile.privateProfile": "私密个人资料",
+  "profile.privateProfileDesc": "此个人资料为私密状态。只有经批准的关注者才能查看照片和详细信息。",
 };
 
 const zhTW: TranslationDict = {
@@ -5330,7 +5348,9 @@ const zhTW: TranslationDict = {
   "profile.logoRemoved": "標誌已移除",
   "profile.logoUploadError": "標誌上傳失敗",
   "profile.logoInvalidType": "格式無效。請使用JPEG、PNG、GIF或WebP。",
-  "profile.logoTooLarge": "圖片太大。最大5MB。"
+  "profile.logoTooLarge": "圖片太大。最大5MB。",
+  "profile.privateProfile": "私密個人資料",
+  "profile.privateProfileDesc": "此個人資料為私密狀態。只有經批准的追蹤者才能查看照片和詳細資訊。",
 };
 
 export const translations: Record<string, TranslationDict> = { it, en, fr, de, es, "pt-BR": ptBR, ja, ko, "zh-CN": zhCN, "zh-TW": zhTW };

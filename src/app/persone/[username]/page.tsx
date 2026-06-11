@@ -33,6 +33,7 @@ import {
   Upload,
   X,
   ImageIconLucide,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -182,6 +183,12 @@ export default function ProfiloPage() {
 
   const isOwnProfile = session?.user && user && (session.user as any).id === user.id;
 
+  // Check if profile is viewable: own profile always visible, others only if public
+  const isProfileVisible = isOwnProfile || user.isPublic !== false;
+
+  // Only fetch content if profile is visible
+  const canViewContent = isOwnProfile || isProfileVisible;
+
   // Cover upload handler
   const handleCoverChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -317,6 +324,39 @@ export default function ProfiloPage() {
       <div className="min-h-screen bg-[#0d0d0d]">
         <Header />
         <EmptyState icon={Users} title={t("profile.userNotFound")} description={t("profile.userNotFoundDesc")} />
+      </div>
+    );
+  }
+
+  // Private profile - show limited info
+  if (!isProfileVisible) {
+    return (
+      <div className="min-h-screen bg-[#0d0d0d] flex flex-col">
+        <Header />
+        <main className="flex-1">
+          {/* Cover - still show but no custom */}
+          <div className="h-44 md:h-56 relative overflow-hidden">
+            <div className="w-full h-full bg-gradient-to-br from-[#0063dc]/20 to-[#ff0084]/20" />
+          </div>
+          <div className="max-w-6xl mx-auto px-4 -mt-16 relative z-10">
+            <div className="flex items-end gap-5">
+              <Avatar className="h-28 w-28 md:h-36 md:w-36 border-4 border-[#0d0d0d] shadow-xl">
+                <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                <AvatarFallback className="bg-[#0063dc] text-white text-4xl">
+                  {user.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0 pb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name}</h1>
+              </div>
+            </div>
+            <div className="mt-8 flex flex-col items-center justify-center py-16">
+              <Lock className="h-16 w-16 text-white/10 mb-4" />
+              <h2 className="text-xl font-semibold text-white/60 mb-2">{t("profile.privateProfile")}</h2>
+              <p className="text-white/30 text-sm text-center max-w-md">{t("profile.privateProfileDesc")}</p>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
