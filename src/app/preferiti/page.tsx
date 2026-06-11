@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { Header } from "@/components/header";
 import { PhotoCard } from "@/components/photo-card";
 import { EmptyState } from "@/components/empty-state";
-import { Heart, Camera } from "lucide-react";
+import { Heart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
@@ -19,7 +19,7 @@ export default function PreferitiPage() {
   const fetchFavorites = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/photos?favorites=true&limit=50");
+      const res = await fetch("/api/photos?favorites=true&limit=100");
       if (res.ok) {
         const data = await res.json();
         setPhotos(data.photos || data);
@@ -34,6 +34,14 @@ export default function PreferitiPage() {
   useEffect(() => {
     if (session?.user) fetchFavorites();
   }, [session, fetchFavorites]);
+
+  // Handle unfavorite: remove photo from list when unfavorited
+  const handleFavoriteChange = useCallback((photoId: string, isFavorited: boolean) => {
+    if (!isFavorited) {
+      // Photo was unfavorited - remove from list
+      setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+    }
+  }, []);
 
   if (!session?.user) {
     return (
@@ -62,13 +70,14 @@ export default function PreferitiPage() {
           </motion.div>
 
           {loading ? (
-            <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="break-inside-avoid">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i}>
                   <Skeleton
                     className="w-full rounded-lg bg-white/5"
-                    style={{ height: `${150 + Math.random() * 200}px` }}
+                    style={{ height: `${180 + Math.random() * 150}px` }}
                   />
+                  <Skeleton className="w-24 h-4 rounded bg-white/5 mt-2" />
                 </div>
               ))}
             </div>
@@ -89,7 +98,14 @@ export default function PreferitiPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
                 >
-                  <PhotoCard photo={photo} flickrStyle />
+                  <PhotoCard
+                    photo={{
+                      ...photo,
+                      isFavorited: true, // All photos on this page are favorited
+                    }}
+                    flickrStyle
+                    onFavoriteChange={(isFav) => handleFavoriteChange(photo.id, isFav)}
+                  />
                 </motion.div>
               ))}
             </div>

@@ -92,6 +92,9 @@ export async function GET(request: NextRequest) {
       viewerIsMinor = isMinor(viewerUser?.birthDate || null);
     }
 
+    // If favorites=true, use the logged-in user's ID
+    const effectiveFavoritesUserId = favoritesUserId === "true" && viewerId ? viewerId : favoritesUserId;
+
     const where: Record<string, unknown> = {};
 
     if (safetyLevel) {
@@ -119,9 +122,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Favorites filter: find photos favorited by a specific user
-    if (favoritesUserId) {
+    if (effectiveFavoritesUserId) {
       where.favorites = {
-        some: { userId: favoritesUserId },
+        some: { userId: effectiveFavoritesUserId },
       };
     }
 
@@ -140,6 +143,9 @@ export async function GET(request: NextRequest) {
             },
           },
           exif: true,
+          favorites: {
+            select: { userId: true },
+          },
           _count: { select: { favorites: true, comments: true } },
         },
         orderBy: { createdAt: "desc" },
@@ -153,7 +159,9 @@ export async function GET(request: NextRequest) {
       ...photo,
       favoriteCount: photo._count.favorites,
       commentCount: photo._count.comments,
+      isFavorited: viewerId ? photo.favorites.some((f: any) => f.userId === viewerId) : false,
       _count: undefined,
+      favorites: undefined,
       shouldBlur: computeShouldBlur(
         { isMature: photo.isMature, safetyLevel: photo.safetyLevel, userId: photo.userId },
         viewerId,
