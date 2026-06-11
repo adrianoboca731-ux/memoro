@@ -231,6 +231,7 @@ model GroupPhoto {
   photoId   String   @map("photo_id")
   addedBy   String   @map("added_by")
   addedAt   DateTime @default(now()) @map("added_at")
+  status    String   @default("pending") // "pending", "approved", "rejected"
 
   group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)

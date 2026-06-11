@@ -18,6 +18,10 @@ import {
   Plus,
   Send,
   Camera,
+  Check,
+  X,
+  Clock,
+  ImagePlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +29,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -52,17 +55,25 @@ export default function GruppoDetailPage() {
 
   const [group, setGroup] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
+  const [pendingPhotos, setPendingPhotos] = useState<any[]>([]);
   const [discussions, setDiscussions] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
+  const [myPhotos, setMyPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMember, setIsMember] = useState(false);
+  const [isAdminOrMod, setIsAdminOrMod] = useState(false);
   const [joinLoading, setJoinLoading] = useState(false);
   const [newDiscussionTitle, setNewDiscussionTitle] = useState("");
   const [newDiscussionBody, setNewDiscussionBody] = useState("");
   const [discussionOpen, setDiscussionOpen] = useState(false);
+  const [submitPhotoOpen, setSubmitPhotoOpen] = useState(false);
+  const [selectedPhotoId, setSelectedPhotoId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingDiscussion, setIsCreatingDiscussion] = useState(false);
+  const [activeTab, setActiveTab] = useState("photos");
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   const dateLocale = dateLocales[locale] || it;
-  const [isCreatingDiscussion, setIsCreatingDiscussion] = useState(false);
 
   const fetchGroup = useCallback(async () => {
     setLoading(true);
@@ -71,10 +82,13 @@ export default function GruppoDetailPage() {
       if (res.ok) {
         const data = await res.json();
         setGroup(data);
-        // Check if user is a member
         if (session?.user) {
-          const memberRes = await fetch(`/api/groups/${groupId}`);
-          // simplified check
+          const userId = (session.user as any).id;
+          const membership = data.members?.find((m: any) => m.userId === userId);
+          if (membership) {
+            setIsMember(true);
+            setIsAdminOrMod(membership.role === 'admin' || membership.role === 'moderator');
+          }
         }
       }
     } catch (err) {
@@ -89,10 +103,22 @@ export default function GruppoDetailPage() {
       const res = await fetch(`/api/groups/${groupId}/photos`);
       if (res.ok) {
         const data = await res.json();
-        setPhotos(Array.isArray(data) ? data : data.photos || []);
+        const approved = (Array.isArray(data) ? data : data.photos || []).filter((p: any) => p.status === 'approved');
+        setPhotos(approved);
       }
     } catch {}
   }, [groupId]);
+
+  const fetchPendingPhotos = useCallback(async () => {
+    if (!isAdminOrMod) return;
+    try {
+      const res = await fetch(`/api/groups/${groupId}/photos?status=pending`);
+      if (res.ok) {
+        const data = await res.json();
+        setPendingPhotos(Array.isArray(data) ? data : []);
+      }
+    } catch {}
+  }, [groupId, isAdminOrMod]);
 
   const fetchDiscussions = useCallback(async () => {
     try {
@@ -104,11 +130,26 @@ export default function GruppoDetailPage() {
     } catch {}
   }, [groupId]);
 
+  const fetchMyPhotos = useCallback(async () => {
+    if (!session?.user) return;
+    try {
+      const res = await fetch("/api/photos?limit=100");
+      if (res.ok) {
+        const data = await res.json();
+        setMyPhotos(data.photos || data);
+      }
+    } catch {}
+  }, [session]);
+
   useEffect(() => {
     fetchGroup();
     fetchPhotos();
     fetchDiscussions();
   }, [fetchGroup, fetchPhotos, fetchDiscussions]);
+
+  useEffect(() => {
+    if (isAdminOrMod) fetchPendingPhotos();
+  }, [isAdminOrMod, fetchPendingPhotos]);
 
   const handleJoinLeave = useCallback(async () => {
     setJoinLoading(true);
@@ -129,6 +170,56 @@ export default function GruppoDetailPage() {
       setJoinLoading(false);
     }
   }, [groupId, isMember]);
+
+  const handleSubmitPhoto = useCallback(async () => {
+    if (!selectedPhotoId) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`/api/groups/${groupId}/photos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoId: selectedPhotoId }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        if (result.status === 'approved') {
+          setPhotos((prev) => [result, ...prev]);
+        }
+        setSubmitPhotoOpen(false);
+        setSelectedPhotoId("");
+        // Refresh photos
+        fetchPhotos();
+      } else {
+        const err = await res.json();
+        alert(err.error || t("groups.errorSubmitting"));
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [groupId, selectedPhotoId, fetchPhotos, t]);
+
+  const handleApproveReject = useCallback(async (photoId: string, status: 'approved' | 'rejected') => {
+    setApprovingId(photoId);
+    try {
+      const res = await fetch(`/api/groups/${groupId}/photos/${photoId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        setPendingPhotos((prev) => prev.filter((p: any) => p.photoId !== photoId));
+        if (status === 'approved') {
+          fetchPhotos();
+        }
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    } finally {
+      setApprovingId(null);
+    }
+  }, [groupId, fetchPhotos]);
 
   const handleCreateDiscussion = useCallback(async () => {
     if (!newDiscussionTitle.trim() || !newDiscussionBody.trim()) return;
@@ -221,6 +312,19 @@ export default function GruppoDetailPage() {
               <span className="flex items-center gap-1"><MessageSquare className="h-4 w-4" /> {group.discussionCount} {t("groups.discussions").toLowerCase()}</span>
             </div>
             <div className="flex items-center gap-2">
+              {session?.user && isMember && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    fetchMyPhotos();
+                    setSubmitPhotoOpen(true);
+                  }}
+                  className="gap-1.5 border-white/10 text-white/70 hover:bg-white/5"
+                >
+                  <ImagePlus className="h-4 w-4" /> {t("groups.submitPhoto")}
+                </Button>
+              )}
               {session?.user && (
                 <Button
                   variant={isMember ? "outline" : "default"}
@@ -253,45 +357,126 @@ export default function GruppoDetailPage() {
 
           <Separator className="bg-white/5" />
 
-          {/* Tabs */}
-          <Tabs defaultValue="photos">
-            <TabsList className="bg-white/5 border border-white/10">
-              <TabsTrigger value="photos" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
-                <ImageIcon className="h-4 w-4 mr-1.5" /> {t("groups.photos")}
-              </TabsTrigger>
-              <TabsTrigger value="discussions" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
-                <MessageSquare className="h-4 w-4 mr-1.5" /> {t("groups.discussions")}
-              </TabsTrigger>
-              <TabsTrigger value="members" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
-                <Users className="h-4 w-4 mr-1.5" /> {t("groups.membersList")}
-              </TabsTrigger>
-            </TabsList>
+          {/* Pending photos section for admins */}
+          {isAdminOrMod && pendingPhotos.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Clock className="h-5 w-5 text-yellow-400" />
+                {t("groups.pendingPhotos")} ({pendingPhotos.length})
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {pendingPhotos.map((gp: any) => (
+                  <Card key={gp.id} className="bg-white/5 border-yellow-500/20 overflow-hidden">
+                    <CardContent className="p-3">
+                      <div className="flex gap-3">
+                        <div className="w-20 h-20 rounded overflow-hidden shrink-0 bg-white/5">
+                          {gp.photo?.thumbnail || gp.photo?.filepath ? (
+                            <img
+                              src={gp.photo.thumbnail || gp.photo.filepath}
+                              alt={gp.photo?.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ImageIcon className="h-6 w-6 text-white/10" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white/80 truncate">{gp.photo?.title}</p>
+                          <p className="text-xs text-white/30 mt-0.5">
+                            {t("groups.submittedBy")} {gp.photo?.user?.name || t("common.user")}
+                          </p>
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white gap-1"
+                              onClick={() => handleApproveReject(gp.photoId, 'approved')}
+                              disabled={approvingId === gp.photoId}
+                            >
+                              <Check className="h-3 w-3" /> {t("groups.approve")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10 gap-1"
+                              onClick={() => handleApproveReject(gp.photoId, 'rejected')}
+                              disabled={approvingId === gp.photoId}
+                            >
+                              <X className="h-3 w-3" /> {t("groups.reject")}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <Separator className="bg-white/5" />
+            </div>
+          )}
 
-            <TabsContent value="photos" className="mt-4">
+          {/* Tabs */}
+          <div className="border-b border-white/10">
+            <nav className="flex items-center gap-0 -mb-px overflow-x-auto">
+              {[
+                { key: "photos", icon: ImageIcon, label: t("groups.photos") },
+                { key: "discussions", icon: MessageSquare, label: t("groups.discussions") },
+                { key: "members", icon: Users, label: t("groups.membersList") },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                      isActive
+                        ? "border-[#0063dc] text-white"
+                        : "border-transparent text-white/40 hover:text-white/60 hover:border-white/20"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Photos tab */}
+          {activeTab === "photos" && (
+            <div className="mt-4">
               {photos.length === 0 ? (
                 <EmptyState
                   icon={Camera}
                   title={t("groups.noPhotosInGroup")}
-                  description={t("groups.noPhotosInGroupDesc")}
+                  description={isMember ? t("groups.noPhotosInGroupDescMember") : t("groups.noPhotosInGroupDesc")}
                 />
               ) : (
                 <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
-                  {photos.map((photo: any, index: number) => (
-                    <motion.div
-                      key={photo.id}
-                      className="break-inside-avoid"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
-                    >
-                      <PhotoCard photo={photo} />
-                    </motion.div>
-                  ))}
+                  {photos.map((gp: any, index: number) => {
+                    const photo = gp.photo || gp;
+                    return (
+                      <motion.div
+                        key={gp.id || photo.id}
+                        className="break-inside-avoid"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.5) }}
+                      >
+                        <PhotoCard photo={photo} />
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="discussions" className="mt-4 space-y-4">
+          {/* Discussions tab */}
+          {activeTab === "discussions" && (
+            <div className="mt-4 space-y-4">
               {isMember && (
                 <Button
                   size="sm"
@@ -330,9 +515,12 @@ export default function GruppoDetailPage() {
                   ))}
                 </div>
               )}
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="members" className="mt-4">
+          {/* Members tab */}
+          {activeTab === "members" && (
+            <div className="mt-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {members.length > 0 ? members.map((member: any) => (
                   <Link key={member.id} href={`/persone/${member.user?.username || ""}`}>
@@ -355,10 +543,61 @@ export default function GruppoDetailPage() {
                   </p>
                 )}
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
         </div>
       </main>
+
+      {/* Submit Photo Dialog */}
+      <Dialog open={submitPhotoOpen} onOpenChange={setSubmitPhotoOpen}>
+        <DialogContent className="bg-[#2a2a2d] border-white/10 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <ImagePlus className="h-5 w-5 text-[#0063dc]" />
+              {t("groups.submitPhotoTitle")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-white/50">{t("groups.submitPhotoDesc")}</p>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-64 overflow-y-auto">
+              {myPhotos.map((photo: any) => (
+                <button
+                  key={photo.id}
+                  onClick={() => setSelectedPhotoId(photo.id)}
+                  className={`aspect-square rounded overflow-hidden relative ${
+                    selectedPhotoId === photo.id ? "ring-2 ring-[#0063dc]" : ""
+                  }`}
+                >
+                  <img
+                    src={photo.thumbnail || photo.filepath}
+                    alt={photo.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {selectedPhotoId === photo.id && (
+                    <div className="absolute inset-0 bg-[#0063dc]/30 flex items-center justify-center">
+                      <Check className="h-6 w-6 text-white" />
+                    </div>
+                  )}
+                </button>
+              ))}
+              {myPhotos.length === 0 && (
+                <p className="text-sm text-white/30 col-span-full text-center py-4">
+                  {t("groups.noPhotosToSubmit")}
+                </p>
+              )}
+            </div>
+            <Button
+              onClick={handleSubmitPhoto}
+              disabled={!selectedPhotoId || isSubmitting}
+              className="w-full bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white"
+            >
+              {isSubmitting ? t("common.sending") : (
+                <><Send className="h-4 w-4 mr-1.5" /> {t("groups.submitPhotoButton")}</>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* New Discussion Dialog */}
       <Dialog open={discussionOpen} onOpenChange={setDiscussionOpen}>
