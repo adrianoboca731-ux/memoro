@@ -32,7 +32,6 @@ import {
   Pencil,
   Upload,
   X,
-  ImageIconLucide,
   Lock,
   Clock,
   Check,
@@ -195,14 +194,14 @@ export default function ProfiloPage() {
   // Private profiles only visible to approved followers
   const isApprovedFollower = followStatus === "approved";
   const isPendingFollower = followStatus === "pending";
-  const isProfileVisible = isOwnProfile || user.isPublic !== false || isApprovedFollower;
+  const isProfileVisible = isOwnProfile || user?.isPublic !== false || isApprovedFollower;
 
   // Only fetch content if profile is visible
   const canViewContent = isOwnProfile || isProfileVisible;
 
   // Fetch pending follow requests for own private profile
   const fetchPendingRequests = useCallback(async () => {
-    if (!isOwnProfile || user.isPublic !== false) return;
+    if (!isOwnProfile || user?.isPublic !== false) return;
     try {
       const res = await fetch("/api/follows/pending");
       if (res.ok) {
