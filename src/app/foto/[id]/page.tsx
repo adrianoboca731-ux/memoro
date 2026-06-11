@@ -632,6 +632,16 @@ export default function FotoDetailPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => { setAddToOpen(true); setAddToTab("albums"); }}
+                className="gap-1.5 text-white/60 hover:text-white hover:bg-white/5"
+              >
+                <Plus className="h-4 w-4" />
+                {t("photo.addToAlbum")}
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
                 className="gap-1.5 text-white/60 hover:text-white hover:bg-white/5"
                 asChild
               >

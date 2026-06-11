@@ -575,6 +575,7 @@ const it: TranslationDict = {
   "photo.noAlbums": "Nessun album trovato",
   "photo.items": "elementi",
   "photo.createAlbum": "Crea nuovo album",
+  "photo.addToAlbum": "Aggiungi all'album",
   "photo.albumName": "Nome album",
 };
 
@@ -1140,6 +1141,7 @@ const en: TranslationDict = {
   "photo.noAlbums": "No albums found",
   "photo.items": "items",
   "photo.createAlbum": "Create new album",
+  "photo.addToAlbum": "Add to album",
   "photo.albumName": "Album name",
 };
 
@@ -1705,6 +1707,7 @@ const fr: TranslationDict = {
   "photo.noAlbums": "Aucun album trouvé",
   "photo.items": "éléments",
   "photo.createAlbum": "Créer un nouvel album",
+  "photo.addToAlbum": "Ajouter à l'album",
   "photo.albumName": "Nom de l'album",
 };
 
@@ -2270,6 +2273,7 @@ const de: TranslationDict = {
   "photo.noAlbums": "Keine Alben gefunden",
   "photo.items": "Elemente",
   "photo.createAlbum": "Neues Album erstellen",
+  "photo.addToAlbum": "Zum Album hinzufügen",
   "photo.albumName": "Albumname",
 };
 
@@ -2835,6 +2839,7 @@ const es: TranslationDict = {
   "photo.noAlbums": "No se encontraron álbumes",
   "photo.items": "elementos",
   "photo.createAlbum": "Crear nuevo álbum",
+  "photo.addToAlbum": "Añadir al álbum",
   "photo.albumName": "Nombre del álbum",
 };
 
@@ -3400,6 +3405,7 @@ const ptBR: TranslationDict = {
   "photo.noAlbums": "Nenhum álbum encontrado",
   "photo.items": "itens",
   "photo.createAlbum": "Criar novo álbum",
+  "photo.addToAlbum": "Adicionar ao álbum",
   "photo.albumName": "Nome do álbum",
 };
 
@@ -3965,6 +3971,7 @@ const ja: TranslationDict = {
   "photo.noAlbums": "アルバムが見つかりません",
   "photo.items": "項目",
   "photo.createAlbum": "新しいアルバムを作成",
+  "photo.addToAlbum": "アルバムに追加",
   "photo.albumName": "アルバム名",
 };
 
@@ -4530,6 +4537,7 @@ const ko: TranslationDict = {
   "photo.noAlbums": "앨범을 찾을 수 없습니다",
   "photo.items": "항목",
   "photo.createAlbum": "새 앨범 만들기",
+  "photo.addToAlbum": "앨범에 추가",
   "photo.albumName": "앨범 이름",
 };
 
@@ -5095,6 +5103,7 @@ const zhCN: TranslationDict = {
   "photo.noAlbums": "未找到相册",
   "photo.items": "项",
   "photo.createAlbum": "创建新相册",
+  "photo.addToAlbum": "添加到相册",
   "photo.albumName": "相册名称",
 };
 
@@ -5660,6 +5669,7 @@ const zhTW: TranslationDict = {
   "photo.noAlbums": "未找到相簿",
   "photo.items": "項目",
   "photo.createAlbum": "建立新相簿",
+  "photo.addToAlbum": "加入相簿",
   "photo.albumName": "相簿名稱",
 };
 
