@@ -78,7 +78,7 @@ export default function AlbumPage() {
   }, [newAlbumName, newAlbumDesc]);
 
   const handleDeleteAlbum = useCallback(async (id: string) => {
-    if (!confirm("t("albums.deleteConfirm")")) return;
+    if (!confirm(t("albums.deleteConfirm"))) return;
     try {
       const res = await fetch(`/api/albums/${id}`, { method: "DELETE" });
       if (res.ok) setAlbums((prev) => prev.filter((a) => a.id !== id));

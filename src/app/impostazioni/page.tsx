@@ -57,20 +57,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 type SettingsSection = "profile" | "privacy" | "content-filters" | "notifications" | "appearance" | "exif" | "account";
 
-const sidebarItems: { key: SettingsSection; label: string; icon: typeof Settings }[] = [
-  { key: "profile", label: "Il tuo profilo", icon: User },
-  { key: "privacy", label: "Privacy e autorizzazioni", icon: Shield },
-  { key: "content-filters", label: "Filtri contenuti", icon: Eye },
-  { key: "notifications", label: "Notifiche", icon: Bell },
-  { key: "appearance", label: "Aspetto", icon: Palette },
-  { key: "exif", label: "EXIF", icon: Camera },
-  { key: "account", label: "Account", icon: Key },
-];
-
 export default function ImpostazioniPage() {
+  const { t } = useI18n();
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile");
@@ -88,6 +80,16 @@ export default function ImpostazioniPage() {
     new: "",
     confirm: "",
   });
+
+  const sidebarItems: { key: SettingsSection; label: string; icon: typeof Settings }[] = [
+    { key: "profile", label: t("settings.profile"), icon: User },
+    { key: "privacy", label: t("settings.privacy"), icon: Shield },
+    { key: "content-filters", label: t("settings.contentFilters"), icon: Eye },
+    { key: "notifications", label: t("settings.notifications"), icon: Bell },
+    { key: "appearance", label: t("settings.appearance"), icon: Palette },
+    { key: "exif", label: t("settings.exif"), icon: Camera },
+    { key: "account", label: t("settings.account"), icon: Key },
+  ];
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -132,16 +134,16 @@ export default function ImpostazioniPage() {
       if (res.ok) {
         const data = await res.json();
         setSettings(data);
-        toast.success("Impostazioni salvate");
+        toast.success(t("settings.settingsSaved"));
       } else {
-        toast.error("Errore nel salvataggio delle impostazioni");
+        toast.error(t("settings.saveError"));
       }
     } catch (err) {
-      toast.error("Errore nel salvataggio");
+      toast.error(t("settings.saveError"));
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [t]);
 
   const handleSaveProfile = useCallback(async () => {
     setSaving(true);
@@ -152,16 +154,16 @@ export default function ImpostazioniPage() {
         body: JSON.stringify(profileData),
       });
       if (res.ok) {
-        toast.success("Profilo aggiornato");
+        toast.success(t("settings.profileUpdated"));
       } else {
-        toast.error("Errore nell'aggiornamento del profilo");
+        toast.error(t("settings.profileUpdateError"));
       }
     } catch {
-      toast.error("Errore nell'aggiornamento");
+      toast.error(t("settings.profileUpdateError"));
     } finally {
       setSaving(false);
     }
-  }, [session, profileData]);
+  }, [session, profileData, t]);
 
   const handleUpdateSetting = useCallback((key: string, value: unknown) => {
     setSettings((prev: any) => {
@@ -175,7 +177,7 @@ export default function ImpostazioniPage() {
     return (
       <div className="min-h-screen bg-[#0d0d0d]">
         <Header />
-        <EmptyState icon={Settings} title="Accedi per gestire le impostazioni" description="Effettua l'accesso per visualizzare e modificare le tue impostazioni" />
+        <EmptyState icon={Settings} title={t("settings.loginToManage")} description={t("settings.loginToManageDesc")} />
       </div>
     );
   }
@@ -210,9 +212,9 @@ export default function ImpostazioniPage() {
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3 mb-1">
               <Settings className="h-8 w-8 text-white/30" />
-              Impostazioni
+              {t("settings.title")}
             </h1>
-            <p className="text-white/40 mb-6">Gestisci il tuo account e le tue preferenze</p>
+            <p className="text-white/40 mb-6">{t("settings.subtitle")}</p>
           </motion.div>
 
           <div className="flex flex-col lg:flex-row gap-6">
@@ -241,8 +243,8 @@ export default function ImpostazioniPage() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                   <Card className="bg-white/5 border-white/10">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg">Il tuo profilo</CardTitle>
-                      <CardDescription className="text-white/40">Gestisci le informazioni del tuo profilo pubblico</CardDescription>
+                      <CardTitle className="text-white text-lg">{t("settings.profileTitle")}</CardTitle>
+                      <CardDescription className="text-white/40">{t("settings.profileDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center gap-4">
@@ -254,12 +256,12 @@ export default function ImpostazioniPage() {
                         </Avatar>
                         <div>
                           <Button variant="outline" size="sm" className="border-white/10 text-white/70 hover:bg-white/5">
-                            Cambia avatar
+                            {t("settings.changeAvatar")}
                           </Button>
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-white/60 text-sm">Nome</Label>
+                        <Label className="text-white/60 text-sm">{t("settings.name")}</Label>
                         <Input
                           value={profileData.name}
                           onChange={(e) => setProfileData((p) => ({ ...p, name: e.target.value }))}
@@ -267,27 +269,27 @@ export default function ImpostazioniPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-white/60 text-sm">Bio</Label>
+                        <Label className="text-white/60 text-sm">{t("settings.bio")}</Label>
                         <Textarea
                           value={profileData.bio}
                           onChange={(e) => setProfileData((p) => ({ ...p, bio: e.target.value }))}
-                          placeholder="Racconta qualcosa di te..."
+                          placeholder={t("settings.bioPlaceholder")}
                           rows={3}
                           className="bg-white/5 border-white/10 text-white resize-none"
                         />
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-white/60 text-sm">Posizione</Label>
+                          <Label className="text-white/60 text-sm">{t("settings.location")}</Label>
                           <Input
                             value={profileData.location}
                             onChange={(e) => setProfileData((p) => ({ ...p, location: e.target.value }))}
-                            placeholder="es. Roma, Italia"
+                            placeholder={t("settings.locationPlaceholder")}
                             className="bg-white/5 border-white/10 text-white"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-white/60 text-sm">Sito web</Label>
+                          <Label className="text-white/60 text-sm">{t("settings.website")}</Label>
                           <Input
                             value={profileData.website}
                             onChange={(e) => setProfileData((p) => ({ ...p, website: e.target.value }))}
@@ -297,7 +299,7 @@ export default function ImpostazioniPage() {
                         </div>
                       </div>
                       <Button onClick={handleSaveProfile} disabled={saving} className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1.5">
-                        <Save className="h-4 w-4" /> {saving ? "Salvataggio..." : "Salva profilo"}
+                        <Save className="h-4 w-4" /> {saving ? t("common.saving") : t("settings.saveProfile")}
                       </Button>
                     </CardContent>
                   </Card>
@@ -309,12 +311,12 @@ export default function ImpostazioniPage() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                   <Card className="bg-white/5 border-white/10">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg">Privacy e autorizzazioni</CardTitle>
-                      <CardDescription className="text-white/40">Controlla chi può vedere e interagire con i tuoi contenuti</CardDescription>
+                      <CardTitle className="text-white text-lg">{t("settings.privacyTitle")}</CardTitle>
+                      <CardDescription className="text-white/40">{t("settings.privacyDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="space-y-3">
-                        <Label className="text-white/60 text-sm">Visibilità del profilo</Label>
+                        <Label className="text-white/60 text-sm">{t("settings.profileVisibility")}</Label>
                         <Select
                           value={settings.profileVisibility || "public"}
                           onValueChange={(v) => handleUpdateSetting("profileVisibility", v)}
@@ -323,15 +325,15 @@ export default function ImpostazioniPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-[#2a2a2d] border-white/10">
-                            <SelectItem value="public"><span className="flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> Pubblico</span></SelectItem>
-                            <SelectItem value="friends"><span className="flex items-center gap-2"><Users className="h-3.5 w-3.5" /> Solo contatti</span></SelectItem>
-                            <SelectItem value="private"><span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5" /> Privato</span></SelectItem>
+                            <SelectItem value="public"><span className="flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> {t("settings.public")}</span></SelectItem>
+                            <SelectItem value="friends"><span className="flex items-center gap-2"><Users className="h-3.5 w-3.5" /> {t("settings.contactsOnly")}</span></SelectItem>
+                            <SelectItem value="private"><span className="flex items-center gap-2"><Lock className="h-3.5 w-3.5" /> {t("settings.private")}</span></SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-3">
-                        <Label className="text-white/60 text-sm">Chi può inviarti messaggi</Label>
+                        <Label className="text-white/60 text-sm">{t("settings.whoCanMessage")}</Label>
                         <Select
                           value={settings.allowMessages || "everyone"}
                           onValueChange={(v) => handleUpdateSetting("allowMessages", v)}
@@ -340,9 +342,9 @@ export default function ImpostazioniPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-[#2a2a2d] border-white/10">
-                            <SelectItem value="everyone">Tutti</SelectItem>
-                            <SelectItem value="contacts">Solo contatti</SelectItem>
-                            <SelectItem value="nobody">Nessuno</SelectItem>
+                            <SelectItem value="everyone">{t("settings.everyone")}</SelectItem>
+                            <SelectItem value="contacts">{t("settings.contactsOnly")}</SelectItem>
+                            <SelectItem value="nobody">{t("settings.nobody")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -351,8 +353,8 @@ export default function ImpostazioniPage() {
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-white/70 text-sm">Permetti commenti</Label>
-                          <p className="text-xs text-white/30 mt-0.5">Consenti agli altri di commentare le tue foto</p>
+                          <Label className="text-white/70 text-sm">{t("settings.allowComments")}</Label>
+                          <p className="text-xs text-white/30 mt-0.5">{t("settings.allowCommentsDesc")}</p>
                         </div>
                         <Switch
                           checked={settings.allowComments !== false}
@@ -362,8 +364,8 @@ export default function ImpostazioniPage() {
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-white/70 text-sm">Permetti download</Label>
-                          <p className="text-xs text-white/30 mt-0.5">Consenti agli altri di scaricare le tue foto</p>
+                          <Label className="text-white/70 text-sm">{t("settings.allowDownloads")}</Label>
+                          <p className="text-xs text-white/30 mt-0.5">{t("settings.allowDownloadsDesc")}</p>
                         </div>
                         <Switch
                           checked={settings.allowDownloads !== false}
@@ -373,8 +375,8 @@ export default function ImpostazioniPage() {
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-white/70 text-sm">Mostra rullino</Label>
-                          <p className="text-xs text-white/30 mt-0.5">Rendi visibile il tuo rullino agli altri utenti</p>
+                          <Label className="text-white/70 text-sm">{t("settings.showCameraRoll")}</Label>
+                          <p className="text-xs text-white/30 mt-0.5">{t("settings.showCameraRollDesc")}</p>
                         </div>
                         <Switch
                           checked={settings.showCameraRoll === true}
@@ -392,14 +394,14 @@ export default function ImpostazioniPage() {
                   <Card className="bg-white/5 border-white/10">
                     <CardHeader>
                       <CardTitle className="text-white text-lg flex items-center gap-2">
-                        <Eye className="h-5 w-5" /> Filtri contenuti
+                        <Eye className="h-5 w-5" /> {t("settings.contentFiltersTitle")}
                       </CardTitle>
-                      <CardDescription className="text-white/40">Gestisci i filtri per i contenuti adulti</CardDescription>
+                      <CardDescription className="text-white/40">{t("settings.contentFiltersDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* SafeSearch - Three options like Flickr */}
                       <div className="space-y-3">
-                        <Label className="text-white/70 text-sm font-medium">Ricerca sicura (SafeSearch)</Label>
+                        <Label className="text-white/70 text-sm font-medium">{t("settings.safeSearch")}</Label>
                         <RadioGroup
                           value={settings.safeSearch || "moderate"}
                           onValueChange={(v) => handleUpdateSetting("safeSearch", v)}
@@ -408,26 +410,26 @@ export default function ImpostazioniPage() {
                           <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5">
                             <RadioGroupItem value="strict" id="strict" className="mt-0.5 border-white/20" />
                             <div className="flex-1">
-                              <Label htmlFor="strict" className="text-white/80 text-sm font-medium cursor-pointer">Rigorosa</Label>
-                              <p className="text-xs text-white/30 mt-0.5">Nascondi tutti i contenuti maturi e limitati. Visualizza solo contenuti sicuri.</p>
+                              <Label htmlFor="strict" className="text-white/80 text-sm font-medium cursor-pointer">{t("settings.strict")}</Label>
+                              <p className="text-xs text-white/30 mt-0.5">{t("settings.strictDesc")}</p>
                             </div>
-                            <Badge className="bg-green-500/20 text-green-400 border-0 text-[10px]">Sicuro</Badge>
+                            <Badge className="bg-green-500/20 text-green-400 border-0 text-[10px]">{t("safety.safe")}</Badge>
                           </div>
                           <div className="flex items-start gap-3 p-3 rounded-lg bg-[#0063dc]/5 border border-[#0063dc]/20">
                             <RadioGroupItem value="moderate" id="moderate" className="mt-0.5 border-white/20" />
                             <div className="flex-1">
-                              <Label htmlFor="moderate" className="text-white/80 text-sm font-medium cursor-pointer">Moderata</Label>
-                              <p className="text-xs text-white/30 mt-0.5">Mostra contenuti moderati ma nascondi quelli limitati. <span className="text-[#0063dc]">Predefinito</span></p>
+                              <Label htmlFor="moderate" className="text-white/80 text-sm font-medium cursor-pointer">{t("settings.moderate")}</Label>
+                              <p className="text-xs text-white/30 mt-0.5">{t("settings.moderateDesc")} <span className="text-[#0063dc]">{t("settings.default")}</span></p>
                             </div>
-                            <Badge className="bg-yellow-500/20 text-yellow-400 border-0 text-[10px]">Moderato</Badge>
+                            <Badge className="bg-yellow-500/20 text-yellow-400 border-0 text-[10px]">{t("safety.moderate")}</Badge>
                           </div>
                           <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/5">
                             <RadioGroupItem value="off" id="off" className="mt-0.5 border-white/20" />
                             <div className="flex-1">
-                              <Label htmlFor="off" className="text-white/80 text-sm font-medium cursor-pointer">Disattivata</Label>
-                              <p className="text-xs text-white/30 mt-0.5">Mostra tutti i contenuti inclusi quelli limitati e per adulti.</p>
+                              <Label htmlFor="off" className="text-white/80 text-sm font-medium cursor-pointer">{t("settings.off")}</Label>
+                              <p className="text-xs text-white/30 mt-0.5">{t("settings.offDesc")}</p>
                             </div>
-                            <Badge className="bg-red-500/20 text-red-400 border-0 text-[10px]">Restretto</Badge>
+                            <Badge className="bg-red-500/20 text-red-400 border-0 text-[10px]">{t("safety.restricted")}</Badge>
                           </div>
                         </RadioGroup>
                       </div>
@@ -438,8 +440,8 @@ export default function ImpostazioniPage() {
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <Label className="text-white/70 text-sm">Mostra contenuti per adulti</Label>
-                            <p className="text-xs text-white/30 mt-0.5">Mostra/nascondi contenuti maturi nel tuo flusso foto</p>
+                            <Label className="text-white/70 text-sm">{t("settings.showAdultContent")}</Label>
+                            <p className="text-xs text-white/30 mt-0.5">{t("settings.showAdultContentDesc")}</p>
                           </div>
                           <Switch
                             checked={settings.showMatureContent === true}
@@ -449,8 +451,8 @@ export default function ImpostazioniPage() {
 
                         <div className="flex items-center justify-between">
                           <div>
-                            <Label className="text-white/70 text-sm">Mostra contenuti limitati</Label>
-                            <p className="text-xs text-white/30 mt-0.5">Mostra/nascondi contenuti con livello di sicurezza &quot;Restretto&quot;</p>
+                            <Label className="text-white/70 text-sm">{t("settings.showRestrictedContent")}</Label>
+                            <p className="text-xs text-white/30 mt-0.5">{t("settings.showRestrictedContentDesc")}</p>
                           </div>
                           <Switch
                             checked={settings.showRestrictedContent === true}
@@ -460,8 +462,8 @@ export default function ImpostazioniPage() {
 
                         <div className="flex items-center justify-between">
                           <div>
-                            <Label className="text-white/70 text-sm">Consenti caricamenti per adulti</Label>
-                            <p className="text-xs text-white/30 mt-0.5">Permetti il caricamento di contenuti con livello di sicurezza maturo o limitato</p>
+                            <Label className="text-white/70 text-sm">{t("settings.allowMatureUploads")}</Label>
+                            <p className="text-xs text-white/30 mt-0.5">{t("settings.allowMatureUploadsDesc")}</p>
                           </div>
                           <Switch
                             checked={settings.allowMatureUploads === true}
@@ -473,8 +475,7 @@ export default function ImpostazioniPage() {
                       <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3 flex items-start gap-2">
                         <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
                         <p className="text-xs text-yellow-500/70">
-                          I contenuti per adulti sono visibili solo agli utenti che hanno disattivato il filtro di ricerca sicura.
-                          I contenuti limitati richiedono l&apos;impostazione &quot;Disattivata&quot; per essere visibili.
+                          {t("settings.adultContentWarning")}
                         </p>
                       </div>
                     </CardContent>
@@ -487,16 +488,16 @@ export default function ImpostazioniPage() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                   <Card className="bg-white/5 border-white/10">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg">Notifiche</CardTitle>
-                      <CardDescription className="text-white/40">Scegli quali notifiche ricevere</CardDescription>
+                      <CardTitle className="text-white text-lg">{t("settings.notificationsTitle")}</CardTitle>
+                      <CardDescription className="text-white/40">{t("settings.notificationsDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4 text-white/30" />
                           <div>
-                            <Label className="text-white/70 text-sm">Notifiche email</Label>
-                            <p className="text-xs text-white/30">Ricevi aggiornamenti via email</p>
+                            <Label className="text-white/70 text-sm">{t("settings.emailNotifications")}</Label>
+                            <p className="text-xs text-white/30">{t("settings.emailNotificationsDesc")}</p>
                           </div>
                         </div>
                         <Switch
@@ -509,8 +510,8 @@ export default function ImpostazioniPage() {
                         <div className="flex items-center gap-2">
                           <Heart className="h-4 w-4 text-[#ff0084]" />
                           <div>
-                            <Label className="text-white/70 text-sm">Preferiti</Label>
-                            <p className="text-xs text-white/30">Quando qualcuno aggiunge una tua foto ai preferiti</p>
+                            <Label className="text-white/70 text-sm">{t("settings.notifyFavorites")}</Label>
+                            <p className="text-xs text-white/30">{t("settings.notifyFavoritesDesc")}</p>
                           </div>
                         </div>
                         <Switch
@@ -522,8 +523,8 @@ export default function ImpostazioniPage() {
                         <div className="flex items-center gap-2">
                           <MessageCircle className="h-4 w-4 text-green-500" />
                           <div>
-                            <Label className="text-white/70 text-sm">Commenti</Label>
-                            <p className="text-xs text-white/30">Quando qualcuno commenta le tue foto</p>
+                            <Label className="text-white/70 text-sm">{t("settings.notifyComments")}</Label>
+                            <p className="text-xs text-white/30">{t("settings.notifyCommentsDesc")}</p>
                           </div>
                         </div>
                         <Switch
@@ -535,8 +536,8 @@ export default function ImpostazioniPage() {
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-purple-500" />
                           <div>
-                            <Label className="text-white/70 text-sm">Nuovi follower</Label>
-                            <p className="text-xs text-white/30">Quando qualcuno inizia a seguirti</p>
+                            <Label className="text-white/70 text-sm">{t("settings.notifyFollows")}</Label>
+                            <p className="text-xs text-white/30">{t("settings.notifyFollowsDesc")}</p>
                           </div>
                         </div>
                         <Switch
@@ -548,8 +549,8 @@ export default function ImpostazioniPage() {
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-orange-500" />
                           <div>
-                            <Label className="text-white/70 text-sm">Inviti ai gruppi</Label>
-                            <p className="text-xs text-white/30">Quando vieni invitato a un gruppo</p>
+                            <Label className="text-white/70 text-sm">{t("settings.notifyGroupInvites")}</Label>
+                            <p className="text-xs text-white/30">{t("settings.notifyGroupInvitesDesc")}</p>
                           </div>
                         </div>
                         <Switch
@@ -561,8 +562,8 @@ export default function ImpostazioniPage() {
                         <div className="flex items-center gap-2">
                           <MessageSquare className="h-4 w-4 text-[#0063dc]" />
                           <div>
-                            <Label className="text-white/70 text-sm">Messaggi</Label>
-                            <p className="text-xs text-white/30">Quando ricevi un nuovo messaggio</p>
+                            <Label className="text-white/70 text-sm">{t("settings.notifyMessages")}</Label>
+                            <p className="text-xs text-white/30">{t("settings.notifyMessagesDesc")}</p>
                           </div>
                         </div>
                         <Switch
@@ -580,36 +581,36 @@ export default function ImpostazioniPage() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                   <Card className="bg-white/5 border-white/10">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg">Aspetto</CardTitle>
-                      <CardDescription className="text-white/40">Personalizza l&apos;aspetto di Memoro</CardDescription>
+                      <CardTitle className="text-white text-lg">{t("settings.appearanceTitle")}</CardTitle>
+                      <CardDescription className="text-white/40">{t("settings.appearanceDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="space-y-3">
-                        <Label className="text-white/70 text-sm">Tema</Label>
+                        <Label className="text-white/70 text-sm">{t("settings.theme")}</Label>
                         <div className="flex gap-3">
                           {[
-                            { value: "dark", label: "Scuro", color: "bg-[#0d0d0d]" },
-                            { value: "light", label: "Chiaro", color: "bg-[#f3f5f6]" },
-                            { value: "system", label: "Sistema", color: "bg-gradient-to-br from-[#0d0d0d] to-[#f3f5f6]" },
-                          ].map((t) => (
+                            { value: "dark", label: t("settings.dark"), color: "bg-[#0d0d0d]" },
+                            { value: "light", label: t("settings.light"), color: "bg-[#f3f5f6]" },
+                            { value: "system", label: t("settings.system"), color: "bg-gradient-to-br from-[#0d0d0d] to-[#f3f5f6]" },
+                          ].map((themeOpt) => (
                             <button
-                              key={t.value}
+                              key={themeOpt.value}
                               className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors ${
-                                theme === t.value
+                                theme === themeOpt.value
                                   ? "border-[#0063dc] bg-[#0063dc]/5"
                                   : "border-white/10 hover:border-white/20"
                               }`}
-                              onClick={() => setTheme(t.value)}
+                              onClick={() => setTheme(themeOpt.value)}
                             >
-                              <div className={`w-12 h-8 rounded ${t.color} border border-white/10`} />
-                              <span className="text-xs text-white/60">{t.label}</span>
+                              <div className={`w-12 h-8 rounded ${themeOpt.color} border border-white/10`} />
+                              <span className="text-xs text-white/60">{themeOpt.label}</span>
                             </button>
                           ))}
                         </div>
                       </div>
 
                       <div className="space-y-3">
-                        <Label className="text-white/70 text-sm">Vista predefinita</Label>
+                        <Label className="text-white/70 text-sm">{t("settings.defaultView")}</Label>
                         <Select
                           value={settings.defaultView || "grid"}
                           onValueChange={(v) => handleUpdateSetting("defaultView", v)}
@@ -618,15 +619,15 @@ export default function ImpostazioniPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-[#2a2a2d] border-white/10">
-                            <SelectItem value="grid">Griglia</SelectItem>
-                            <SelectItem value="list">Lista</SelectItem>
-                            <SelectItem value="justified">Giustificata</SelectItem>
+                            <SelectItem value="grid">{t("settings.gridView")}</SelectItem>
+                            <SelectItem value="list">{t("settings.listView")}</SelectItem>
+                            <SelectItem value="justified">{t("settings.justifiedView")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-3">
-                        <Label className="text-white/70 text-sm">Lingua</Label>
+                        <Label className="text-white/70 text-sm">{t("common.language")}</Label>
                         <Select
                           value={settings.language || "it"}
                           onValueChange={(v) => handleUpdateSetting("language", v)}
@@ -653,14 +654,14 @@ export default function ImpostazioniPage() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                   <Card className="bg-white/5 border-white/10">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg">Dati EXIF</CardTitle>
-                      <CardDescription className="text-white/40">Gestisci la visibilità dei dati EXIF delle tue foto</CardDescription>
+                      <CardTitle className="text-white text-lg">{t("settings.exifTitle")}</CardTitle>
+                      <CardDescription className="text-white/40">{t("settings.exifDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <Label className="text-white/70 text-sm">Mostra dati EXIF</Label>
-                          <p className="text-xs text-white/30 mt-0.5">Mostra i dati tecnici della fotocamera nelle tue foto (fotocamera, obiettivo, apertura, ISO, ecc.)</p>
+                          <Label className="text-white/70 text-sm">{t("settings.showExif")}</Label>
+                          <p className="text-xs text-white/30 mt-0.5">{t("settings.showExifDesc")}</p>
                         </div>
                         <Switch
                           checked={settings.showEXIF !== false}
@@ -677,12 +678,12 @@ export default function ImpostazioniPage() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                   <Card className="bg-white/5 border-white/10">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg">Cambia password</CardTitle>
-                      <CardDescription className="text-white/40">Aggiorna la tua password per mantenere l&apos;account sicuro</CardDescription>
+                      <CardTitle className="text-white text-lg">{t("settings.changePassword")}</CardTitle>
+                      <CardDescription className="text-white/40">{t("settings.changePasswordDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <Label className="text-white/60 text-sm">Password attuale</Label>
+                        <Label className="text-white/60 text-sm">{t("settings.currentPassword")}</Label>
                         <Input
                           type="password"
                           value={passwordData.current}
@@ -691,7 +692,7 @@ export default function ImpostazioniPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-white/60 text-sm">Nuova password</Label>
+                        <Label className="text-white/60 text-sm">{t("settings.newPassword")}</Label>
                         <Input
                           type="password"
                           value={passwordData.new}
@@ -700,7 +701,7 @@ export default function ImpostazioniPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-white/60 text-sm">Conferma nuova password</Label>
+                        <Label className="text-white/60 text-sm">{t("settings.confirmNewPassword")}</Label>
                         <Input
                           type="password"
                           value={passwordData.confirm}
@@ -711,15 +712,15 @@ export default function ImpostazioniPage() {
                       <Button
                         onClick={async () => {
                           if (passwordData.new !== passwordData.confirm) {
-                            toast.error("Le password non coincidono");
+                            toast.error(t("settings.passwordMismatch"));
                             return;
                           }
-                          toast.success("Password aggiornata");
+                          toast.success(t("settings.passwordUpdated"));
                           setPasswordData({ current: "", new: "", confirm: "" });
                         }}
                         className="bg-[#0063dc] hover:bg-[#0052b5] text-white"
                       >
-                        Aggiorna password
+                        {t("settings.updatePassword")}
                       </Button>
                     </CardContent>
                   </Card>
@@ -727,30 +728,30 @@ export default function ImpostazioniPage() {
                   <Card className="bg-red-500/5 border-red-500/10">
                     <CardHeader>
                       <CardTitle className="text-red-400 text-lg flex items-center gap-2">
-                        <Trash2 className="h-5 w-5" /> Elimina account
+                        <Trash2 className="h-5 w-5" /> {t("settings.deleteAccount")}
                       </CardTitle>
                       <CardDescription className="text-white/40">
-                        Questa azione è irreversibile. Tutti i tuoi dati, foto e contenuti verranno eliminati permanentemente.
+                        {t("settings.deleteAccountDesc")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" className="gap-1.5">
-                            <Trash2 className="h-4 w-4" /> Elimina il mio account
+                            <Trash2 className="h-4 w-4" /> {t("settings.deleteMyAccount")}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent className="bg-[#2a2a2d] border-white/10">
                           <AlertDialogHeader>
-                            <AlertDialogTitle className="text-white">Sei assolutamente sicuro?</AlertDialogTitle>
+                            <AlertDialogTitle className="text-white">{t("settings.areYouSure")}</AlertDialogTitle>
                             <AlertDialogDescription className="text-white/50">
-                              Questa azione non può essere annullata. Il tuo account e tutti i dati associati verranno eliminati permanentemente, incluse tutte le foto, album, gallerie e messaggi.
+                              {t("settings.deleteWarning")}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel className="border-white/10 text-white/70">Annulla</AlertDialogCancel>
+                            <AlertDialogCancel className="border-white/10 text-white/70">{t("common.cancel")}</AlertDialogCancel>
                             <AlertDialogAction className="bg-red-500 hover:bg-red-600 text-white">
-                              Sì, elimina il mio account
+                              {t("settings.yesDeleteAccount")}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -766,7 +767,7 @@ export default function ImpostazioniPage() {
 
       <footer className="border-t border-white/5 py-4 px-4 text-center text-xs text-white/20 mt-8">
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">Memoro</span>
-        <span className="ml-1">&mdash; Condividi i Tuoi Ricordi</span>
+        <span className="ml-1">&mdash; {t("home.footerShort")}</span>
       </footer>
     </div>
   );

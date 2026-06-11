@@ -134,6 +134,7 @@ function HeroSection() {
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useI18n();
 
   // Redirect logged-in users to explore page
   useEffect(() => {

@@ -128,3 +128,213 @@
 - Photo delete gracefully handles both blob and local file URLs
 - Do NOT run `bun run build` or `prisma db push` locally — they require a real Postgres connection
 - ESLint passes with no errors after all changes
+
+---
+
+## Task ID: i18n-foto-page
+
+### i18n Migration for `/src/app/foto/[id]/page.tsx`
+
+#### Completed Changes
+
+1. **Added i18n import and hook**
+   - Added `import { useI18n } from "@/lib/i18n";` at top of file
+   - Added `const { t } = useI18n();` inside `FotoDetailPage` component
+
+2. **Replaced all hardcoded Italian visible text with t() calls** (38 replacements total):
+
+   | Original Italian | Translation Key |
+   |---|---|
+   | `"Foto non trovata"` (error state) | `t("photo.notFound")` |
+   | `"Errore nel caricamento della foto"` | `t("common.error")` |
+   | `"Sei sicuro di voler eliminare questa foto?"` | `t("photo.deleteConfirm")` |
+   | `"Foto non trovata"` (fallback display) | `t("photo.notFound")` |
+   | `Torna a Esplora` | `{t("photo.backToExplore")}` |
+   | `placeholder="Aggiungi una descrizione..."` | `placeholder={t("photo.addDescription")}` |
+   | `Preferito` | `{t("photo.favorite")}` |
+   | `Galleria` | `{t("photo.gallery")}` |
+   | `Condividi` | `{t("photo.share")}` |
+   | `Scarica` | `{t("photo.download")}` |
+   | `Modifica` | `{t("photo.edit")}` |
+   | `Aggiungi ai gruppi` (dropdown) | `{t("photo.addToGroups")}` |
+   | `Elimina foto` | `{t("photo.deletePhoto")}` |
+   | `Segnala` | `{t("photo.report")}` |
+   | `Salva` | `{t("common.save")}` |
+   | `Annulla` | `{t("common.cancel")}` |
+   | `Tag` (label) | `{t("photo.tag")}` |
+   | `placeholder="Tag separati da virgola..."` | `placeholder={t("photo.tagPlaceholder")}` |
+   | `Livello di sicurezza:` | `{t("safety.level")}` |
+   | `Dati EXIF` | `{t("photo.exifData")}` |
+   | `Fotocamera` | `{t("photo.camera")}` |
+   | `Obiettivo` | `{t("photo.lens")}` |
+   | `Lunghezza focale` | `{t("photo.focalLength")}` |
+   | `Apertura` | `{t("photo.aperture")}` |
+   | `Tempo di esposizione` | `{t("photo.shutterSpeed")}` |
+   | `Dettagli` | `{t("photo.details")}` |
+   | `Dimensioni` | `{t("photo.dimensions")}` |
+   | `Caricata il` | `{t("photo.uploadedOn")}` |
+   | `Album` | `{t("photo.album")}` |
+   | `Dimensione file` | `{t("photo.fileSize")}` |
+   | `Aggiungi alla galleria` (dialog title) | `{t("photo.addToGallery")}` |
+   | `Non hai ancora creato gallerie.` | `{t("photo.noGalleries")}` |
+   | `Crea una galleria` | `{t("photo.createGallery")}` |
+   | `Aggiungi ai gruppi` (dialog title) | `{t("photo.addToGroup")}` |
+   | `Non sei membro di nessun gruppo.` | `{t("photo.noGroups")}` |
+   | `Esplora i gruppi` | `{t("photo.exploreGroups")}` |
+   | `membri` | `{t("common.members")}` |
+
+3. **Not translated** (correctly excluded):
+   - `console.error("Errore nel preferito:", ...)` — developer-facing, not visible
+   - `console.error("Errore nel salvataggio:", ...)` — developer-facing, not visible
+   - `console.error("Errore nell'eliminazione:", ...)` — developer-facing, not visible
+   - Brand names, CSS classes, API endpoints, variable names — all preserved
+
+4. **Verification**: Read through entire updated file — all JSX is valid, all Italian visible text replaced, no broken tags
+
+---
+
+## Task ID: 2
+
+### i18n Migration for `/src/app/impostazioni/page.tsx` (Settings Page)
+
+#### Completed Changes
+
+1. **Added i18n import and hook**
+   - Added `import { useI18n } from "@/lib/i18n";` at top of file
+   - Added `const { t } = useI18n();` inside `ImpostazioniPage` component
+
+2. **Moved `sidebarItems` inside component** so it can use `t()`:
+   - Was: top-level `const sidebarItems = [...]` with hardcoded Italian labels
+   - Now: inside component function, using `t("settings.profile")`, `t("settings.privacy")`, etc.
+
+3. **Fixed typo bug**:
+   - Line was: `}, andleSaveSettings]);` (missing `[` and `h`)
+   - Fixed to: `}, [handleSaveSettings]);`
+
+4. **Replaced all hardcoded Italian visible text with t() calls** (~70+ replacements):
+
+   **Page header & auth:**
+   | Original | Key |
+   |---|---|
+   | `"Impostazioni"` | `t("settings.title")` |
+   | `"Gestisci il tuo account e le tue preferenze"` | `t("settings.subtitle")` |
+   | `"Accedi per gestire le impostazioni"` | `t("settings.loginToManage")` |
+   | `"Effettua l'accesso per visualizzare e modificare le tue impostazioni"` | `t("settings.loginToManageDesc")` |
+
+   **Profile section:**
+   | Original | Key |
+   |---|---|
+   | `"Il tuo profilo"` | `t("settings.profileTitle")` |
+   | `"Gestisci le informazioni del tuo profilo pubblico"` | `t("settings.profileDesc")` |
+   | `"Cambia avatar"` | `t("settings.changeAvatar")` |
+   | `"Nome"` | `t("settings.name")` |
+   | `"Bio"` | `t("settings.bio")` |
+   | `"Racconta qualcosa di te..."` | `t("settings.bioPlaceholder")` |
+   | `"Posizione"` | `t("settings.location")` |
+   | `"es. Roma, Italia"` | `t("settings.locationPlaceholder")` |
+   | `"Sito web"` | `t("settings.website")` |
+   | `"Salva profilo"` / `"Salvataggio..."` | `t("settings.saveProfile")` / `t("common.saving")` |
+   | `"Profilo aggiornato"` | `t("settings.profileUpdated")` |
+   | `"Errore nell'aggiornamento del profilo"` | `t("settings.profileUpdateError")` |
+
+   **Privacy section:**
+   | Original | Key |
+   |---|---|
+   | `"Privacy e autorizzazioni"` | `t("settings.privacyTitle")` |
+   | `"Controlla chi può vedere e interagire con i tuoi contenuti"` | `t("settings.privacyDesc")` |
+   | `"Visibilità del profilo"` | `t("settings.profileVisibility")` |
+   | `"Pubblico"` / `"Solo contatti"` / `"Privato"` | `t("settings.public")` / `t("settings.contactsOnly")` / `t("settings.private")` |
+   | `"Chi può inviarti messaggi"` | `t("settings.whoCanMessage")` |
+   | `"Tutti"` / `"Nessuno"` | `t("settings.everyone")` / `t("settings.nobody")` |
+   | `"Permetti commenti"` + desc | `t("settings.allowComments")` + `t("settings.allowCommentsDesc")` |
+   | `"Permetti download"` + desc | `t("settings.allowDownloads")` + `t("settings.allowDownloadsDesc")` |
+   | `"Mostra rullino"` + desc | `t("settings.showCameraRoll")` + `t("settings.showCameraRollDesc")` |
+
+   **Content Filters section:**
+   | Original | Key |
+   |---|---|
+   | `"Filtri contenuti"` | `t("settings.contentFiltersTitle")` |
+   | `"Gestisci i filtri per i contenuti adulti"` | `t("settings.contentFiltersDesc")` |
+   | `"Ricerca sicura (SafeSearch)"` | `t("settings.safeSearch")` |
+   | `"Rigorosa"` + desc | `t("settings.strict")` + `t("settings.strictDesc")` |
+   | `"Moderata"` + desc | `t("settings.moderate")` + `t("settings.moderateDesc")` |
+   | `"Predefinito"` | `t("settings.default")` |
+   | `"Disattivata"` + desc | `t("settings.off")` + `t("settings.offDesc")` |
+   | Badge: `"Sicuro"` / `"Moderato"` / `"Restretto"` | `t("safety.safe")` / `t("safety.moderate")` / `t("safety.restricted")` |
+   | `"Mostra contenuti per adulti"` + desc | `t("settings.showAdultContent")` + `t("settings.showAdultContentDesc")` |
+   | `"Mostra contenuti limitati"` + desc | `t("settings.showRestrictedContent")` + `t("settings.showRestrictedContentDesc")` |
+   | `"Consenti caricamenti per adulti"` + desc | `t("settings.allowMatureUploads")` + `t("settings.allowMatureUploadsDesc")` |
+   | Warning paragraph | `t("settings.adultContentWarning")` |
+
+   **Notifications section:**
+   | Original | Key |
+   |---|---|
+   | `"Notifiche"` | `t("settings.notificationsTitle")` |
+   | `"Scegli quali notifiche ricevere"` | `t("settings.notificationsDesc")` |
+   | `"Notifiche email"` + desc | `t("settings.emailNotifications")` + `t("settings.emailNotificationsDesc")` |
+   | `"Preferiti"` + desc | `t("settings.notifyFavorites")` + `t("settings.notifyFavoritesDesc")` |
+   | `"Commenti"` + desc | `t("settings.notifyComments")` + `t("settings.notifyCommentsDesc")` |
+   | `"Nuovi follower"` + desc | `t("settings.notifyFollows")` + `t("settings.notifyFollowsDesc")` |
+   | `"Inviti ai gruppi"` + desc | `t("settings.notifyGroupInvites")` + `t("settings.notifyGroupInvitesDesc")` |
+   | `"Messaggi"` + desc | `t("settings.notifyMessages")` + `t("settings.notifyMessagesDesc")` |
+
+   **Appearance section:**
+   | Original | Key |
+   |---|---|
+   | `"Aspetto"` | `t("settings.appearanceTitle")` |
+   | `"Personalizza l'aspetto di Memoro"` | `t("settings.appearanceDesc")` |
+   | `"Tema"` | `t("settings.theme")` |
+   | `"Scuro"` / `"Chiaro"` / `"Sistema"` | `t("settings.dark")` / `t("settings.light")` / `t("settings.system")` |
+   | `"Vista predefinita"` | `t("settings.defaultView")` |
+   | `"Griglia"` / `"Lista"` / `"Giustificata"` | `t("settings.gridView")` / `t("settings.listView")` / `t("settings.justifiedView")` |
+   | `"Lingua"` | `t("common.language")` |
+
+   **EXIF section:**
+   | Original | Key |
+   |---|---|
+   | `"Dati EXIF"` | `t("settings.exifTitle")` |
+   | `"Gestisci la visibilità dei dati EXIF delle tue foto"` | `t("settings.exifDesc")` |
+   | `"Mostra dati EXIF"` + desc | `t("settings.showExif")` + `t("settings.showExifDesc")` |
+
+   **Account section:**
+   | Original | Key |
+   |---|---|
+   | `"Cambia password"` | `t("settings.changePassword")` |
+   | `"Aggiorna la tua password..."` | `t("settings.changePasswordDesc")` |
+   | `"Password attuale"` / `"Nuova password"` / `"Conferma nuova password"` | `t("settings.currentPassword")` / `t("settings.newPassword")` / `t("settings.confirmNewPassword")` |
+   | `"Aggiorna password"` | `t("settings.updatePassword")` |
+   | `"Le password non coincidono"` | `t("settings.passwordMismatch")` |
+   | `"Password aggiornata"` | `t("settings.passwordUpdated")` |
+   | `"Elimina account"` | `t("settings.deleteAccount")` |
+   | `"Questa azione è irreversibile..."` | `t("settings.deleteAccountDesc")` |
+   | `"Elimina il mio account"` | `t("settings.deleteMyAccount")` |
+   | `"Sei assolutamente sicuro?"` | `t("settings.areYouSure")` |
+   | `"Questa azione non può essere annullata..."` | `t("settings.deleteWarning")` |
+   | `"Sì, elimina il mio account"` | `t("settings.yesDeleteAccount")` |
+   | `"Annulla"` | `t("common.cancel")` |
+
+   **Toast messages:**
+   | Original | Key |
+   |---|---|
+   | `"Impostazioni salvate"` | `t("settings.settingsSaved")` |
+   | `"Errore nel salvataggio delle impostazioni"` | `t("settings.saveError")` |
+   | `"Errore nel salvataggio"` | `t("settings.saveError")` |
+
+   **Footer:**
+   | Original | Key |
+   |---|---|
+   | `"Condividi i Tuoi Ricordi"` | `t("home.footerShort")` |
+
+5. **Not translated** (correctly excluded):
+   - `ImpostazioniPage` — component name, not visible text
+   - `"Memoro"` — brand name
+   - `"https://..."` — URL placeholder
+   - Language names (`Italiano`, `English`, `Français`, `Deutsch`, `Español`) — native language names are intentional
+   - `console.error("Errore:", err)` — developer-facing, not visible
+   - CSS classes, API endpoints, variable names, HTML entities (`&apos;`, `&mdash;`)
+
+6. **Renamed variable**: In the appearance section theme options `.map()`, renamed the loop variable from `t` to `themeOpt` to avoid shadowing the i18n `t` function.
+
+7. **Added `t` to useCallback deps**: `handleSaveSettings` and `handleSaveProfile` now include `t` in their dependency arrays since they call `t()` inside.
+
+8. **Verification**: Checked for remaining hardcoded Italian strings (none found except component name), confirmed typo fix, confirmed sidebarItems moved inside component

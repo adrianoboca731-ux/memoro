@@ -62,12 +62,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function FotoDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
   const photoId = params.id as string;
+  const { t } = useI18n();
 
   const [photo, setPhoto] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -99,10 +101,10 @@ export default function FotoDetailPage() {
         setEditTags(data.tags || "");
       } else {
         const data = await res.json();
-        setError(data.error || "Foto non trovata");
+        setError(data.error || t("photo.notFound"));
       }
     } catch (err) {
-      setError("Errore nel caricamento della foto");
+      setError(t("common.error"));
     } finally {
       setLoading(false);
     }
@@ -143,7 +145,7 @@ export default function FotoDetailPage() {
   }, [photoId, photo, editTitle, editDescription, editTags]);
 
   const handleDelete = useCallback(async () => {
-    if (!confirm("Sei sicuro di voler eliminare questa foto?")) return;
+    if (!confirm(t("photo.deleteConfirm"))) return;
     try {
       const res = await fetch(`/api/photos/${photoId}`, { method: "DELETE" });
       if (res.ok) {
@@ -176,10 +178,10 @@ export default function FotoDetailPage() {
         <Header />
         <div className="flex flex-col items-center justify-center h-[calc(100vh-56px)] text-white/50">
           <Camera className="h-16 w-16 mb-4 opacity-30" />
-          <p className="text-lg font-medium">{error || "Foto non trovata"}</p>
+          <p className="text-lg font-medium">{error || t("photo.notFound")}</p>
           <Link href="/esplora">
             <Button variant="outline" className="mt-4 border-white/20 text-white hover:bg-white/5">
-              Torna a Esplora
+              {t("photo.backToExplore")}
             </Button>
           </Link>
         </div>
@@ -222,7 +224,7 @@ export default function FotoDetailPage() {
                 <Textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  placeholder="Aggiungi una descrizione..."
+                  placeholder={t("photo.addDescription")}
                   rows={3}
                   className="bg-white/10 border-white/20 text-white text-sm resize-none"
                 />
@@ -285,7 +287,7 @@ export default function FotoDetailPage() {
                 }`}
               >
                 <Heart className={`h-4 w-4 ${isFavorited ? "fill-[#ff0084]" : ""}`} />
-                Preferito
+                {t("photo.favorite")}
               </Button>
 
               <Button
@@ -295,7 +297,7 @@ export default function FotoDetailPage() {
                 className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
               >
                 <BookmarkPlus className="h-4 w-4" />
-                Galleria
+                {t("photo.gallery")}
               </Button>
 
               <Button
@@ -304,7 +306,7 @@ export default function FotoDetailPage() {
                 className="gap-1.5 border-white/10 text-white/70 hover:text-white hover:bg-white/5"
               >
                 <Share2 className="h-4 w-4" />
-                Condividi
+                {t("photo.share")}
               </Button>
 
               <Button
@@ -315,7 +317,7 @@ export default function FotoDetailPage() {
               >
                 <a href={photo.filepath} download target="_blank" rel="noopener noreferrer">
                   <Download className="h-4 w-4" />
-                  Scarica
+                  {t("photo.download")}
                 </a>
               </Button>
 
@@ -329,19 +331,19 @@ export default function FotoDetailPage() {
                   {isOwner && (
                     <>
                       <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setIsEditing(true)}>
-                        <Edit3 className="h-4 w-4 mr-2" /> Modifica
+                        <Edit3 className="h-4 w-4 mr-2" /> {t("photo.edit")}
                       </DropdownMenuItem>
                       <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer" onClick={() => setAddToGroupOpen(true)}>
-                        <Users className="h-4 w-4 mr-2" /> Aggiungi ai gruppi
+                        <Users className="h-4 w-4 mr-2" /> {t("photo.addToGroups")}
                       </DropdownMenuItem>
                       <DropdownMenuItem className="text-red-400 focus:text-red-300 focus:bg-white/5 cursor-pointer" onClick={handleDelete}>
-                        <Trash2 className="h-4 w-4 mr-2" /> Elimina foto
+                        <Trash2 className="h-4 w-4 mr-2" /> {t("photo.deletePhoto")}
                       </DropdownMenuItem>
                     </>
                   )}
                   {!isOwner && (
                     <DropdownMenuItem className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer">
-                      Segnala
+                      {t("photo.report")}
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -352,10 +354,10 @@ export default function FotoDetailPage() {
             {isEditing && (
               <div className="flex gap-2">
                 <Button size="sm" onClick={handleSave} className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1.5">
-                  <Save className="h-4 w-4" /> Salva
+                  <Save className="h-4 w-4" /> {t("common.save")}
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} className="border-white/20 text-white/70">
-                  Annulla
+                  {t("common.cancel")}
                 </Button>
               </div>
             )}
@@ -365,12 +367,12 @@ export default function FotoDetailPage() {
             {/* Tags */}
             {(photo.tags || isEditing) && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Tag</p>
+                <p className="text-xs font-medium text-white/40 uppercase tracking-wider">{t("photo.tag")}</p>
                 {isEditing ? (
                   <Input
                     value={editTags}
                     onChange={(e) => setEditTags(e.target.value)}
-                    placeholder="Tag separati da virgola..."
+                    placeholder={t("photo.tagPlaceholder")}
                     className="bg-white/5 border-white/10 text-white text-sm"
                   />
                 ) : (
@@ -393,7 +395,7 @@ export default function FotoDetailPage() {
             {/* Safety level */}
             {photo.safetyLevel && photo.safetyLevel !== "safe" && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-white/40">Livello di sicurezza:</span>
+                <span className="text-xs text-white/40">{t("safety.level")}</span>
                 <SafetyBadge level={photo.safetyLevel} />
               </div>
             )}
@@ -408,7 +410,7 @@ export default function FotoDetailPage() {
                   onClick={() => setShowExif(!showExif)}
                 >
                   <p className="text-xs font-medium text-white/40 uppercase tracking-wider flex items-center gap-1.5">
-                    <Camera className="h-3.5 w-3.5" /> Dati EXIF
+                    <Camera className="h-3.5 w-3.5" /> {t("photo.exifData")}
                   </p>
                   {showExif ? (
                     <ChevronUp className="h-4 w-4 text-white/30" />
@@ -428,7 +430,7 @@ export default function FotoDetailPage() {
                         {photo.exif.camera && (
                           <div className="flex justify-between">
                             <span className="text-white/40 flex items-center gap-1.5">
-                              <Camera className="h-3 w-3" /> Fotocamera
+                              <Camera className="h-3 w-3" /> {t("photo.camera")}
                             </span>
                             <span className="text-white/70">{photo.exif.camera}</span>
                           </div>
@@ -436,28 +438,28 @@ export default function FotoDetailPage() {
                         {photo.exif.lens && (
                           <div className="flex justify-between">
                             <span className="text-white/40 flex items-center gap-1.5">
-                              <Aperture className="h-3 w-3" /> Obiettivo
+                              <Aperture className="h-3 w-3" /> {t("photo.lens")}
                             </span>
                             <span className="text-white/70">{photo.exif.lens}</span>
                           </div>
                         )}
                         {photo.exif.focalLength && (
                           <div className="flex justify-between">
-                            <span className="text-white/40">Lunghezza focale</span>
+                            <span className="text-white/40">{t("photo.focalLength")}</span>
                             <span className="text-white/70">{photo.exif.focalLength}</span>
                           </div>
                         )}
                         {photo.exif.aperture && (
                           <div className="flex justify-between">
                             <span className="text-white/40 flex items-center gap-1.5">
-                              <Gauge className="h-3 w-3" /> Apertura
+                              <Gauge className="h-3 w-3" /> {t("photo.aperture")}
                             </span>
                             <span className="text-white/70">f/{photo.exif.aperture}</span>
                           </div>
                         )}
                         {photo.exif.shutterSpeed && (
                           <div className="flex justify-between">
-                            <span className="text-white/40">Tempo di esposizione</span>
+                            <span className="text-white/40">{t("photo.shutterSpeed")}</span>
                             <span className="text-white/70">{photo.exif.shutterSpeed}</span>
                           </div>
                         )}
@@ -478,16 +480,16 @@ export default function FotoDetailPage() {
 
             {/* Photo details */}
             <div className="space-y-2.5 text-sm">
-              <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Dettagli</p>
+              <p className="text-xs font-medium text-white/40 uppercase tracking-wider">{t("photo.details")}</p>
               {photo.width && photo.height && (
                 <div className="flex justify-between">
-                  <span className="text-white/40">Dimensioni</span>
+                  <span className="text-white/40">{t("photo.dimensions")}</span>
                   <span className="text-white/70">{photo.width} × {photo.height}</span>
                 </div>
               )}
               <div className="flex justify-between">
                 <span className="text-white/40 flex items-center gap-1.5">
-                  <Calendar className="h-3 w-3" /> Caricata il
+                  <Calendar className="h-3 w-3" /> {t("photo.uploadedOn")}
                 </span>
                 <span className="text-white/70">
                   {format(new Date(photo.createdAt), "d MMMM yyyy", { locale: it })}
@@ -496,7 +498,7 @@ export default function FotoDetailPage() {
               {photo.album && (
                 <div className="flex justify-between items-center">
                   <span className="text-white/40 flex items-center gap-1.5">
-                    <Folder className="h-3 w-3" /> Album
+                    <Folder className="h-3 w-3" /> {t("photo.album")}
                   </span>
                   <Link href={`/album/${photo.album.id}`}>
                     <Badge variant="secondary" className="text-xs bg-white/10 text-white/60 border-0 hover:bg-white/15 cursor-pointer">
@@ -506,7 +508,7 @@ export default function FotoDetailPage() {
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-white/40">Dimensione file</span>
+                <span className="text-white/40">{t("photo.fileSize")}</span>
                 <span className="text-white/70">
                   {photo.size > 1048576
                     ? `${(photo.size / 1048576).toFixed(1)} MB`
@@ -530,13 +532,13 @@ export default function FotoDetailPage() {
       <Dialog open={addToGalleryOpen} onOpenChange={setAddToGalleryOpen}>
         <DialogContent className="bg-[#2a2a2d] border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Aggiungi alla galleria</DialogTitle>
+            <DialogTitle className="text-white">{t("photo.addToGallery")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {galleries.length === 0 ? (
               <p className="text-sm text-white/40 text-center py-4">
-                Non hai ancora creato gallerie.
-                <Link href="/gallerie" className="text-[#0063dc] hover:underline ml-1">Crea una galleria</Link>
+                {t("photo.noGalleries")}
+                <Link href="/gallerie" className="text-[#0063dc] hover:underline ml-1">{t("photo.createGallery")}</Link>
               </p>
             ) : (
               galleries.map((g) => (
@@ -567,13 +569,13 @@ export default function FotoDetailPage() {
       <Dialog open={addToGroupOpen} onOpenChange={setAddToGroupOpen}>
         <DialogContent className="bg-[#2a2a2d] border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Aggiungi ai gruppi</DialogTitle>
+            <DialogTitle className="text-white">{t("photo.addToGroup")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {groups.length === 0 ? (
               <p className="text-sm text-white/40 text-center py-4">
-                Non sei membro di nessun gruppo.
-                <Link href="/gruppi" className="text-[#0063dc] hover:underline ml-1">Esplora i gruppi</Link>
+                {t("photo.noGroups")}
+                <Link href="/gruppi" className="text-[#0063dc] hover:underline ml-1">{t("photo.exploreGroups")}</Link>
               </p>
             ) : (
               groups.map((g) => (
@@ -594,7 +596,7 @@ export default function FotoDetailPage() {
                   <Users className="h-8 w-8 text-white/20" />
                   <div>
                     <span className="text-sm text-white/80 block">{g.name}</span>
-                    <span className="text-xs text-white/30">{g.memberCount} membri</span>
+                    <span className="text-xs text-white/30">{g.memberCount} {t("common.members")}</span>
                   </div>
                 </button>
               ))

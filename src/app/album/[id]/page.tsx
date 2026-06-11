@@ -90,7 +90,7 @@ export default function AlbumDetailPage() {
   }, [albumId, album, editName, editDescription]);
 
   const handleDeleteAlbum = useCallback(async () => {
-    if (!confirm("t("albums.deleteAlbumAndPhotos")")) return;
+    if (!confirm(t("albums.deleteAlbumAndPhotos"))) return;
     try {
       const res = await fetch(`/api/albums/${albumId}`, { method: "DELETE" });
       if (res.ok) router.push("/album");

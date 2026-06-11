@@ -76,7 +76,7 @@ export default function GalleriePage() {
   }, [newName, newDesc]);
 
   const handleDelete = useCallback(async (id: string) => {
-    if (!confirm("t("galleries.deleteConfirm")")) return;
+    if (!confirm(t("galleries.deleteConfirm"))) return;
     try {
       const res = await fetch(`/api/galleries/${id}`, { method: "DELETE" });
       if (res.ok) setGalleries((prev) => prev.filter((g) => g.id !== id));

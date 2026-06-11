@@ -209,7 +209,7 @@ export default function GruppoDetailPage() {
             <div className="flex items-center gap-4 text-sm text-white/50">
               <Badge variant="secondary" className="gap-1 bg-white/10 text-white/60 border-0">
                 {group.isPublic ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                {group.isPublic ? "t("groups.public") : t("groups.private")}
+                {group.isPublic ? t("groups.public") : t("groups.private")}
               </Badge>
               <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {group.memberCount} {t("common.members")}</span>
               <span className="flex items-center gap-1"><ImageIcon className="h-4 w-4" /> {group.photoCount} {t("common.photos")}</span>
