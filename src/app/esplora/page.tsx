@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/header";
 import { PhotoCard } from "@/components/photo-card";
 import { EmptyState } from "@/components/empty-state";
-import { Compass, TrendingUp, Eye, Clock, Camera } from "lucide-react";
+import { Compass, Eye, Clock, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -20,8 +19,6 @@ export default function EsploraPage() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("interesting");
-  const [trendingTags, setTrendingTags] = useState<string[]>([]);
-
   const fetchPhotos = useCallback(async () => {
     setLoading(true);
     try {
@@ -43,12 +40,6 @@ export default function EsploraPage() {
   useEffect(() => {
     fetchPhotos();
   }, [fetchPhotos]);
-
-  useEffect(() => {
-    // Load translated trending tags
-    const tags = t("explore.tags").split(",");
-    setTrendingTags(tags);
-  }, [t]);
 
   const filters: { key: FilterType; label: string; icon: typeof Compass }[] = [
     { key: "interesting", label: t("explore.interesting"), icon: Compass },
@@ -133,26 +124,6 @@ export default function EsploraPage() {
 
             {/* Sidebar */}
             <aside className="hidden lg:block w-72 shrink-0 space-y-6">
-              {/* Trending */}
-              <div className="bg-white/5 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2 mb-3">
-                  <TrendingUp className="h-4 w-4 text-[#ff0084]" />
-                  {t("explore.trending")}
-                </h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {trendingTags.map((tag) => (
-                    <Link key={tag} href={`/cerca?q=${tag}`}>
-                      <Badge
-                        variant="secondary"
-                        className="text-xs bg-white/10 text-white/60 hover:bg-white/15 border-0 cursor-pointer"
-                      >
-                        {tag}
-                      </Badge>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
               {/* Most viewed today */}
               <div className="bg-white/5 rounded-lg p-4">
                 <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2 mb-3">
