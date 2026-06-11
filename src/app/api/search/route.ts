@@ -3,6 +3,19 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+function computeShouldBlur(
+  photo: { isMature: boolean; safetyLevel: string; userId: string },
+  viewerId: string | null | undefined,
+  userSafeSearch: string,
+  showMatureContent: boolean
+): boolean {
+  if (viewerId && photo.userId === viewerId) return false;
+  if (showMatureContent) return false;
+  if ((photo.isMature || photo.safetyLevel === "restricted") && userSafeSearch !== "off") return true;
+  if (photo.safetyLevel === "moderate" && userSafeSearch === "strict") return true;
+  return false;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -18,11 +31,16 @@ export async function GET(request: NextRequest) {
     // Get user safety settings
     const session = await getServerSession(authOptions);
     let userSafeSearch = "moderate";
-    if (session?.user?.id) {
+    let showMatureContent = false;
+    const viewerId = (session?.user as any)?.id;
+    if (viewerId) {
       const settings = await db.userSettings.findUnique({
-        where: { userId: (session.user as any).id },
+        where: { userId: viewerId },
       });
-      if (settings) userSafeSearch = settings.safeSearch;
+      if (settings) {
+        userSafeSearch = settings.safeSearch;
+        showMatureContent = settings.showMatureContent;
+      }
     }
 
     const skip = (page - 1) * limit;
@@ -36,12 +54,8 @@ export async function GET(request: NextRequest) {
         ],
       };
 
-      // Apply safety filter
-      if (userSafeSearch === "strict") {
-        where.safetyLevel = "safe";
-      } else if (userSafeSearch === "moderate") {
-        where.safetyLevel = { in: ["safe", "moderate"] };
-      }
+      // No longer filter by safety level in the where clause
+      // Instead, add shouldBlur flag to each photo
 
       const [photos, total] = await Promise.all([
         db.photo.findMany({
@@ -66,6 +80,12 @@ export async function GET(request: NextRequest) {
           favoriteCount: p._count.favorites,
           commentCount: p._count.comments,
           _count: undefined,
+          shouldBlur: computeShouldBlur(
+            { isMature: p.isMature, safetyLevel: p.safetyLevel, userId: p.userId },
+            viewerId,
+            userSafeSearch,
+            showMatureContent
+          ),
         })),
         total,
         page,

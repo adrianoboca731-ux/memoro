@@ -32,6 +32,8 @@ import {
   BookmarkPlus,
   Users,
   ExternalLink,
+  AlertTriangle,
+  ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,6 +86,7 @@ export default function FotoDetailPage() {
   const [editDescription, setEditDescription] = useState("");
   const [editTags, setEditTags] = useState("");
   const [showExif, setShowExif] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [addToGalleryOpen, setAddToGalleryOpen] = useState(false);
   const [addToGroupOpen, setAddToGroupOpen] = useState(false);
   const [galleries, setGalleries] = useState<any[]>([]);
@@ -207,8 +210,39 @@ export default function FotoDetailPage() {
             transition={{ duration: 0.4 }}
             src={photo.filepath}
             alt={photo.title}
-            className="max-w-full max-h-[calc(100vh-56px)] object-contain"
+            className={`max-w-full max-h-[calc(100vh-56px)] object-contain ${
+              photo.shouldBlur && !revealed ? "blur-xl" : ""
+            }`}
           />
+          {/* Mature/restricted content overlay */}
+          {photo.shouldBlur && !revealed && (
+            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 z-10 p-6">
+              {photo.safetyLevel === "restricted" ? (
+                <ShieldAlert className="h-12 w-12 text-red-400/80" />
+              ) : (
+                <AlertTriangle className="h-12 w-12 text-amber-400/80" />
+              )}
+              <p className="text-white font-semibold text-lg text-center">
+                {photo.safetyLevel === "restricted" ? t("photo.restrictedContent") : t("photo.matureContent")}
+              </p>
+              <p className="text-white/50 text-sm text-center max-w-md">
+                {photo.safetyLevel === "restricted" ? t("photo.restrictedContentDesc") : t("photo.matureContentDesc")}
+              </p>
+              <Button
+                size="default"
+                variant="outline"
+                className="mt-2 border-white/20 text-white hover:bg-white/10 gap-2"
+                onClick={() => {
+                  if (confirm(t("photo.confirmShowMature"))) {
+                    setRevealed(true);
+                  }
+                }}
+              >
+                <Eye className="h-4 w-4" />
+                {t("photo.showContent")}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Right sidebar (30%) */}

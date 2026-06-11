@@ -3,29 +3,33 @@ import { db } from "@/lib/db";
 
 export async function POST() {
   try {
-    // Add cover_image and logo_image columns to users table
     const migrations: string[] = [
+      // Cover and logo for users
       `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "cover_image" TEXT`,
       `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "logo_image" TEXT`,
+      // Follow approval system: add status column to follows
+      `ALTER TABLE "follows" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'approved'`,
     ];
+
+    const results: string[] = [];
 
     for (const sql of migrations) {
       try {
         await db.$executeRawUnsafe(sql);
-        console.log("Migration applied:", sql);
+        results.push(`Applied: ${sql.substring(0, 80)}...`);
       } catch (err: any) {
-        // Column might already exist
-        if (err.message?.includes("already exists")) {
-          console.log("Already exists, skipping:", sql);
+        if (err.message?.includes("already exists") || err.message?.includes("default value")) {
+          results.push(`Already exists: ${sql.substring(0, 80)}...`);
         } else {
-          throw err;
+          results.push(`Error: ${err.message}`);
         }
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: "Migrations applied: cover_image, logo_image added to users",
+      message: "Migrations applied",
+      results,
     });
   } catch (error: any) {
     console.error("Migration error:", error.message);

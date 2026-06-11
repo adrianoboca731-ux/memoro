@@ -37,33 +37,31 @@ export async function GET(
       );
     }
 
-    // Check safety level against user settings
+    // Compute shouldBlur based on user settings instead of blocking
     const session = await getServerSession(authOptions);
     let userSafeSearch = "moderate";
-    if (session?.user?.id) {
+    let showMatureContent = false;
+    const viewerId = (session?.user as any)?.id;
+    if (viewerId) {
       const settings = await db.userSettings.findUnique({
-        where: { userId: (session.user as any).id },
+        where: { userId: viewerId },
       });
-      if (settings) userSafeSearch = settings.safeSearch;
+      if (settings) {
+        userSafeSearch = settings.safeSearch;
+        showMatureContent = settings.showMatureContent;
+      }
     }
 
-    if (
-      userSafeSearch === "strict" &&
-      photo.safetyLevel !== "safe"
-    ) {
-      return NextResponse.json(
-        { error: "Contenuto non disponibile con le tue impostazioni" },
-        { status: 403 }
-      );
-    }
-    if (
-      userSafeSearch === "moderate" &&
-      photo.safetyLevel === "restricted"
-    ) {
-      return NextResponse.json(
-        { error: "Contenuto riservato" },
-        { status: 403 }
-      );
+    // Compute shouldBlur: photo owner always sees unblurred, showMatureContent bypasses blur
+    let shouldBlur = false;
+    if (viewerId && photo.userId === viewerId) {
+      shouldBlur = false;
+    } else if (showMatureContent) {
+      shouldBlur = false;
+    } else if ((photo.isMature || photo.safetyLevel === "restricted") && userSafeSearch !== "off") {
+      shouldBlur = true;
+    } else if (photo.safetyLevel === "moderate" && userSafeSearch === "strict") {
+      shouldBlur = true;
     }
 
     // Increment view count
@@ -86,6 +84,7 @@ export async function GET(
       favoriteCount: photo._count.favorites,
       commentCount: photo._count.comments,
       isFavorited,
+      shouldBlur,
       favorites: undefined,
       _count: undefined,
     });

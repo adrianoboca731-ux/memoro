@@ -545,6 +545,19 @@ const it: TranslationDict = {
   "profile.logoTooLarge": "Immagine troppo grande. Massimo 5MB.",
   "profile.privateProfile": "Profilo Privato",
   "profile.privateProfileDesc": "Questo profilo è privato. Solo i follower approvati possono vedere le foto e i dettagli.",
+  "profile.pendingFollow": "In attesa",
+  "profile.followPending": "Richiesta inviata",
+  "profile.followPendingDesc": "Questo profilo è privato. Il proprietario deve approvare la tua richiesta.",
+  "profile.pendingRequests": "Richieste in attesa",
+  "profile.approveFollow": "Approva",
+  "profile.rejectFollow": "Rifiuta",
+  "profile.noPendingRequests": "Nessuna richiesta in attesa",
+  "photo.matureContent": "Contenuto maturo",
+  "photo.matureContentDesc": "Questa foto è segnalata come contenuto maturo. Clicca per visualizzarla.",
+  "photo.restrictedContent": "Contenuto riservato",
+  "photo.restrictedContentDesc": "Questa foto è classificata come contenuto riservato. Modifica le impostazioni del filtro per visualizzarla.",
+  "photo.showContent": "Mostra",
+  "photo.confirmShowMature": "Vuoi visualizzare questo contenuto maturo?",
 };
 
 const en: TranslationDict = {
@@ -1079,6 +1092,19 @@ const en: TranslationDict = {
   "profile.logoTooLarge": "Image too large. Maximum 5MB.",
   "profile.privateProfile": "Private Profile",
   "profile.privateProfileDesc": "This profile is private. Only approved followers can see photos and details.",
+  "profile.pendingFollow": "Pending",
+  "profile.followPending": "Request sent",
+  "profile.followPendingDesc": "This profile is private. The owner needs to approve your request.",
+  "profile.pendingRequests": "Pending requests",
+  "profile.approveFollow": "Approve",
+  "profile.rejectFollow": "Reject",
+  "profile.noPendingRequests": "No pending requests",
+  "photo.matureContent": "Mature content",
+  "photo.matureContentDesc": "This photo is marked as mature content. Click to view it.",
+  "photo.restrictedContent": "Restricted content",
+  "photo.restrictedContentDesc": "This photo is classified as restricted content. Change your filter settings to view it.",
+  "photo.showContent": "Show",
+  "photo.confirmShowMature": "Do you want to view this mature content?",
 };
 
 const fr: TranslationDict = {
@@ -1613,6 +1639,19 @@ const fr: TranslationDict = {
   "profile.logoTooLarge": "Image trop grande. Maximum 5 Mo.",
   "profile.privateProfile": "Profil Privé",
   "profile.privateProfileDesc": "Ce profil est privé. Seuls les abonnés approuvés peuvent voir les photos et les détails.",
+  "profile.pendingFollow": "En attente",
+  "profile.followPending": "Demande envoyée",
+  "profile.followPendingDesc": "Ce profil est privé. Le propriétaire doit approuver votre demande.",
+  "profile.pendingRequests": "Demandes en attente",
+  "profile.approveFollow": "Approuver",
+  "profile.rejectFollow": "Refuser",
+  "profile.noPendingRequests": "Aucune demande en attente",
+  "photo.matureContent": "Contenu mature",
+  "photo.matureContentDesc": "Cette photo est signalée comme contenu mature. Cliquez pour la voir.",
+  "photo.restrictedContent": "Contenu restreint",
+  "photo.restrictedContentDesc": "Cette photo est classée comme contenu restreint. Modifiez vos paramètres de filtre pour la voir.",
+  "photo.showContent": "Afficher",
+  "photo.confirmShowMature": "Voulez-vous voir ce contenu mature ?",
 };
 
 const de: TranslationDict = {
@@ -2147,6 +2186,19 @@ const de: TranslationDict = {
   "profile.logoTooLarge": "Bild zu groß. Maximal 5 MB.",
   "profile.privateProfile": "Privates Profil",
   "profile.privateProfileDesc": "Dieses Profil ist privat. Nur genehmigte Follower können Fotos und Details sehen.",
+  "profile.pendingFollow": "Ausstehend",
+  "profile.followPending": "Anfrage gesendet",
+  "profile.followPendingDesc": "Dieses Profil ist privat. Der Besitzer muss Ihre Anfrage genehmigen.",
+  "profile.pendingRequests": "Ausstehende Anfragen",
+  "profile.approveFollow": "Genehmigen",
+  "profile.rejectFollow": "Ablehnen",
+  "profile.noPendingRequests": "Keine ausstehenden Anfragen",
+  "photo.matureContent": "Inhalt für Erwachsene",
+  "photo.matureContentDesc": "Dieses Foto ist als Inhalt für Erwachsene markiert. Klicken Sie zum Anzeigen.",
+  "photo.restrictedContent": "Eingeschränkter Inhalt",
+  "photo.restrictedContentDesc": "Dieses Foto ist als eingeschränkter Inhalt klassifiziert. Ändern Sie Ihre Filtereinstellungen.",
+  "photo.showContent": "Anzeigen",
+  "photo.confirmShowMature": "Möchten Sie diesen Inhalt für Erwachsene sehen?",
 };
 
 const es: TranslationDict = {
@@ -2681,6 +2733,19 @@ const es: TranslationDict = {
   "profile.logoTooLarge": "Imagen demasiado grande. Máximo 5MB.",
   "profile.privateProfile": "Perfil Privado",
   "profile.privateProfileDesc": "Este perfil es privado. Solo los seguidores aprobados pueden ver las fotos y los detalles.",
+  "profile.pendingFollow": "Pendiente",
+  "profile.followPending": "Solicitud enviada",
+  "profile.followPendingDesc": "Este perfil es privado. El propietario debe aprobar tu solicitud.",
+  "profile.pendingRequests": "Solicitudes pendientes",
+  "profile.approveFollow": "Aprobar",
+  "profile.rejectFollow": "Rechazar",
+  "profile.noPendingRequests": "Sin solicitudes pendientes",
+  "photo.matureContent": "Contenido maduro",
+  "photo.matureContentDesc": "Esta foto está marcada como contenido maduro. Haz clic para verla.",
+  "photo.restrictedContent": "Contenido restringido",
+  "photo.restrictedContentDesc": "Esta foto está clasificada como contenido restringido. Cambia la configuración del filtro para verla.",
+  "photo.showContent": "Mostrar",
+  "photo.confirmShowMature": "¿Quieres ver este contenido maduro?",
 };
 
 const ptBR: TranslationDict = {
@@ -3215,6 +3280,19 @@ const ptBR: TranslationDict = {
   "profile.logoTooLarge": "Imagem muito grande. Máximo 5MB.",
   "profile.privateProfile": "Perfil Privado",
   "profile.privateProfileDesc": "Este perfil é privado. Apenas seguidores aprovados podem ver fotos e detalhes.",
+  "profile.pendingFollow": "Pendente",
+  "profile.followPending": "Solicitação enviada",
+  "profile.followPendingDesc": "Este perfil é privado. O proprietário precisa aprovar sua solicitação.",
+  "profile.pendingRequests": "Solicitações pendentes",
+  "profile.approveFollow": "Aprovar",
+  "profile.rejectFollow": "Rejeitar",
+  "profile.noPendingRequests": "Sem solicitações pendentes",
+  "photo.matureContent": "Conteúdo maduro",
+  "photo.matureContentDesc": "Esta foto está marcada como conteúdo maduro. Clique para visualizar.",
+  "photo.restrictedContent": "Conteúdo restrito",
+  "photo.restrictedContentDesc": "Esta foto está classificada como conteúdo restrito. Altere as configurações do filtro para visualizar.",
+  "photo.showContent": "Mostrar",
+  "photo.confirmShowMature": "Deseja visualizar este conteúdo maduro?",
 };
 
 const ja: TranslationDict = {
@@ -3749,6 +3827,19 @@ const ja: TranslationDict = {
   "profile.logoTooLarge": "画像が大きすぎます。最大5MB。",
   "profile.privateProfile": "プライベートプロフィール",
   "profile.privateProfileDesc": "このプロフィールは非公開です。承認されたフォロワーのみが写真と詳細を見ることができます。",
+  "profile.pendingFollow": "保留中",
+  "profile.followPending": "リクエスト送信済み",
+  "profile.followPendingDesc": "このプロフィールは非公開です。所有者の承認が必要です。",
+  "profile.pendingRequests": "保留中のリクエスト",
+  "profile.approveFollow": "承認",
+  "profile.rejectFollow": "拒否",
+  "profile.noPendingRequests": "保留中のリクエストはありません",
+  "photo.matureContent": "成人向けコンテンツ",
+  "photo.matureContentDesc": "この写真は成人向けコンテンツとしてマークされています。クリックして表示。",
+  "photo.restrictedContent": "制限付きコンテンツ",
+  "photo.restrictedContentDesc": "この写真は制限付きコンテンツに分類されています。フィルター設定を変更してください。",
+  "photo.showContent": "表示",
+  "photo.confirmShowMature": "この成人向けコンテンツを表示しますか？",
 };
 
 const ko: TranslationDict = {
@@ -4283,6 +4374,19 @@ const ko: TranslationDict = {
   "profile.logoTooLarge": "이미지가 너무 큽니다. 최대 5MB.",
   "profile.privateProfile": "비공개 프로필",
   "profile.privateProfileDesc": "이 프로필은 비공개입니다. 승인된 팔로워만 사진과 세부정보를 볼 수 있습니다.",
+  "profile.pendingFollow": "대기 중",
+  "profile.followPending": "요청됨",
+  "profile.followPendingDesc": "이 프로필은 비공개입니다. 소유자가 요청을 승인해야 합니다.",
+  "profile.pendingRequests": "대기 중인 요청",
+  "profile.approveFollow": "승인",
+  "profile.rejectFollow": "거절",
+  "profile.noPendingRequests": "대기 중인 요청 없음",
+  "photo.matureContent": "성인 콘텐츠",
+  "photo.matureContentDesc": "이 사진은 성인 콘텐츠로 표시되어 있습니다. 클릭하여 보기.",
+  "photo.restrictedContent": "제한된 콘텐츠",
+  "photo.restrictedContentDesc": "이 사진은 제한된 콘텐츠로 분류되어 있습니다. 필터 설정을 변경하세요.",
+  "photo.showContent": "보기",
+  "photo.confirmShowMature": "이 성인 콘텐츠를 보시겠습니까?",
 };
 
 const zhCN: TranslationDict = {
@@ -4817,6 +4921,19 @@ const zhCN: TranslationDict = {
   "profile.logoTooLarge": "图片太大。最大5MB。",
   "profile.privateProfile": "私密个人资料",
   "profile.privateProfileDesc": "此个人资料为私密状态。只有经批准的关注者才能查看照片和详细信息。",
+  "profile.pendingFollow": "待处理",
+  "profile.followPending": "已发送请求",
+  "profile.followPendingDesc": "此个人资料为私密。所有者需要批准您的请求。",
+  "profile.pendingRequests": "待处理的请求",
+  "profile.approveFollow": "批准",
+  "profile.rejectFollow": "拒绝",
+  "profile.noPendingRequests": "没有待处理的请求",
+  "photo.matureContent": "成人内容",
+  "photo.matureContentDesc": "此照片被标记为成人内容。点击查看。",
+  "photo.restrictedContent": "受限内容",
+  "photo.restrictedContentDesc": "此照片被归类为受限内容。更改过滤设置以查看。",
+  "photo.showContent": "显示",
+  "photo.confirmShowMature": "您要查看此成人内容吗？",
 };
 
 const zhTW: TranslationDict = {
@@ -5351,6 +5468,19 @@ const zhTW: TranslationDict = {
   "profile.logoTooLarge": "圖片太大。最大5MB。",
   "profile.privateProfile": "私密個人資料",
   "profile.privateProfileDesc": "此個人資料為私密狀態。只有經批准的追蹤者才能查看照片和詳細資訊。",
+  "profile.pendingFollow": "待處理",
+  "profile.followPending": "已發送請求",
+  "profile.followPendingDesc": "此個人資料為私密。擁有者需要批准您的請求。",
+  "profile.pendingRequests": "待處理的請求",
+  "profile.approveFollow": "批准",
+  "profile.rejectFollow": "拒絕",
+  "profile.noPendingRequests": "沒有待處理的請求",
+  "photo.matureContent": "成人內容",
+  "photo.matureContentDesc": "此照片被標記為成人內容。點擊查看。",
+  "photo.restrictedContent": "受限內容",
+  "photo.restrictedContentDesc": "此照片被歸類為受限內容。更改過濾設定以查看。",
+  "photo.showContent": "顯示",
+  "photo.confirmShowMature": "您要查看此成人內容嗎？",
 };
 
 export const translations: Record<string, TranslationDict> = { it, en, fr, de, es, "pt-BR": ptBR, ja, ko, "zh-CN": zhCN, "zh-TW": zhTW };

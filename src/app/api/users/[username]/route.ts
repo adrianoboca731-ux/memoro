@@ -45,6 +45,22 @@ export async function GET(
       );
     }
 
+    // Check follow status for the current viewer
+    let viewerFollowStatus: string | null = null;
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id && (session.user as any).id !== user.id) {
+      const follow = await db.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: (session.user as any).id,
+            followingId: user.id,
+          },
+        },
+        select: { status: true },
+      });
+      viewerFollowStatus = follow?.status || null;
+    }
+
     const userWithCounts = {
       ...user,
       photos: user.photos.map((p) => ({
@@ -53,6 +69,7 @@ export async function GET(
         commentCount: p._count.comments,
         _count: undefined,
       })),
+      viewerFollowStatus,
     };
 
     return NextResponse.json(userWithCounts);

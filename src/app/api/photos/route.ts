@@ -3,6 +3,28 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+function computeShouldBlur(
+  photo: { isMature: boolean; safetyLevel: string; userId: string },
+  viewerId: string | null | undefined,
+  userSafeSearch: string,
+  showMatureContent: boolean
+): boolean {
+  // Photo owner ALWAYS sees their own photos unblurred
+  if (viewerId && photo.userId === viewerId) return false;
+  // User with showMatureContent = true sees mature content unblurred
+  if (showMatureContent) return false;
+
+  // If photo isMature or safetyLevel = "restricted" AND viewer safeSearch is not "off"
+  if ((photo.isMature || photo.safetyLevel === "restricted") && userSafeSearch !== "off") {
+    return true;
+  }
+  // If photo safetyLevel = "moderate" AND viewer safeSearch = "strict"
+  if (photo.safetyLevel === "moderate" && userSafeSearch === "strict") {
+    return true;
+  }
+  return false;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -17,22 +39,22 @@ export async function GET(request: NextRequest) {
 
     const session = await getServerSession(authOptions);
     let userSafeSearch = "moderate";
-    if (session?.user?.id) {
+    let showMatureContent = false;
+    const viewerId = (session?.user as any)?.id;
+    if (viewerId) {
       const settings = await db.userSettings.findUnique({
-        where: { userId: (session.user as any).id },
+        where: { userId: viewerId },
       });
-      if (settings) userSafeSearch = settings.safeSearch;
+      if (settings) {
+        userSafeSearch = settings.safeSearch;
+        showMatureContent = settings.showMatureContent;
+      }
     }
 
     const where: Record<string, unknown> = {};
 
-    // Safety level filtering based on user settings
-    if (userSafeSearch === "strict") {
-      where.safetyLevel = "safe";
-    } else if (userSafeSearch === "moderate") {
-      where.safetyLevel = { in: ["safe", "moderate"] };
-    }
-    // "off" means no filter
+    // No longer filter by safety level in the where clause
+    // Instead, we add shouldBlur flag to each photo
 
     if (safetyLevel) {
       where.safetyLevel = safetyLevel;
@@ -94,6 +116,12 @@ export async function GET(request: NextRequest) {
       favoriteCount: photo._count.favorites,
       commentCount: photo._count.comments,
       _count: undefined,
+      shouldBlur: computeShouldBlur(
+        { isMature: photo.isMature, safetyLevel: photo.safetyLevel, userId: photo.userId },
+        viewerId,
+        userSafeSearch,
+        showMatureContent
+      ),
     }));
 
     return NextResponse.json({

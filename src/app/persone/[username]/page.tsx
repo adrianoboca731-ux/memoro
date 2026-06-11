@@ -34,6 +34,8 @@ import {
   X,
   ImageIconLucide,
   Lock,
+  Clock,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -83,8 +85,10 @@ export default function ProfiloPage() {
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followStatus, setFollowStatus] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("photostream");
   const [sortOrder, setSortOrder] = useState<"date" | "views" | "favorites">("date");
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
 
   // Cover & Logo upload states
   const [coverUploading, setCoverUploading] = useState(false);
@@ -101,6 +105,10 @@ export default function ProfiloPage() {
       if (res.ok) {
         const data = await res.json();
         setUser(data);
+        if (data.viewerFollowStatus) {
+          setFollowStatus(data.viewerFollowStatus);
+          setIsFollowing(data.viewerFollowStatus === "approved");
+        }
       }
     } catch (err) {
       console.error("Error loading profile:", err);
@@ -183,11 +191,63 @@ export default function ProfiloPage() {
 
   const isOwnProfile = session?.user && user && (session.user as any).id === user.id;
 
-  // Check if profile is viewable: own profile always visible, others only if public
-  const isProfileVisible = isOwnProfile || user.isPublic !== false;
+  // Check if profile is viewable: own profile always visible, public profiles always visible
+  // Private profiles only visible to approved followers
+  const isApprovedFollower = followStatus === "approved";
+  const isPendingFollower = followStatus === "pending";
+  const isProfileVisible = isOwnProfile || user.isPublic !== false || isApprovedFollower;
 
   // Only fetch content if profile is visible
   const canViewContent = isOwnProfile || isProfileVisible;
+
+  // Fetch pending follow requests for own private profile
+  const fetchPendingRequests = useCallback(async () => {
+    if (!isOwnProfile || user.isPublic !== false) return;
+    try {
+      const res = await fetch("/api/follows/pending");
+      if (res.ok) {
+        const data = await res.json();
+        setPendingRequests(data.requests || []);
+      }
+    } catch (err) {
+      console.error("Error fetching pending requests:", err);
+    }
+  }, [isOwnProfile, user]);
+
+  useEffect(() => {
+    if (user && isOwnProfile) {
+      fetchPendingRequests();
+    }
+  }, [user, isOwnProfile, fetchPendingRequests]);
+
+  const handleApproveFollow = useCallback(async (followId: string) => {
+    try {
+      const res = await fetch(`/api/follows/${followId}/approve`, { method: "POST" });
+      if (res.ok) {
+        setPendingRequests((prev) => prev.filter((r) => r.id !== followId));
+        toast.success(t("profile.approveFollow"));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [t]);
+
+  const handleRejectFollow = useCallback(async (followId: string) => {
+    try {
+      const res = await fetch(`/api/follows/${followId}/approve`, { method: "DELETE" });
+      if (res.ok) {
+        setPendingRequests((prev) => prev.filter((r) => r.id !== followId));
+        toast.success(t("profile.rejectFollow"));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, [t]);
+
+  const handleFollowStatusChange = useCallback((following: boolean, status: string | null) => {
+    setIsFollowing(following);
+    setFollowStatus(status);
+  }, []);
 
   // Cover upload handler
   const handleCoverChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -347,13 +407,32 @@ export default function ProfiloPage() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0 pb-2">
-                <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name}</h1>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name}</h1>
+                  <FollowButton
+                    userId={user.id}
+                    username={user.username}
+                    isPrivate={user.isPublic === false}
+                    followStatus={followStatus}
+                    onStatusChange={handleFollowStatusChange}
+                  />
+                </div>
               </div>
             </div>
             <div className="mt-8 flex flex-col items-center justify-center py-16">
-              <Lock className="h-16 w-16 text-white/10 mb-4" />
-              <h2 className="text-xl font-semibold text-white/60 mb-2">{t("profile.privateProfile")}</h2>
-              <p className="text-white/30 text-sm text-center max-w-md">{t("profile.privateProfileDesc")}</p>
+              {isPendingFollower ? (
+                <>
+                  <Clock className="h-16 w-16 text-amber-500/30 mb-4" />
+                  <h2 className="text-xl font-semibold text-amber-400/80 mb-2">{t("profile.followPending")}</h2>
+                  <p className="text-white/30 text-sm text-center max-w-md">{t("profile.followPendingDesc")}</p>
+                </>
+              ) : (
+                <>
+                  <Lock className="h-16 w-16 text-white/10 mb-4" />
+                  <h2 className="text-xl font-semibold text-white/60 mb-2">{t("profile.privateProfile")}</h2>
+                  <p className="text-white/30 text-sm text-center max-w-md">{t("profile.privateProfileDesc")}</p>
+                </>
+              )}
             </div>
           </div>
         </main>
@@ -517,7 +596,14 @@ export default function ProfiloPage() {
                   <div className="flex items-center gap-2">
                     {!isOwnProfile && (
                       <>
-                        <FollowButton userId={user.id} username={user.username} initialFollowing={isFollowing} />
+                        <FollowButton
+                          userId={user.id}
+                          username={user.username}
+                          initialFollowing={isFollowing}
+                          isPrivate={user.isPublic === false}
+                          followStatus={followStatus}
+                          onStatusChange={handleFollowStatusChange}
+                        />
                         <Link href="/messaggi">
                           <Button variant="outline" size="sm" className="gap-1.5 border-white/10 text-white/70 hover:bg-white/5 h-8">
                             <Mail className="h-3.5 w-3.5" /> {t("profile.sendMessage")}
@@ -569,6 +655,68 @@ export default function ProfiloPage() {
               )}
             </div>
           </motion.div>
+
+          {/* Pending follow requests - only for own private profile */}
+          {isOwnProfile && user.isPublic === false && pendingRequests.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-5 bg-amber-500/10 border border-amber-500/20 rounded-lg p-4"
+            >
+              <h3 className="text-sm font-semibold text-amber-400 flex items-center gap-2 mb-3">
+                <Clock className="h-4 w-4" />
+                {t("profile.pendingRequests")} ({pendingRequests.length})
+              </h3>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {pendingRequests.map((req: any) => (
+                  <div
+                    key={req.id}
+                    className="flex items-center gap-3 p-2 rounded-lg bg-white/5"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={req.follower?.avatar || undefined} />
+                      <AvatarFallback className="text-xs bg-[#0063dc] text-white">
+                        {req.follower?.name?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/persone/${req.follower?.username}`} className="text-sm font-medium text-white/80 hover:underline truncate block">
+                        {req.follower?.name}
+                      </Link>
+                      <p className="text-xs text-white/30">@{req.follower?.username}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs gap-1 border-green-500/30 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+                        onClick={() => handleApproveFollow(req.id)}
+                      >
+                        <Check className="h-3 w-3" />
+                        {t("profile.approveFollow")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs gap-1 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                        onClick={() => handleRejectFollow(req.id)}
+                      >
+                        <X className="h-3 w-3" />
+                        {t("profile.rejectFollow")}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* No pending requests info */}
+          {isOwnProfile && user.isPublic === false && pendingRequests.length === 0 && (
+            <div className="mt-3 text-xs text-white/20">
+              {t("profile.noPendingRequests")}
+            </div>
+          )}
 
           {/* Flickr-style tab navigation */}
           <div className="mt-5 border-b border-white/10">

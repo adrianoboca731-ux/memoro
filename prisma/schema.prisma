@@ -87,6 +87,7 @@ model Follow {
   id          String   @id @default(cuid())
   followerId  String   @map("follower_id")
   followingId String   @map("following_id")
+  status      String   @default("approved") @map("status") // "pending", "approved", "rejected"
   createdAt   DateTime @default(now()) @map("created_at")
 
   follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
