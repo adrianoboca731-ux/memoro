@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, MessageCircle, User } from "lucide-react";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { it, enUS, fr, de as deLocale, es as esLocale, ptBR, ja, ko, zhTW, zhCN } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
+
+const dateLocales: Record<string, any> = { it, en: enUS, fr, de: deLocale, es: esLocale, "pt-BR": ptBR, ja, ko, "zh-TW": zhTW, "zh-CN": zhCN };
 
 interface Comment {
   id: string;
@@ -31,9 +34,12 @@ interface CommentSectionProps {
 
 export function CommentSection({ photoId, comments, onCommentAdded }: CommentSectionProps) {
   const { data: session } = useSession();
+  const { t, locale } = useI18n();
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localComments, setLocalComments] = useState<Comment[]>(comments);
+
+  const dateLocale = dateLocales[locale] || it;
 
   const handleAddComment = useCallback(async () => {
     if (!commentText.trim() || isSubmitting) return;
@@ -51,7 +57,7 @@ export function CommentSection({ photoId, comments, onCommentAdded }: CommentSec
         onCommentAdded?.(comment);
       }
     } catch (err) {
-      console.error("Errore nell'aggiunta del commento:", err);
+      console.error(err);
     } finally {
       setIsSubmitting(false);
     }
@@ -61,7 +67,7 @@ export function CommentSection({ photoId, comments, onCommentAdded }: CommentSec
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm font-medium text-foreground/70">
         <MessageCircle className="h-4 w-4" />
-        <span>Commenti ({localComments.length})</span>
+        <span>{t("comments.title")} ({localComments.length})</span>
       </div>
 
       {/* Add comment form */}
@@ -75,7 +81,7 @@ export function CommentSection({ photoId, comments, onCommentAdded }: CommentSec
           </Avatar>
           <div className="flex-1 space-y-2">
             <Textarea
-              placeholder="Aggiungi un commento..."
+              placeholder={t("comments.addComment")}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               rows={3}
@@ -89,7 +95,7 @@ export function CommentSection({ photoId, comments, onCommentAdded }: CommentSec
                 className="bg-[#0063dc] hover:bg-[#0052b5] text-white gap-1.5"
               >
                 <Send className="h-3.5 w-3.5" />
-                {isSubmitting ? "Invio..." : "Commenta"}
+                {isSubmitting ? t("common.sending") : t("comments.submit")}
               </Button>
             </div>
           </div>
@@ -98,7 +104,7 @@ export function CommentSection({ photoId, comments, onCommentAdded }: CommentSec
 
       {!session?.user && (
         <p className="text-sm text-muted-foreground text-center py-2">
-          <a href="/auth/accedi" className="text-[#0063dc] hover:underline">Accedi</a> per aggiungere un commento
+          <a href="/auth/accedi" className="text-[#0063dc] hover:underline">{t("nav.login")}</a> {t("comments.loginToComment")}
         </p>
       )}
 
@@ -121,10 +127,10 @@ export function CommentSection({ photoId, comments, onCommentAdded }: CommentSec
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-foreground/90">
-                    {comment.author?.name || "Utente"}
+                    {comment.author?.name || t("common.user")}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
-                    {format(new Date(comment.createdAt), "d MMM yyyy 'alle' HH:mm", { locale: it })}
+                    {format(new Date(comment.createdAt), "d MMM yyyy '" + t("comments.at") + "' HH:mm", { locale: dateLocale })}
                   </span>
                 </div>
                 <p className="text-sm text-foreground/70 mt-0.5">{comment.text}</p>
@@ -136,7 +142,7 @@ export function CommentSection({ photoId, comments, onCommentAdded }: CommentSec
 
       {localComments.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-4">
-          Nessun commento ancora. Sii il primo a commentare!
+          {t("comments.noComments")}
         </p>
       )}
     </div>

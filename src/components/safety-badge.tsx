@@ -2,19 +2,22 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Shield, AlertTriangle, ShieldAlert } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface SafetyBadgeProps {
   level: string;
   size?: "sm" | "default";
 }
 
-const config: Record<string, { label: string; color: string; icon: typeof Shield }> = {
-  safe: { label: "Sicuro", color: "bg-green-500/80 text-white", icon: Shield },
-  moderate: { label: "Moderato", color: "bg-yellow-500/80 text-black", icon: AlertTriangle },
-  restricted: { label: "Restretto", color: "bg-red-500/80 text-white", icon: ShieldAlert },
-};
-
 export function SafetyBadge({ level, size = "sm" }: SafetyBadgeProps) {
+  const { t } = useI18n();
+
+  const config: Record<string, { label: string; color: string; icon: typeof Shield }> = {
+    safe: { label: t("safety.safe"), color: "bg-green-500/80 text-white", icon: Shield },
+    moderate: { label: t("safety.moderate"), color: "bg-yellow-500/80 text-black", icon: AlertTriangle },
+    restricted: { label: t("safety.restricted"), color: "bg-red-500/80 text-white", icon: ShieldAlert },
+  };
+
   const c = config[level] || config.safe;
   const Icon = c.icon;
 

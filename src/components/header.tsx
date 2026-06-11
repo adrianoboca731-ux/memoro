@@ -15,10 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useI18n } from "@/lib/i18n";
 
 export function Header() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { t } = useI18n();
   const [localSearch, setLocalSearch] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -46,13 +49,13 @@ export function Header() {
   );
 
   const mobileNavItems = [
-    { href: `/persone/${(session?.user as any)?.username || ""}`, label: "Tu" },
-    { href: "/esplora", label: "Esplora" },
-    { href: "/album", label: "Album" },
-    { href: "/gruppi", label: "Gruppi" },
-    { href: "/gallerie", label: "Gallerie" },
-    { href: "/preferiti", label: "Preferiti" },
-    { href: "/rullino", label: "Rullino" },
+    { href: `/persone/${(session?.user as any)?.username || ""}`, label: t("nav.you") },
+    { href: "/esplora", label: t("nav.explore") },
+    { href: "/album", label: t("nav.album") },
+    { href: "/gruppi", label: t("nav.groups") },
+    { href: "/gallerie", label: t("nav.galleries") },
+    { href: "/preferiti", label: t("nav.favorites") },
+    { href: "/rullino", label: t("nav.cameraRoll") },
   ];
 
   return (
@@ -81,7 +84,7 @@ export function Header() {
                 className="h-8 text-sm text-white/60 hover:text-white hover:bg-white/5"
               >
                 <Compass className="h-4 w-4 mr-1" />
-                Esplora
+                {t("nav.explore")}
               </Button>
             </Link>
             <Link href="/carica">
@@ -91,7 +94,7 @@ export function Header() {
                 className="h-8 text-sm text-white/60 hover:text-white hover:bg-white/5 gap-1.5"
               >
                 <Upload className="h-4 w-4" />
-                <span className="hidden lg:inline">Caricamento</span>
+                <span className="hidden lg:inline">{t("nav.upload")}</span>
               </Button>
             </Link>
           </nav>
@@ -106,7 +109,7 @@ export function Header() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
             <Input
               ref={searchInputRef}
-              placeholder="Cerca foto, persone o gruppi"
+              placeholder={t("nav.searchPlaceholder")}
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-9 h-8 bg-white/5 border-white/10 text-white text-sm placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-white/20 rounded-full"
@@ -138,6 +141,7 @@ export function Header() {
                 <Mail className="h-4 w-4" />
               </Button>
             </Link>
+            <LanguageSwitcher />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -174,28 +178,28 @@ export function Header() {
                   onClick={() => router.push(`/persone/${(session.user as any).username || ""}`)}
                 >
                   <User className="h-4 w-4 mr-2" />
-                  Il tuo profilo
+                  {t("nav.yourProfile")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
                   onClick={() => router.push("/album")}
                 >
                   <ImageIcon className="h-4 w-4 mr-2" />
-                  I tuoi album
+                  {t("nav.yourAlbums")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
                   onClick={() => router.push("/gallerie")}
                 >
                   <LayoutGrid className="h-4 w-4 mr-2" />
-                  Le tue gallerie
+                  {t("nav.yourGalleries")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
                   onClick={() => router.push("/gruppi")}
                 >
                   <Users className="h-4 w-4 mr-2" />
-                  I tuoi gruppi
+                  {t("nav.yourGroups")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/10" />
                 <DropdownMenuItem
@@ -203,21 +207,21 @@ export function Header() {
                   onClick={() => router.push("/rullino")}
                 >
                   <Film className="h-4 w-4 mr-2" />
-                  Rullino
+                  {t("nav.cameraRoll")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
                   onClick={() => router.push("/preferiti")}
                 >
                   <Heart className="h-4 w-4 mr-2" />
-                  Preferiti
+                  {t("nav.favorites")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
                   onClick={() => router.push("/impostazioni")}
                 >
                   <Settings className="h-4 w-4 mr-2" />
-                  Impostazioni
+                  {t("nav.settings")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/10" />
                 <DropdownMenuItem
@@ -225,7 +229,7 @@ export function Header() {
                   onClick={() => signOut({ callbackUrl: "/" })}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Esci
+                  {t("nav.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -246,13 +250,14 @@ export function Header() {
         ) : (
           /* Right side - Not authenticated */
           <div className="flex items-center gap-2 shrink-0">
+            <LanguageSwitcher />
             <Link href="/auth/accedi">
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-white/70 hover:text-white hover:bg-white/5"
               >
-                Accedi
+                {t("nav.login")}
               </Button>
             </Link>
             <Link href="/auth/registrati">
@@ -260,7 +265,7 @@ export function Header() {
                 size="sm"
                 className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] hover:opacity-90 text-white"
               >
-                Registrati
+                {t("nav.register")}
               </Button>
             </Link>
           </div>

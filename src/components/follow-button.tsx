@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface FollowButtonProps {
   userId: string;
@@ -14,6 +15,7 @@ interface FollowButtonProps {
 
 export function FollowButton({ userId, username, initialFollowing = false, size = "sm" }: FollowButtonProps) {
   const { data: session } = useSession();
+  const { t } = useI18n();
   const [isFollowing, setIsFollowing] = useState(initialFollowing);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,7 +35,7 @@ export function FollowButton({ userId, username, initialFollowing = false, size 
         setIsFollowing(!isFollowing);
       }
     } catch (err) {
-      console.error("Errore nel seguire l'utente:", err);
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -56,12 +58,12 @@ export function FollowButton({ userId, username, initialFollowing = false, size 
       {isFollowing ? (
         <>
           <UserMinus className="h-3.5 w-3.5 mr-1" />
-          Seguendo
+          {t("profile.following")}
         </>
       ) : (
         <>
           <UserPlus className="h-3.5 w-3.5 mr-1" />
-          Segui
+          {t("profile.follow")}
         </>
       )}
     </Button>

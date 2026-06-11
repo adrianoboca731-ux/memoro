@@ -3,13 +3,14 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
+import { I18nProvider } from "@/lib/i18n";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Memoro — Condividi i Tuoi Ricordi",
+  title: "Memoro — Share Your Memories",
   description:
-    "La piattaforma gratuita per condividere e scoprire foto straordinarie. Spazio illimitato gratuito.",
+    "The free platform for sharing and discovering extraordinary photos. Unlimited free space.",
 };
 
 export default function RootLayout({
@@ -19,14 +20,16 @@ export default function RootLayout({
     <html lang="it" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
+          <I18nProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </I18nProvider>
         </AuthProvider>
       </body>
     </html>

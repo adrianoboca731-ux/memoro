@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 import { FollowButton } from "./follow-button";
+import { useI18n } from "@/lib/i18n";
 
 interface UserCardProps {
   user: {
@@ -20,6 +21,8 @@ interface UserCardProps {
 }
 
 export function UserCard({ user, showFollow = true }: UserCardProps) {
+  const { t } = useI18n();
+
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg bg-card border hover:shadow-md transition-shadow">
       <Link href={`/persone/${user.username}`} className="shrink-0">
@@ -39,11 +42,11 @@ export function UserCard({ user, showFollow = true }: UserCardProps) {
           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
             {user.photoCount !== undefined && (
               <span className="flex items-center gap-1">
-                <User className="h-3 w-3" /> {user.photoCount} foto
+                <User className="h-3 w-3" /> {user.photoCount} {t("common.photos")}
               </span>
             )}
             {user.followerCount !== undefined && (
-              <span>{user.followerCount} follower</span>
+              <span>{user.followerCount} {t("common.followers")}</span>
             )}
           </div>
         )}
