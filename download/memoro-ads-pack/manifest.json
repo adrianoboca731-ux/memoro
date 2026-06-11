@@ -1,0 +1,802 @@
+[
+  {
+    "file": "memoro-it-728x90.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-it-vs-728x90.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-it-300x250.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-it-vs-300x250.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-it-160x600.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-it-vs-160x600.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-it-300x600.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-it-vs-300x600.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-it-970x90.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-it-vs-970x90.png",
+    "lang": "Italiano",
+    "lang_code": "it",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-en-728x90.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-en-vs-728x90.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-en-300x250.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-en-vs-300x250.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-en-160x600.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-en-vs-160x600.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-en-300x600.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-en-vs-300x600.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-en-970x90.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-en-vs-970x90.png",
+    "lang": "English",
+    "lang_code": "en",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-fr-728x90.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-fr-vs-728x90.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-fr-300x250.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-fr-vs-300x250.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-fr-160x600.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-fr-vs-160x600.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-fr-300x600.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-fr-vs-300x600.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-fr-970x90.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-fr-vs-970x90.png",
+    "lang": "Francais",
+    "lang_code": "fr",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-de-728x90.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-de-vs-728x90.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-de-300x250.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-de-vs-300x250.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-de-160x600.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-de-vs-160x600.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-de-300x600.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-de-vs-300x600.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-de-970x90.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-de-vs-970x90.png",
+    "lang": "Deutsch",
+    "lang_code": "de",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-es-728x90.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-es-vs-728x90.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-es-300x250.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-es-vs-300x250.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-es-160x600.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-es-vs-160x600.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-es-300x600.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-es-vs-300x600.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-es-970x90.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-es-vs-970x90.png",
+    "lang": "Espanol",
+    "lang_code": "es",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-pt-BR-728x90.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-pt-BR-vs-728x90.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-pt-BR-300x250.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-pt-BR-vs-300x250.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-pt-BR-160x600.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-pt-BR-vs-160x600.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-pt-BR-300x600.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-pt-BR-vs-300x600.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-pt-BR-970x90.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-pt-BR-vs-970x90.png",
+    "lang": "Portugues-BR",
+    "lang_code": "pt-BR",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ja-728x90.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ja-vs-728x90.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ja-300x250.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ja-vs-300x250.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ja-160x600.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ja-vs-160x600.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ja-300x600.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ja-vs-300x600.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ja-970x90.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ja-vs-970x90.png",
+    "lang": "Japanese",
+    "lang_code": "ja",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ko-728x90.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ko-vs-728x90.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ko-300x250.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ko-vs-300x250.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ko-160x600.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ko-vs-160x600.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ko-300x600.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ko-vs-300x600.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-ko-970x90.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-ko-vs-970x90.png",
+    "lang": "Korean",
+    "lang_code": "ko",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-TW-728x90.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-TW-vs-728x90.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-TW-300x250.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-TW-vs-300x250.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-TW-160x600.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-TW-vs-160x600.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-TW-300x600.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-TW-vs-300x600.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-TW-970x90.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-TW-vs-970x90.png",
+    "lang": "Chinese-Traditional",
+    "lang_code": "zh-TW",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-CN-728x90.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-CN-vs-728x90.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "728x90",
+    "dimensions": "728x90",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-CN-300x250.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-CN-vs-300x250.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "300x250",
+    "dimensions": "300x250",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-CN-160x600.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-CN-vs-160x600.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "160x600",
+    "dimensions": "160x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-CN-300x600.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-CN-vs-300x600.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "300x600",
+    "dimensions": "300x600",
+    "type": "comparison"
+  },
+  {
+    "file": "memoro-zh-CN-970x90.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "main"
+  },
+  {
+    "file": "memoro-zh-CN-vs-970x90.png",
+    "lang": "Chinese-Simplified",
+    "lang_code": "zh-CN",
+    "size": "970x90",
+    "dimensions": "970x90",
+    "type": "comparison"
+  }
+]
