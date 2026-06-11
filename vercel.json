@@ -1,0 +1,10 @@
+{
+  "experimentalServices": {
+    "memoro": {
+      "type": "web",
+      "routePrefix": "/",
+      "framework": "nextjs",
+      "buildCommand": "npx prisma generate && next build"
+    }
+  }
+}
