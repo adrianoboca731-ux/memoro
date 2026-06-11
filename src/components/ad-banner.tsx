@@ -1,73 +1,133 @@
 "use client";
 
-import { useEffect } from "react";
+import { Camera, Sparkles, ArrowRight, Upload, Users, Globe } from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
-type AdSize = "leaderboard" | "banner" | "rectangle" | "mobile" | "skyscraper";
+type PromoVariant = "leaderboard" | "rectangle" | "banner";
 
-interface AdBannerProps {
-  slot: string;
-  size: AdSize;
+interface PromoBannerProps {
+  variant?: PromoVariant;
   className?: string;
 }
 
-const sizeMap: Record<AdSize, { width: number; height: number; maxW: string }> = {
-  leaderboard: { width: 728, height: 90, maxW: "max-w-[728px]" },
-  banner: { width: 468, height: 60, maxW: "max-w-[468px]" },
-  rectangle: { width: 336, height: 280, maxW: "max-w-[336px]" },
-  mobile: { width: 320, height: 50, maxW: "max-w-[320px]" },
-  skyscraper: { width: 160, height: 600, maxW: "max-w-[160px]" },
-};
+const messages = [
+  {
+    icon: Camera,
+    title: "Memoro — Free Photo Sharing",
+    subtitle: "Unlimited space, no limits. Join the community!",
+    cta: "Sign Up Free",
+    href: "/auth/registrati",
+    gradient: "from-[#0063dc]/20 to-[#ff0084]/20",
+  },
+  {
+    icon: Sparkles,
+    title: "Share Your Best Shots",
+    subtitle: "Upload unlimited photos for free on Memoro.",
+    cta: "Get Started",
+    href: "/auth/registrati",
+    gradient: "from-[#ff0084]/20 to-[#0063dc]/20",
+  },
+  {
+    icon: Users,
+    title: "Join Photographers Worldwide",
+    subtitle: "Create galleries, join groups, share your passion.",
+    cta: "Join Now",
+    href: "/auth/registrati",
+    gradient: "from-[#0063dc]/15 to-[#ff0084]/15",
+  },
+  {
+    icon: Globe,
+    title: "Memoro — 10 Languages",
+    subtitle: "The free photo platform for everyone, everywhere.",
+    cta: "Explore",
+    href: "/esplora",
+    gradient: "from-[#ff0084]/15 to-[#0063dc]/15",
+  },
+];
 
-export function AdBanner({ slot, size, className = "" }: AdBannerProps) {
-  const { width, height, maxW } = sizeMap[size];
+export function PromoBanner({ variant = "leaderboard", className = "" }: PromoBannerProps) {
+  // Pick a message based on variant to keep it consistent per placement
+  const msgIndex = variant === "rectangle" ? 2 : variant === "banner" ? 1 : 0;
+  const msg = messages[msgIndex];
+  const Icon = msg.icon;
 
-  useEffect(() => {
-    try {
-      // @ts-expect-error adsbygoogle is injected by Google
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e) {
-      console.error("AdSense error:", e);
-    }
-  }, []);
-
-  return (
-    <div className={`flex justify-center my-4 ${className}`}>
-      <div
-        className={`${maxW} w-full overflow-hidden rounded-lg bg-white/5 border border-white/10`}
-      >
-        <ins
-          className="adsbygoogle"
-          style={{ display: "block", width: "100%", height: `${height}px` }}
-          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-          data-ad-slot={slot}
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        />
+  if (variant === "rectangle") {
+    return (
+      <div className={`my-4 ${className}`}>
+        <Link href={msg.href}>
+          <motion.div
+            className={`rounded-xl bg-gradient-to-br ${msg.gradient} border border-white/10 p-5 hover:border-white/20 transition-all cursor-pointer group`}
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0063dc] to-[#ff0084] flex items-center justify-center">
+                <Icon className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-white/80 font-semibold text-sm">{msg.title}</span>
+            </div>
+            <p className="text-white/40 text-xs leading-relaxed mb-3">{msg.subtitle}</p>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-[#ff0084] group-hover:text-[#ff0084]/80 transition-colors">
+              {msg.cta}
+              <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </motion.div>
+        </Link>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-/**
- * Placeholder banner shown when AdSense is not yet configured.
- * Displays a "Your Ad Here" message to indicate where ads will appear.
- */
-export function AdPlaceholder({ size, className = "" }: { size: AdSize; className?: string }) {
-  const { height, maxW } = sizeMap[size];
-
-  return (
-    <div className={`flex justify-center my-4 ${className}`}>
-      <div
-        className={`${maxW} w-full flex items-center justify-center rounded-lg border border-dashed border-white/20 bg-white/[0.03] text-white/20 text-xs`}
-        style={{ minHeight: `${Math.min(height, 90)}px` }}
-      >
-        <span className="flex items-center gap-1.5">
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" />
-          </svg>
-          Advertisement
-        </span>
+  if (variant === "banner") {
+    return (
+      <div className={`my-4 ${className}`}>
+        <Link href={msg.href}>
+          <motion.div
+            className={`rounded-lg bg-gradient-to-r ${msg.gradient} border border-white/10 px-5 py-3 hover:border-white/20 transition-all cursor-pointer group flex items-center justify-between gap-4`}
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-[#0063dc] to-[#ff0084] flex items-center justify-center shrink-0">
+                <Icon className="h-3.5 w-3.5 text-white" />
+              </div>
+              <div>
+                <span className="text-white/80 font-medium text-sm">{msg.title}</span>
+                <span className="text-white/30 text-xs ml-2 hidden sm:inline">{msg.subtitle}</span>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-[#ff0084] shrink-0 group-hover:text-[#ff0084]/80 transition-colors">
+              {msg.cta}
+              <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </motion.div>
+        </Link>
       </div>
+    );
+  }
+
+  // Leaderboard (default)
+  return (
+    <div className={`my-4 ${className}`}>
+      <Link href={msg.href}>
+        <motion.div
+          className={`rounded-xl bg-gradient-to-r ${msg.gradient} border border-white/10 px-6 py-4 hover:border-white/20 transition-all cursor-pointer group flex items-center justify-center gap-4 flex-wrap`}
+          whileHover={{ scale: 1.01 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0063dc] to-[#ff0084] flex items-center justify-center shadow-lg shadow-[#0063dc]/20">
+            <Camera className="h-5 w-5 text-white" />
+          </div>
+          <div className="text-center sm:text-left">
+            <span className="text-white font-bold text-lg">Memoro</span>
+            <span className="text-white/50 text-sm ml-2">{msg.subtitle}</span>
+          </div>
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#ff0084] bg-[#ff0084]/10 px-4 py-1.5 rounded-full group-hover:bg-[#ff0084]/20 transition-colors">
+            {msg.cta}
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+          </span>
+        </motion.div>
+      </Link>
     </div>
   );
 }

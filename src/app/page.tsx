@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
-import { AdPlaceholder } from "@/components/ad-banner";
+import { PromoBanner } from "@/components/ad-banner";
 
 // Hero section for logged-out users
 function HeroSection() {
@@ -121,8 +121,8 @@ function HeroSection() {
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-6 px-4 text-center">
-        {/* Ad Banner — Homepage Footer */}
-        <AdPlaceholder size="leaderboard" className="mb-6" />
+        {/* Promo Banner — Homepage Footer */}
+        <PromoBanner variant="leaderboard" className="mb-6" />
 
         <span className="bg-gradient-to-r from-[#0063dc] to-[#ff0084] bg-clip-text text-transparent font-bold">
           Memoro
