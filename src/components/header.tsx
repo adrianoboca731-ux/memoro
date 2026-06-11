@@ -76,9 +76,9 @@ export function Header() {
         </Link>
         <Link
           href="/chisiamo"
-          className="shrink-0 hidden sm:block"
+          className="shrink-0"
         >
-          <span className="text-xs text-white/40 hover:text-white/70 transition-colors">
+          <span className="text-xs text-white/60 hover:text-white transition-colors">
             {t("nav.about")}
           </span>
         </Link>
