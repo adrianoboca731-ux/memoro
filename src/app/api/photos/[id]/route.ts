@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { del } from "@vercel/blob";
+import { deleteFromCloudinary } from "@/lib/cloudinary";
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -180,21 +180,15 @@ export async function DELETE(
       return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
     }
 
-    // Delete blob files
-    if (
-      photo.filepath &&
-      photo.filepath.includes("blob.vercel-storage.com")
-    ) {
+    // Delete Cloudinary files
+    if (photo.filepath && photo.filepath.includes("cloudinary.com")) {
       try {
-        await del(photo.filepath);
+        await deleteFromCloudinary(photo.filepath);
       } catch {}
     }
-    if (
-      photo.thumbnail &&
-      photo.thumbnail.includes("blob.vercel-storage.com")
-    ) {
+    if (photo.thumbnail && photo.thumbnail.includes("cloudinary.com")) {
       try {
-        await del(photo.thumbnail);
+        await deleteFromCloudinary(photo.thumbnail);
       } catch {}
     }
 

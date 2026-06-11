@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put, del } from "@vercel/blob";
+import { uploadToCloudinary, deleteFromCloudinary } from "@/lib/cloudinary";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -38,27 +38,28 @@ export async function POST(request: NextRequest) {
       select: { avatar: true },
     });
 
-    // Upload new avatar to Vercel Blob
+    // Upload new avatar to Cloudinary
     const timestamp = Date.now();
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const pathname = `avatars/${userId}/${timestamp}-${sanitizedFilename}`;
+    const folder = `memoro/avatars/${userId}`;
+    const filename = `${timestamp}-${sanitizedFilename}`;
 
-    const blob = await put(pathname, file, {
-      access: "public",
-      contentType: file.type,
-    });
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const result = await uploadToCloudinary(buffer, folder, filename, file.type);
 
     // Update user avatar in database
     const updatedUser = await db.user.update({
       where: { id: userId },
-      data: { avatar: blob.url },
+      data: { avatar: result.url },
       select: { id: true, avatar: true, name: true, username: true },
     });
 
-    // Delete old avatar from blob storage (if it was a blob URL)
-    if (currentUser?.avatar && currentUser.avatar.includes("blob.vercel-storage.com")) {
+    // Delete old avatar from Cloudinary (if it was a Cloudinary URL)
+    if (currentUser?.avatar && currentUser.avatar.includes("cloudinary.com")) {
       try {
-        await del(currentUser.avatar);
+        await deleteFromCloudinary(currentUser.avatar);
       } catch {
         // Ignore deletion errors for old avatar
       }
@@ -98,10 +99,10 @@ export async function DELETE(request: NextRequest) {
       data: { avatar: null },
     });
 
-    // Delete from blob storage
-    if (currentUser?.avatar && currentUser.avatar.includes("blob.vercel-storage.com")) {
+    // Delete from Cloudinary
+    if (currentUser?.avatar && currentUser.avatar.includes("cloudinary.com")) {
       try {
-        await del(currentUser.avatar);
+        await deleteFromCloudinary(currentUser.avatar);
       } catch {
         // Ignore deletion errors
       }

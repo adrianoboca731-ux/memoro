@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put } from "@vercel/blob";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -32,39 +32,39 @@ export async function POST(request: NextRequest) {
     const userId = (session.user as any).id;
     const timestamp = Date.now();
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const pathname = `photos/${userId}/${timestamp}-${sanitizedFilename}`;
+    const folder = `memoro/photos/${userId}`;
+    const filename = `${timestamp}-${sanitizedFilename}`;
 
-    const blob = await put(pathname, file, {
-      access: "public",
-      contentType: file.type,
-    });
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-    // Extract dimensions if possible (return basic info)
-    const result: Record<string, unknown> = {
-      filename: file.name,
-      filepath: blob.url,
-      thumbnail: blob.url,
-      mimetype: file.type,
-      size: file.size,
-    };
+    const result = await uploadToCloudinary(buffer, folder, filename, file.type);
 
     // Try to get image dimensions
+    let width: number | undefined;
+    let height: number | undefined;
     try {
-      if (typeof globalThis !== "undefined") {
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        // Basic dimension extraction from JPEG/PNG headers
-        const dims = getImageDimensions(buffer, file.type);
-        if (dims) {
-          result.width = dims.width;
-          result.height = dims.height;
-        }
+      const dims = getImageDimensions(buffer, file.type);
+      if (dims) {
+        width = dims.width;
+        height = dims.height;
       }
     } catch {
       // Ignore dimension extraction errors
     }
 
-    return NextResponse.json(result, { status: 201 });
+    return NextResponse.json(
+      {
+        filename: file.name,
+        filepath: result.url,
+        thumbnail: result.url,
+        mimetype: file.type,
+        size: file.size,
+        width,
+        height,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
@@ -77,37 +77,31 @@ export async function POST(request: NextRequest) {
 function getImageDimensions(buffer: Buffer, mimetype: string): { width: number; height: number } | null {
   try {
     if (mimetype === "image/png") {
-      // PNG: width and height are at bytes 16-23
       if (buffer.length >= 24) {
         const width = buffer.readUInt32BE(16);
         const height = buffer.readUInt32BE(20);
         return { width, height };
       }
     } else if (mimetype === "image/jpeg") {
-      // JPEG: need to find SOF marker
-      let offset = 2; // Skip SOI marker
+      let offset = 2;
       while (offset < buffer.length - 1) {
         if (buffer[offset] !== 0xff) break;
         const marker = buffer[offset + 1];
         if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
-          // SOF0, SOF1, SOF2
           const height = buffer.readUInt16BE(offset + 5);
           const width = buffer.readUInt16BE(offset + 7);
           return { width, height };
         }
-        // Skip to next marker
         const segLength = buffer.readUInt16BE(offset + 2);
         offset += 2 + segLength;
       }
     } else if (mimetype === "image/gif") {
-      // GIF: width and height are at bytes 6-9
       if (buffer.length >= 10) {
         const width = buffer.readUInt16LE(6);
         const height = buffer.readUInt16LE(8);
         return { width, height };
       }
     } else if (mimetype === "image/webp") {
-      // WebP: more complex, try RIFF/VP8 parsing
       if (buffer.length >= 30 && buffer.toString("ascii", 0, 4) === "RIFF") {
         const chunkType = buffer.toString("ascii", 12, 16);
         if (chunkType === "VP8 ") {
