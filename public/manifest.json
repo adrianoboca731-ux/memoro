@@ -1,0 +1,25 @@
+{
+  "name": "Memoro — Free Photo Sharing Platform",
+  "short_name": "Memoro",
+  "description": "The free platform for sharing and discovering extraordinary photos. Upload unlimited photos, create galleries, join groups, and connect with photographers worldwide.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#0063dc",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/dmp9v6pfo/image/upload/w_192,h_192,c_fill,q_auto:good,f_auto/memoro/logo",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://res.cloudinary.com/dmp9v6pfo/image/upload/w_512,h_512,c_fill,q_auto:good,f_auto/memoro/logo",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["photography", "social", "lifestyle"],
+  "lang": "it",
+  "dir": "ltr"
+}
