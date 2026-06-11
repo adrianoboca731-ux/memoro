@@ -9,6 +9,19 @@ export async function POST() {
       `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "logo_image" TEXT`,
       // Follow approval system: add status column to follows
       `ALTER TABLE "follows" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'approved'`,
+      // Birth date for minor detection
+      `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "birth_date" TIMESTAMP`,
+      // Profile viewers allowlist for private profiles
+      `CREATE TABLE IF NOT EXISTS "profile_viewers" (
+        "id" TEXT NOT NULL,
+        "user_id" TEXT NOT NULL,
+        "viewer_id" TEXT NOT NULL,
+        "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+        CONSTRAINT "profile_viewers_pkey" PRIMARY KEY ("id")
+      )`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "profile_viewers_userId_viewerId_key" ON "profile_viewers"("user_id", "viewer_id")`,
+      `CREATE INDEX IF NOT EXISTS "profile_viewers_user_id_idx" ON "profile_viewers"("user_id")`,
+      `CREATE INDEX IF NOT EXISTS "profile_viewers_viewer_id_idx" ON "profile_viewers"("viewer_id")`,
     ];
 
     const results: string[] = [];
