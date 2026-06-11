@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { Search, Upload, Bell, Mail, Camera, Menu, X, User, Settings, Image as ImageIcon, LayoutGrid, Heart, Film, LogOut, Users, Compass } from "lucide-react";
+import { Search, Upload, Bell, Mail, Camera, Menu, X, User, Settings, Image as ImageIcon, LayoutGrid, Heart, Film, LogOut, Users, Compass, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -56,6 +56,7 @@ export function Header() {
     { href: "/gallerie", label: t("nav.galleries") },
     { href: "/preferiti", label: t("nav.favorites") },
     { href: "/rullino", label: t("nav.cameraRoll") },
+    { href: "/chisiamo", label: t("nav.about") },
   ];
 
   return (
@@ -222,6 +223,13 @@ export function Header() {
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   {t("nav.settings")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-white/70 focus:text-white focus:bg-white/5 cursor-pointer"
+                  onClick={() => router.push("/chisiamo")}
+                >
+                  <Info className="h-4 w-4 mr-2" />
+                  {t("nav.about")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-white/10" />
                 <DropdownMenuItem
