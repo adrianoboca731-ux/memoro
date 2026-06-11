@@ -2,6 +2,9 @@
 # Render start script for Next.js standalone
 set -e
 
+echo "Pushing database schema..."
+npx prisma db push --accept-data-loss
+
 echo "Copying static assets..."
 
 # Copy .next/static to standalone/.next/static
