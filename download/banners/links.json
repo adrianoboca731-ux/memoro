@@ -1,0 +1,146 @@
+[
+  {
+    "lang": "de",
+    "file": "memoro-banner-de.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196596/memoro/banners/apxfygiva3htx7mci4re.jpg",
+    "public_id": "memoro/banners/apxfygiva3htx7mci4re"
+  },
+  {
+    "lang": "de",
+    "file": "memoro-vs-de.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196598/memoro/banners/ojk523lk6gqz9jdmsx19.jpg",
+    "public_id": "memoro/banners/ojk523lk6gqz9jdmsx19"
+  },
+  {
+    "lang": "en",
+    "file": "memoro-banner-en.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196600/memoro/banners/iksqwy7nsw7cc7hht6yb.jpg",
+    "public_id": "memoro/banners/iksqwy7nsw7cc7hht6yb"
+  },
+  {
+    "lang": "en",
+    "file": "memoro-vs-en.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196602/memoro/banners/ckfsbbagdlu6tut1mxyo.jpg",
+    "public_id": "memoro/banners/ckfsbbagdlu6tut1mxyo"
+  },
+  {
+    "lang": "es",
+    "file": "memoro-banner-es.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196604/memoro/banners/gsomvmpvesrvth2cszly.jpg",
+    "public_id": "memoro/banners/gsomvmpvesrvth2cszly"
+  },
+  {
+    "lang": "es",
+    "file": "memoro-vs-es.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196606/memoro/banners/avciyt9xxwzifzvnsvwk.jpg",
+    "public_id": "memoro/banners/avciyt9xxwzifzvnsvwk"
+  },
+  {
+    "lang": "fr",
+    "file": "memoro-banner-fr.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196608/memoro/banners/oaxeupl0nyjc8gg9ivhs.jpg",
+    "public_id": "memoro/banners/oaxeupl0nyjc8gg9ivhs"
+  },
+  {
+    "lang": "fr",
+    "file": "memoro-vs-fr.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196610/memoro/banners/ek2ikulqjasqrdw4ero6.jpg",
+    "public_id": "memoro/banners/ek2ikulqjasqrdw4ero6"
+  },
+  {
+    "lang": "ja",
+    "file": "memoro-banner-ja.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196612/memoro/banners/jxsrfcolwframesz63ca.jpg",
+    "public_id": "memoro/banners/jxsrfcolwframesz63ca"
+  },
+  {
+    "lang": "ja",
+    "file": "memoro-vs-ja.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196614/memoro/banners/ja4irj5vetownxhoaczw.jpg",
+    "public_id": "memoro/banners/ja4irj5vetownxhoaczw"
+  },
+  {
+    "lang": "ko",
+    "file": "memoro-banner-ko.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196616/memoro/banners/tt4uswastsitp8btgtlf.jpg",
+    "public_id": "memoro/banners/tt4uswastsitp8btgtlf"
+  },
+  {
+    "lang": "ko",
+    "file": "memoro-vs-ko.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196618/memoro/banners/zxy33cxkbri0jaczijk9.jpg",
+    "public_id": "memoro/banners/zxy33cxkbri0jaczijk9"
+  },
+  {
+    "lang": "it",
+    "file": "memoro-banner-300x250.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196620/memoro/banners/mi5ornpsdkdr5uefnzui.jpg",
+    "public_id": "memoro/banners/mi5ornpsdkdr5uefnzui"
+  },
+  {
+    "lang": "it",
+    "file": "memoro-banner-728x90.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196622/memoro/banners/xlb1spdxmut6nsceu2du.jpg",
+    "public_id": "memoro/banners/xlb1spdxmut6nsceu2du"
+  },
+  {
+    "lang": "it",
+    "file": "memoro-banner-social.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196624/memoro/banners/wsqqvmii0k2umlcy9lo9.jpg",
+    "public_id": "memoro/banners/wsqqvmii0k2umlcy9lo9"
+  },
+  {
+    "lang": "it",
+    "file": "memoro-banner-vertical.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196626/memoro/banners/pjsocpsbnaeffxzgcmot.jpg",
+    "public_id": "memoro/banners/pjsocpsbnaeffxzgcmot"
+  },
+  {
+    "lang": "it",
+    "file": "memoro-banner-vs-flickr.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196628/memoro/banners/cgoixitbnet57wfqnkd1.jpg",
+    "public_id": "memoro/banners/cgoixitbnet57wfqnkd1"
+  },
+  {
+    "lang": "it",
+    "file": "memoro-vs-it.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196630/memoro/banners/xivypar3blsimxgzbjdd.jpg",
+    "public_id": "memoro/banners/xivypar3blsimxgzbjdd"
+  },
+  {
+    "lang": "pt-BR",
+    "file": "memoro-banner-pt-BR.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196632/memoro/banners/wwsuqfxkxqvmnuszfyzd.jpg",
+    "public_id": "memoro/banners/wwsuqfxkxqvmnuszfyzd"
+  },
+  {
+    "lang": "pt-BR",
+    "file": "memoro-vs-pt-BR.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196634/memoro/banners/uyxtrmt0xykpbhqcepvu.jpg",
+    "public_id": "memoro/banners/uyxtrmt0xykpbhqcepvu"
+  },
+  {
+    "lang": "zh-CN",
+    "file": "memoro-banner-zh-CN.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196636/memoro/banners/dvsdicu6lzqbuupnxjcd.jpg",
+    "public_id": "memoro/banners/dvsdicu6lzqbuupnxjcd"
+  },
+  {
+    "lang": "zh-CN",
+    "file": "memoro-vs-zh-CN.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196638/memoro/banners/jmjpvmary24krlugta1l.jpg",
+    "public_id": "memoro/banners/jmjpvmary24krlugta1l"
+  },
+  {
+    "lang": "zh-TW",
+    "file": "memoro-banner-zh-TW.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196640/memoro/banners/cwg7jpxd0exshirymno4.jpg",
+    "public_id": "memoro/banners/cwg7jpxd0exshirymno4"
+  },
+  {
+    "lang": "zh-TW",
+    "file": "memoro-vs-zh-TW.png",
+    "url": "https://res.cloudinary.com/dmp9v6pfo/image/upload/v1781196642/memoro/banners/a8dmturngk85kjlxc8gc.jpg",
+    "public_id": "memoro/banners/a8dmturngk85kjlxc8gc"
+  }
+]
